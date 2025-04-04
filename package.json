@@ -45,7 +45,7 @@
         "@swc/core": "^1.4.8",
         "@types/jest": "^29.5.14",
         "@types/js-yaml": "^4.0.9",
-        "@types/luxon": "^3.4.2",
+        "@types/luxon": "^3.6.2",
         "@types/node": "^22.13.14",
         "@types/winston": "^2.4.4",
         "@typescript-eslint/eslint-plugin": "^8.28.0",
