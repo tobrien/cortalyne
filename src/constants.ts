@@ -1,3 +1,19 @@
+import { z } from 'zod';
+
+import { INSTRUCTION as DEFAULT_EMAIL_INSTRUCTIONS } from './prompt/email';
+
+import { INSTRUCTION as DEFAULT_DOCUMENT_INSTRUCTIONS } from './prompt/document';
+
+import { INSTRUCTION as DEFAULT_MEETING_INSTRUCTIONS } from './prompt/meeting';
+
+import { INSTRUCTION as DEFAULT_UPDATE_INSTRUCTIONS } from './prompt/update';
+
+import { INSTRUCTION as DEFAULT_CALL_INSTRUCTIONS } from './prompt/call';
+
+import { INSTRUCTION as DEFAULT_IDEA_INSTRUCTIONS } from './prompt/idea';
+
+import { INSTRUCTION as DEFAULT_OTHER_INSTRUCTIONS } from './prompt/other';
+
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'transote';
 export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
@@ -24,23 +40,44 @@ export const DEFAULT_DEBUG = false;
 export const DEFAULT_MODEL = 'gpt-4o-mini';
 export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-1';
 export const DEFAULT_CONTENT_TYPES = ['diff'];
+export const DEFAULT_RECURSIVE = false;
+export const DEFAULT_INPUT_DIRECTORY = './';
+export const DEFAULT_OUTPUT_DIRECTORY = './';
+
+export const DEFAULT_AUDIO_EXTENSIONS = ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'];
 
 export const ALLOWED_CONTENT_TYPES = ['log', 'diff'];
+export const ALLOWED_AUDIO_EXTENSIONS = ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'];
 
-export const DEFAULT_INSTRUCTIONS_FILE = './.gitchange/instructions.md';
+export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
+    type: z.enum(['meeting', 'call', 'update', 'idea', 'email', 'document', 'other']),
+    conferenceTool: z.enum(['zoom', 'phone', 'teams', 'none']).optional(),
+    attendees: z.array(z.string()).optional(),
+    subject: z.string().optional(),
+    recipients: z.array(z.string()).optional(),
+    topic: z.string().optional(),
+    sections: z.array(z.object({
+        title: z.string(),
+        description: z.string(),
+    })).optional(),
+    tasks: z.array(z.object({
+        task: z.string(),
+        urgency: z.enum(['urgent', 'important', 'none']).optional(),
+        status: z.enum(['in-progress', 'completed', 'none', 'overdue']).optional(),
+    })).optional(),
+    text: z.string(),
+});
 
-export const DEFAULT_INSTRUCTIONS = `
-You are a helpful assistant that can write a release note or change log from a git commit message.
+export { INSTRUCTION as DEFAULT_CLASSIFY_INSTRUCTIONS } from './prompt/classify';
 
-The release note or change log should be written in markdown format.
+export { INSTRUCTION as DEFAULT_NOTE_INSTRUCTIONS } from './prompt/note';
 
-The release note or change log should be written in the following format:
-
-# Release Note or Change Log
-
-## Summary
-
-## Details
-
-## Notes
-`;
+export const NOTE_INSTRUCTION_TYPES = {
+    email: DEFAULT_EMAIL_INSTRUCTIONS,
+    document: DEFAULT_DOCUMENT_INSTRUCTIONS,
+    meeting: DEFAULT_MEETING_INSTRUCTIONS,
+    update: DEFAULT_UPDATE_INSTRUCTIONS,
+    call: DEFAULT_CALL_INSTRUCTIONS,
+    idea: DEFAULT_IDEA_INSTRUCTIONS,
+    other: DEFAULT_OTHER_INSTRUCTIONS,
+};

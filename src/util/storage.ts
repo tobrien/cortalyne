@@ -1,5 +1,6 @@
 // eslint-disable-next-line no-restricted-imports
 import * as fs from 'fs';
+import { glob } from 'glob';
 
 /**
  * This module exists to isolate filesystem operations from the rest of the codebase.
@@ -18,9 +19,12 @@ export interface Utility {
     isWritable: (path: string) => Promise<boolean>;
     isFileReadable: (path: string) => Promise<boolean>;
     isDirectoryWritable: (path: string) => Promise<boolean>;
+    isDirectoryReadable: (path: string) => Promise<boolean>;
     createDirectory: (path: string) => Promise<void>;
     readFile: (path: string, encoding: string) => Promise<string>;
+    readStream: (path: string) => Promise<fs.ReadStream>;
     writeFile: (path: string, data: string | Buffer, encoding: string) => Promise<void>;
+    forEachFileIn: (directory: string, callback: (file: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -84,6 +88,10 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         return await exists(path) && await isDirectory(path) && await isWritable(path);
     }
 
+    const isDirectoryReadable = async (path: string): Promise<boolean> => {
+        return await exists(path) && await isDirectory(path) && await isReadable(path);
+    }
+
     const createDirectory = async (path: string): Promise<void> => {
         try {
             await fs.promises.mkdir(path, { recursive: true });
@@ -100,5 +108,34 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         await fs.promises.writeFile(path, data, { encoding: encoding as BufferEncoding });
     }
 
-    return { exists, isDirectory, isFile, isReadable, isWritable, isFileReadable, isDirectoryWritable, createDirectory, readFile, writeFile };
+    const forEachFileIn = async (directory: string, callback: (file: string) => Promise<void>, options: { pattern: string | string[] } = { pattern: '*.*' }): Promise<void> => {
+        try {
+            const files = await glob(options.pattern, { cwd: directory, nodir: true });
+            for (const file of files) {
+                await callback(file);
+            }
+        } catch (err: any) {
+            throw new Error(`Failed to glob pattern ${options.pattern} in ${directory}: ${err.message}`);
+        }
+    }
+
+    const readStream = async (path: string): Promise<fs.ReadStream> => {
+        return fs.createReadStream(path);
+    }
+
+    return {
+        exists,
+        isDirectory,
+        isFile,
+        isReadable,
+        isWritable,
+        isFileReadable,
+        isDirectoryWritable,
+        isDirectoryReadable,
+        createDirectory,
+        readFile,
+        readStream,
+        writeFile,
+        forEachFileIn,
+    };
 }

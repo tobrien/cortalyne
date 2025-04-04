@@ -22,7 +22,7 @@ import {
 
 describe('constants', () => {
     it('should have correct string values', () => {
-        expect(PROGRAM_NAME).toBe('gitchange');
+        expect(PROGRAM_NAME).toBe('transote');
         expect(DEFAULT_CHARACTER_ENCODING).toBe('utf-8');
         expect(DEFAULT_BINARY_TO_TEXT_ENCODING).toBe('base64');
     });

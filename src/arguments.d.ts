@@ -5,7 +5,9 @@ export interface Input {
     transcriptionModel: string;
     model: string;
     openaiApiKey: string;
-    contentTypes: string[];
-    instructions: string;
+    recursive: boolean;
+    inputDirectory: string;
+    outputDirectory: string;
+    audioExtensions: string[];
 }
 

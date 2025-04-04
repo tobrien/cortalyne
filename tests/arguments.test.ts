@@ -1,13 +1,8 @@
 import { jest } from '@jest/globals';
-import { DEFAULT_INSTRUCTIONS, DEFAULT_MODEL } from '../src/constants.js';
 
 // Import modules asynchronously using dynamic imports to support ESM
 let mockRun: any;
-let mockExport: any;
-let ArgumentError: any;
 let configure: any;
-let generateConfig: any;
-let Storage: any;
 
 // Mock dependencies
 jest.mock('../src/run.js', () => ({
@@ -28,7 +23,15 @@ jest.mock('commander', () => {
             opts: jest.fn().mockReturnValue({
                 dryRun: false,
                 verbose: false,
-                openaiApiKey: 'test-api-key'
+                debug: false,
+                openaiApiKey: 'test-api-key',
+                transcriptionModel: 'test-transcription-model',
+                model: 'test-model',
+                contentTypes: ['diff', 'log'],
+                recursive: false,
+                inputDirectory: 'test-input-directory',
+                outputDirectory: 'test-output-directory',
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
             })
         };
         return cmd;
@@ -63,9 +66,12 @@ describe('arguments', () => {
             expect(config.verbose).toBe(false);
             expect(config.debug).toBe(false);
             expect(config.diff).toBe(true);
-            expect(config.log).toBe(false);
-            expect(config.instructions).toBe(DEFAULT_INSTRUCTIONS);
-            expect(config.model).toBe(DEFAULT_MODEL);
+            expect(config.model).toBe('test-model');
+            expect(config.transcriptionModel).toBe('test-transcription-model');
+            expect(config.recursive).toBe(false);
+            expect(config.inputDirectory).toBe('test-input-directory');
+            expect(config.outputDirectory).toBe('test-output-directory');
+            expect(config.audioExtensions).toStrictEqual(['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']);
         });
 
         it('should configure program with all options', async () => {
@@ -75,9 +81,12 @@ describe('arguments', () => {
             expect(config.verbose).toBe(false);
             expect(config.debug).toBe(false);
             expect(config.diff).toBe(true);
-            expect(config.log).toBe(false);
-            expect(config.instructions).toBe(DEFAULT_INSTRUCTIONS);
-            expect(config.model).toBe(DEFAULT_MODEL);
+            expect(config.model).toBe('test-model');
+            expect(config.transcriptionModel).toBe('test-transcription-model');
+            expect(config.recursive).toBe(false);
+            expect(config.inputDirectory).toBe('test-input-directory');
+            expect(config.outputDirectory).toBe('test-output-directory');
+            expect(config.audioExtensions).toStrictEqual(['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']);
         });
     });
 });  

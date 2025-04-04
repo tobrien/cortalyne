@@ -7,18 +7,23 @@ var fs: {
         access: jest.Mock<() => Promise<void>>,
         mkdir: jest.Mock<() => Promise<void>>,
         readFile: jest.Mock<() => Promise<string>>,
-        writeFile: jest.Mock<() => Promise<void>>
+        writeFile: jest.Mock<() => Promise<void>>,
+        lstatSync: jest.Mock<() => Promise<any>>,
     },
     constants: {
         R_OK: number,
         W_OK: number
     }
 };
+
+// Mock the fs module
+const mockGlob = jest.fn<() => Promise<any>>();
 const mockStat = jest.fn<() => Promise<any>>();
 const mockAccess = jest.fn<() => Promise<void>>();
 const mockMkdir = jest.fn<() => Promise<void>>();
 const mockReadFile = jest.fn<() => Promise<string>>();
 const mockWriteFile = jest.fn<() => Promise<void>>();
+const mockLstatSync = jest.fn<() => Promise<any>>();
 
 jest.unstable_mockModule('fs', () => ({
     __esModule: true,
@@ -27,12 +32,18 @@ jest.unstable_mockModule('fs', () => ({
         access: mockAccess,
         mkdir: mockMkdir,
         readFile: mockReadFile,
-        writeFile: mockWriteFile
+        writeFile: mockWriteFile,
+        lstatSync: mockLstatSync
     },
     constants: {
         R_OK: 4,
         W_OK: 2
     }
+}));
+
+jest.unstable_mockModule('glob', () => ({
+    __esModule: true,
+    glob: mockGlob
 }));
 
 // Import the storage module after mocking fs
@@ -45,6 +56,7 @@ describe('Storage Utility', () => {
 
     beforeAll(async () => {
         var fs = await import('fs');
+        var glob = await import('glob');
         storageModule = await import('../../src/util/storage.js');
     });
 
@@ -344,6 +356,18 @@ describe('Storage Utility', () => {
             } finally {
                 console.log = originalConsoleLog;
             }
+        });
+    });
+
+    describe('forEachFileIn', () => {
+        it('should iterate over files in a directory', async () => {
+            // Setup mocks for the chain of function calls
+            // @ts-ignore
+            mockGlob.mockResolvedValueOnce(['/test/dir/file1.txt', '/test/dir/file2.txt']);
+
+            await storage.forEachFileIn('/test/dir', async (file: string) => {
+                expect(file).toMatch(/^\/test\/dir\/file[12]\.txt$/)
+            });
         });
     });
 });
