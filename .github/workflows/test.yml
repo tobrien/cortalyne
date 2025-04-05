@@ -22,7 +22,7 @@ jobs:
               args: [--frozen-lockfile, --strict-peer-dependencies]
       # Setup the PATH to include local binaries
       - name: Setup pnpm bin in PATH
-        run: echo "$(pnpm bin)" >> $GITHUB_PATH
+        run: echo "PATH=$(pnpm bin):$PATH" >> "$GITHUB_ENV"
       - run: pnpm run lint
       - run: pnpm run build
       - run: pnpm test -- --coverage
