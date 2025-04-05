@@ -55,7 +55,6 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
     attendees: z.array(z.string()).optional(),
     subject: z.string().optional(),
     recipients: z.array(z.string()).optional(),
-    topic: z.string().optional(),
     sections: z.array(z.object({
         title: z.string(),
         description: z.string(),

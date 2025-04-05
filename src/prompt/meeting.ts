@@ -4,12 +4,16 @@ A "meeting" summary typically includes the meeting title, participants, summary 
 
 The summary should clearly indicate who attended, what was discussed, outcomes of discussions, decisions made, and any follow-up actions required.
 
+The summary should also include all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
+
+If the meeting notes are long, please capture as many notes as possible and don't truncate the contents to fit within a particular format.
+
 ### Meeting Title
 
 Determine the meeting title based on the following priority:
 
 1. Explicitly stated title by the participants ("Meeting on Project Launch").
-2. Clearly identified central topic or main subject of discussion.
+2. Clearly identified central or main subject of discussion.
 3. General context if no explicit title is mentioned.
 
 If the title isn't explicitly stated, indicate this clearly:
