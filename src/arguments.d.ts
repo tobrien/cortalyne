@@ -9,5 +9,8 @@ export interface Input {
     inputDirectory: string;
     outputDirectory: string;
     audioExtensions: string[];
+    outputStructure?: string;
+    filenameOptions?: string[];
+
 }
 

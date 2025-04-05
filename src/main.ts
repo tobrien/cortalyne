@@ -3,18 +3,18 @@ import 'dotenv/config';
 import * as Arguments from './arguments';
 import { getLogger, setLogLevel } from './logging';
 import { ExitError } from './phases';
-import * as Run from './run';
 import * as Process from './process';
 import * as Storage from './util/storage';
 import { Instance as ProcessInstance } from './process.d';
 import { VERSION, PROGRAM_NAME } from './constants';
+import { Config as RunConfig } from './run.d';
 
 export async function main() {
 
     // eslint-disable-next-line no-console
     console.info(`Starting ${PROGRAM_NAME}: ${VERSION}`);
 
-    const [runConfig]: [Run.Config] = await Arguments.configure();
+    const [runConfig]: [RunConfig] = await Arguments.configure();
 
     // Set log level based on verbose flag
     if (runConfig.verbose) {

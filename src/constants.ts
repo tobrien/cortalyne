@@ -14,6 +14,8 @@ import { INSTRUCTION as DEFAULT_IDEA_INSTRUCTIONS } from './prompt/idea';
 
 import { INSTRUCTION as DEFAULT_OTHER_INSTRUCTIONS } from './prompt/other';
 
+import { FilenameOption, OutputStructure } from './run.d';
+
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'transote';
 export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
@@ -80,3 +82,9 @@ export const NOTE_INSTRUCTION_TYPES = {
     idea: DEFAULT_IDEA_INSTRUCTIONS,
     other: DEFAULT_OTHER_INSTRUCTIONS,
 };
+
+export const DEFAULT_OUTPUT_STRUCTURE = 'month' as OutputStructure;
+export const DEFAULT_FILENAME_OPTIONS = ['date', 'subject'] as FilenameOption[];
+
+export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as OutputStructure[];
+export const ALLOWED_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
