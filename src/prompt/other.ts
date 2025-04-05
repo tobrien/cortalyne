@@ -2,6 +2,8 @@ export const INSTRUCTION = `## Instructions for Creating an "Other" Note
 
 An **Other** note captures information or content that doesn't fit neatly into predefined categories such as Idea or Update. This format should be flexible and simple, clearly presenting whatever information is captured without imposing unnecessary structure.
 
+The "other" note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
+
 ---
 
 ### "Other" Note Formatting Guide
