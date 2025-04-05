@@ -4,8 +4,6 @@ An "email"-type note typically includes a subject, recipients, and optionally, s
 
 Please note that the subject and recipients might not always be explicitly stated in the transcript. If they are not present, interpret the note as an email draft while clearly indicating missing details.
 
-The email note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
-
 ### Verbatim Email Notes
 
 If the transcript explicitly indicates a verbatim description (e.g., phrases like "this is the text of the email I need to send" or "take this text down verbatim"), the note should contain the verbatim content clearly formatted into paragraphs and logical line breaks.
@@ -48,7 +46,7 @@ To: *(Recipient not explicitly identified)*
 The subject should be determined with the following priority:
 
 1. Explicit statement by the speaker ("email about Boat Race").
-2. Clearly identified subject mentioned by the speaker.
+2. Clearly identified topic mentioned by the speaker.
 3. General context of the note if no explicit subject is mentioned.
 
 If the subject is not explicitly stated, indicate this explicitly:
