@@ -7,6 +7,8 @@ An idea note does not require structured sections (like participants, decisions,
 - If the idea is brief, capture it as concise bullet points.
 - If detailed or lengthy, summarize it clearly in paragraphs, ensuring no critical information is omitted.
 
+The idea note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
+
 ---
 
 ### Idea Note Formatting Guide

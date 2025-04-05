@@ -2,7 +2,15 @@ export const INSTRUCTION = `## Instructions for Creating an Update Note
 
 An **Update** note clearly communicates the latest information or changes related to a specific subject, context, or past event. Unlike an "Idea" note, an update should explicitly reference the subject and briefly provide necessary context or history to clarify what has changed or progressed.
 
-Updates should be concise yet informative, clearly identifying the subject, context, and details of the new information or changes.
+Updates should should not summarize the contents of the transcript, they should clean up and organize the notes, but they should inclide all of the thoughts, ideas and information shared in the transcript.
+
+The update should also be careful not to change the meaning or content of the transcript as it is written.   If there are statements about feeling or emotions, these should not be summarized and changed to a more neutral tone.
+
+Don't clean up the content if it contains specific information about a person or a place.  If the content is about a person or a place, don't change the name of the person or the name of the place.
+
+Please make sure that you don't summarize content as much as you should be capturing all of the ideas.
+
+This note should be informative, clearly identifying the subject, context, and details of the new information or changes.
 
 ---
 
@@ -11,11 +19,11 @@ Updates should be concise yet informative, clearly identifying the subject, cont
 \`\`\`markdown
 ## Update
 
-**Subject:** Clearly state the topic, event, project, or issue this update refers to.
+**Subject:** Clearly state the subject, event, project, or issue this update refers to.
 
 **Context:** Briefly summarize the relevant background or previous state, providing necessary context to understand the update.
 
-**Details:** Clearly describe the specific changes, developments, or new information being reported. Highlight key points, impacts, or consequences as relevant.
+**Details:** Capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
 
 **Next Steps (optional):** If applicable, briefly outline any upcoming actions, decisions, or considerations.
 \`\`\`
