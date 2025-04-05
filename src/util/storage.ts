@@ -27,6 +27,7 @@ export interface Utility {
     writeFile: (path: string, data: string | Buffer, encoding: string) => Promise<void>;
     forEachFileIn: (directory: string, callback: (path: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
     hashFile: (path: string, length: number) => Promise<string>;
+    listFiles: (directory: string) => Promise<string[]>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -130,6 +131,10 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         return crypto.createHash('sha256').update(file).digest('hex').slice(0, length);
     }
 
+    const listFiles = async (directory: string): Promise<string[]> => {
+        return await fs.promises.readdir(directory);
+    }
+
     return {
         exists,
         isDirectory,
@@ -145,5 +150,6 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         writeFile,
         forEachFileIn,
         hashFile,
+        listFiles,
     };
 }

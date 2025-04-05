@@ -1,13 +1,13 @@
 import { Command } from "commander";
 import { Input } from "./arguments.d";
-import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_INPUT_DIRECTORY, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_RECURSIVE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
+import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_INPUT_DIRECTORY, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_RECURSIVE, DEFAULT_TIMEZONE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
 import { getLogger } from "./logging";
 import * as Run from "./run";
 import * as Storage from "./util/storage";
 import { ArgumentError } from "./error/ArgumentError";
-import { OutputStructure, FilenameOption } from "./run.d";
+import { FilenameOption, OutputStructure } from "./output.d";
 import { Config as RunConfig } from "./run.d";
-
+import * as Dates from "./util/dates";
 export const configure = async (): Promise<[RunConfig]> => {
     const program = new Command();
 
@@ -18,6 +18,7 @@ export const configure = async (): Promise<[RunConfig]> => {
         .option('--dry-run', 'perform a dry run without saving files', DEFAULT_DRY_RUN)
         .option('--verbose', 'enable verbose logging', DEFAULT_VERBOSE)
         .option('--debug', 'enable debug logging', DEFAULT_DEBUG)
+        .option('--timezone <timezone>', 'timezone for date calculations', DEFAULT_TIMEZONE)
         .option('--openai-api-key <openaiApiKey>', 'OpenAI API key', process.env.OPENAI_API_KEY)
         .option('--transcription-model <transcriptionModel>', 'OpenAI transcription model to use', DEFAULT_TRANSCRIPTION_MODEL)
         .option('--model <model>', 'OpenAI model to use', DEFAULT_MODEL)
@@ -48,10 +49,16 @@ async function validateOptions(options: Input): Promise<{
     model: string;
     transcriptionModel: string;
     recursive: boolean;
+    timezone: string;
     inputDirectory: string;
     outputDirectory: string;
     audioExtensions: string[];
 }> {
+
+    // Validate timezone
+    const timezone: string = validateTimezone(options.timezone);
+
+
     if (!options.openaiApiKey) {
         throw new Error('OpenAI API key is required, set OPENAI_API_KEY environment variable');
     }
@@ -80,6 +87,7 @@ async function validateOptions(options: Input): Promise<{
         model: options.model,
         transcriptionModel: options.transcriptionModel ?? DEFAULT_TRANSCRIPTION_MODEL,
         recursive: options.recursive ?? DEFAULT_RECURSIVE,
+        timezone: timezone,
         inputDirectory: options.inputDirectory ?? DEFAULT_INPUT_DIRECTORY,
         outputDirectory: options.outputDirectory ?? DEFAULT_OUTPUT_DIRECTORY,
         audioExtensions: options.audioExtensions ?? DEFAULT_AUDIO_EXTENSIONS,
@@ -139,4 +147,12 @@ export const validateFilenameOptions = (filenameOptions: string[] | undefined, o
             }
         }
     }
+}
+
+export const validateTimezone = (timezone: string): string => {
+    const validOptions = Dates.validTimezones();
+    if (validOptions.includes(timezone)) {
+        return timezone;
+    }
+    throw new ArgumentError('--timezone', `Invalid timezone: ${timezone}. Valid options are: ${validOptions.join(', ')}`);
 }

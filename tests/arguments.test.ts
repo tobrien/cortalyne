@@ -25,6 +25,7 @@ jest.mock('commander', () => {
                 verbose: false,
                 debug: false,
                 openaiApiKey: 'test-api-key',
+                timezone: 'America/New_York',
                 transcriptionModel: 'test-transcription-model',
                 model: 'test-model',
                 contentTypes: ['diff', 'log'],
@@ -66,6 +67,7 @@ describe('arguments', () => {
             expect(config.verbose).toBe(false);
             expect(config.debug).toBe(false);
             expect(config.diff).toBe(true);
+            expect(config.timezone).toBe('America/New_York');
             expect(config.model).toBe('test-model');
             expect(config.transcriptionModel).toBe('test-transcription-model');
             expect(config.recursive).toBe(false);
@@ -81,6 +83,7 @@ describe('arguments', () => {
             expect(config.verbose).toBe(false);
             expect(config.debug).toBe(false);
             expect(config.diff).toBe(true);
+            expect(config.timezone).toBe('America/New_York');
             expect(config.model).toBe('test-model');
             expect(config.transcriptionModel).toBe('test-transcription-model');
             expect(config.recursive).toBe(false);

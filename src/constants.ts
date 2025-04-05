@@ -14,7 +14,7 @@ import { INSTRUCTION as DEFAULT_IDEA_INSTRUCTIONS } from './prompt/idea';
 
 import { INSTRUCTION as DEFAULT_OTHER_INSTRUCTIONS } from './prompt/other';
 
-import { FilenameOption, OutputStructure } from './run.d';
+import { FilenameOption, OutputStructure } from './output.d';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'transote';
@@ -22,6 +22,7 @@ export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
 export const DEFAULT_BINARY_TO_TEXT_ENCODING = 'base64';
 export const DEFAULT_DIFF = true;
 export const DEFAULT_LOG = false;
+export const DEFAULT_TIMEZONE = 'Etc/UTC';
 export const DATE_FORMAT_MONTH_DAY = 'MM-DD';
 export const DATE_FORMAT_YEAR = 'YYYY';
 export const DATE_FORMAT_YEAR_MONTH = 'YYYY-MM';

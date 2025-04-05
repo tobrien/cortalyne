@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import * as Arguments from './arguments';
+import { PROGRAM_NAME, VERSION } from './constants';
 import { getLogger, setLogLevel } from './logging';
 import { ExitError } from './phases';
 import * as Process from './process';
-import * as Storage from './util/storage';
 import { Instance as ProcessInstance } from './process.d';
-import { VERSION, PROGRAM_NAME } from './constants';
 import { Config as RunConfig } from './run.d';
+import * as Storage from './util/storage';
 
 export async function main() {
 
