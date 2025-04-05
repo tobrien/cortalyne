@@ -17,6 +17,7 @@ jobs:
           node-version: 22
       - uses: pnpm/action-setup@v4
       - run: pnpm install --frozen-lockfile --strict-peer-dependencies
+      - run: ls -lR
       - run: pnpm run lint
       - run: pnpm run build
       - run: pnpm test -- --coverage
