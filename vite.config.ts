@@ -54,18 +54,23 @@ export default defineConfig({
             '__GIT_TAGS__': gitInfo.tags === '' ? '' : `T:${gitInfo.tags}`,
             '__GIT_COMMIT_DATE__': gitInfo.commitDate,
             '__SYSTEM_INFO__': `${process.platform} ${process.arch} ${process.version}`,
+            preventAssignment: true,
         }),
     ],
     build: {
         target: 'esnext',
         outDir: 'dist',
+        lib: {
+            entry: './src/main.ts',
+            formats: ['es'],
+        },
         rollupOptions: {
             input: 'src/main.ts',
             output: {
-                format: 'es',
+                format: 'esm',
                 entryFileNames: '[name].js',
                 preserveModules: true,
-                validate: true,
+                exports: 'named',
             },
             plugins: [
                 shebang({
@@ -73,5 +78,9 @@ export default defineConfig({
                 }),
             ],
         },
+        // Make sure Vite generates ESM-compatible code
+        modulePreload: false,
+        minify: false,
+        sourcemap: true
     },
 }); 
