@@ -16,7 +16,7 @@ jobs:
         with:
           node-version: 22
       - uses: pnpm/action-setup@v4
-      - run: pnpm ci
+      - run: pnpm install
       - run: pnpm run lint
       - run: pnpm run build
       - run: pnpm test -- --coverage
