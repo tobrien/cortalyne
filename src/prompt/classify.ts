@@ -18,11 +18,16 @@ If it is an "update" note, the note will have a phase similar to "I had an updat
 
 If it is an "email" note, then it will start with a phrase like, "Here are some notes for an email I need to send to Dennis about the New Product."   Or, an "email" type can have a statement like, "I really need to send an email to Dennis about the Boat Race, here are some things to include in that email."  In both cases, the recipient would be "Dennis" for the email.
 
-If it is a "document" note, then it will start with a phrase like, "Here are some notes for a document that will capture the standards for efficiency."   The following transcript would be information about the "document" covering a subject of "standards for efficiency".
+If it is a "document" note, then it will start with a phrase like, "Here are some notes for a document that will capture the standards for efficiency."   The following transcript would be information about the "document" covering a topic of "standards for efficiency".
 
 If it is an "idea" note, the note will have a phase similar to "I had an idea for a new product today," or "These are some notes about the idea I had for a new product yesterday."  There are also some long notes that are "ideas" because they appear to be a series of ideas that are not connected to a particular person or meeting.
 
 If it is an "other" note, the note will have a phase similar to "I had a meeting with John today," or "These are some notes about the meeting with had with the Law Department yesterday."
+
+
+## Subject
+
+If it is an "email" note, then there may be a statement about what the subject of the email is.  For example, "I need to send an email to Dennis about the Boat Race" would have a subject of "Boat Race".   Or, an "email" note may have a sentence like, "I'm sending an email to Martha with the Subject 'Bandages Placate'".  In this case, the subject would be "Bandages Placate".
 
 ## Sections
 
@@ -38,17 +43,15 @@ If it is an "update" or an "idea" type, don't include a conferenceTool property 
 
 Please also note that an "update" or an "idea" can talk about a past Zoom or Teams call, and still not be about that conference call.  If a long note simply mentions that there has been a call, it may not be necessary to include a conferenceTool.
 
-## Subject
+## Topic
 
-If it is an "email" note, then there may be a statement about what the subject of the email is.  For example, "I need to send an email to Dennis about the Boat Race" would have a subject of "Boat Race".   Or, an "email" note may have a sentence like, "I'm sending an email to Martha with the Subject 'Bandages Placate'".  In this case, the subject would be "Bandages Placate".
+If it is a "meeting" or a "call", there may be a statement about what the topic of the meeting or call was.  For example, "I was on a Zoom call with Andy and Martin about the new product" would have a topic of "new product".
 
-If it is a "meeting" or a "call", there may be a statement about what the subject of the meeting or call was.  For example, "I was on a Zoom call with Andy and Martin about the new product" would have a subject of "new product".
+If it is an "update" note, there may be a statement about what the update is about.  For example, "I had an update for the Law Department about the Terms of Service Problems" would have a topic of "Terms of Service Problems".
 
-If it is an "update" note, there may be a statement about what the update is about.  For example, "I had an update for the Law Department about the Terms of Service Problems" would have a subject of "Terms of Service Problems".
+If it is an "idea" note, there may be a statement about what the idea is about.  For example, "I had an idea for a new product to address the Transcription Multiplexing issue" would have a topic of "Transcription Multiplexing".
 
-If it is an "idea" note, there may be a statement about what the idea is about.  For example, "I had an idea for a new product to address the Transcription Multiplexing issue" would have a subject of "Transcription Multiplexing".
-
-If it is an "other" note, there may be a statement about what the note is about.  For example, "I had a note about my depression" would have a subject of "depression".
+If it is an "other" note, there may be a statement about what the note is about.  For example, "I had a note about my depression" would have a topic of "depression".
 
 ## Attendees
 
@@ -56,7 +59,7 @@ If the note is a "meeting" or a "call", there may be a list of attendees.  For e
 
 If it is "meeting" or a "call", there may also be statements made throughout the text of the note about people that were in attendance.  If this is the case, add them to the list of attendees.
 
-Also, I want to make sure that we don't just include "attendees" is there is a note.  If it appears that a transcription is just a phone call where the speaker is leaving notes about a subject, it doesn't have to include attendees at all.
+Also, I want to make sure that we don't just include "attendees" is there is a note.  If it appears that a transcription is just a phone call where the speaker is leaving notes about a topic, it doesn't have to include attendees at all.
 
 Also, don't include any of the example names from the instructions, the names of people and departments in the instructions are just examples.
 

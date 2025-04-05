@@ -4,14 +4,12 @@ A "call"-type note typically summarizes a telephone conversation, capturing esse
 
 Clearly indicate any missing details when necessary.
 
-The call note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
-
 ### Call Title
 
 The title should clearly reflect the subject or purpose of the call. Determine the title with the following priority:
 
 1. Explicitly stated by the speaker ("call regarding sales targets").
-2. Clearly identified subject discussed during the call.
+2. Clearly identified topic discussed during the call.
 3. General context inferred if no explicit title is mentioned.
 
 If the title is not explicitly stated, indicate this explicitly:
@@ -71,7 +69,7 @@ Clearly document any outcomes, agreements, or decisions made during the call. Su
 
 ### Call Summary (Body)
 
-The Body section should contain a structured summary capturing the key points, activities, subjects discussed, and important highlights or statements from the call.
+The Body section should contain a structured summary capturing the key points, activities, topics discussed, and important highlights or statements from the call.
 
 Include information clearly and concisely, ensuring accuracy regarding any significant details:
 

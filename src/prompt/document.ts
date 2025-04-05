@@ -4,8 +4,6 @@ A "document"-type note typically includes a document title, structured sections,
 
 Please note that the document title or specific sections might not always be explicitly stated in the transcript. Clearly indicate any missing details when necessary.
 
-The document note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
-
 ### Verbatim Document Notes
 
 If the transcript explicitly indicates a verbatim description (e.g., phrases like "include this text exactly," or "take this text down verbatim"), the note should contain the verbatim content clearly formatted into paragraphs and logical line breaks.
@@ -34,7 +32,7 @@ This note is intended as a clear and structured starting point, though it might 
 The title should be determined with the following priority:
 
 1. Explicit statement by the speaker ("document on Company Policy Updates").
-2. Clearly identified subject mentioned by the speaker.
+2. Clearly identified topic mentioned by the speaker.
 3. General context of the note if no explicit title is mentioned.
 
 If the title is not explicitly stated, indicate this explicitly:
