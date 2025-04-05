@@ -27,9 +27,11 @@
     "author": "Tim O'Brien <tobrien@discursive.com>",
     "license": "Apache-2.0",
     "dependencies": {
+        "@types/fluent-ffmpeg": "^2.1.27",
         "commander": "^13.1.0",
         "dayjs": "^1.11.13",
         "dotenv": "^16.4.7",
+        "fluent-ffmpeg": "^2.1.3",
         "glob": "^11.0.1",
         "js-yaml": "^4.1.0",
         "luxon": "^3.5.0",

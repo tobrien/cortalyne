@@ -1,6 +1,7 @@
 // eslint-disable-next-line no-restricted-imports
 import * as fs from 'fs';
 import { glob } from 'glob';
+import path from 'path';
 
 /**
  * This module exists to isolate filesystem operations from the rest of the codebase.
@@ -24,7 +25,7 @@ export interface Utility {
     readFile: (path: string, encoding: string) => Promise<string>;
     readStream: (path: string) => Promise<fs.ReadStream>;
     writeFile: (path: string, data: string | Buffer, encoding: string) => Promise<void>;
-    forEachFileIn: (directory: string, callback: (file: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
+    forEachFileIn: (directory: string, callback: (path: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -112,7 +113,7 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         try {
             const files = await glob(options.pattern, { cwd: directory, nodir: true });
             for (const file of files) {
-                await callback(file);
+                await callback(path.join(directory, file));
             }
         } catch (err: any) {
             throw new Error(`Failed to glob pattern ${options.pattern} in ${directory}: ${err.message}`);

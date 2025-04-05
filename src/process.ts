@@ -5,6 +5,49 @@ import { Instance } from './process.d';
 import * as Run from './run';
 import * as OpenAI from './util/openai';
 import * as Storage from './util/storage';
+import path from 'path';
+import ffmpeg from 'fluent-ffmpeg';
+import { Logger } from 'winston';
+
+// Helper function to promisify ffmpeg.ffprobe
+const ffprobeAsync = (filePath: string): Promise<any> => {
+    return new Promise((resolve, reject) => {
+        ffmpeg.ffprobe(filePath, (err, metadata) => {
+            if (err) return reject(err);
+            resolve(metadata);
+        });
+    });
+};
+
+// Extract creation time from audio file using ffmpeg
+const getAudioCreationTime = async (filePath: string, logger: Logger): Promise<Date | null> => {
+    try {
+        const metadata = await ffprobeAsync(filePath);
+
+        // Look for creation_time in format tags
+        const formatTags = metadata?.format?.tags;
+        if (formatTags?.creation_time) {
+            logger.debug('Found creation_time in format tags: %s', formatTags.creation_time);
+            return new Date(formatTags.creation_time);
+        }
+
+        // Check for creation_time in stream tags as fallback
+        if (metadata?.streams?.length > 0) {
+            for (const stream of metadata.streams) {
+                if (stream.tags?.creation_time) {
+                    logger.debug('Found creation_time in stream tags: %s', stream.tags.creation_time);
+                    return new Date(stream.tags.creation_time);
+                }
+            }
+        }
+
+        logger.debug('No creation_time found in audio file metadata');
+        return null;
+    } catch (error) {
+        logger.error('Error extracting creation time from audio file: %s', error);
+        return null;
+    }
+};
 
 export const create = (runConfig: Run.Config): Instance => {
     const logger = Logging.getLogger();
@@ -13,12 +56,22 @@ export const create = (runConfig: Run.Config): Instance => {
     const process = async (file: string) => {
         logger.debug('Processing file %s', file);
 
-        const outputPath = `${runConfig.outputDirectory}/${file.replace(/\.[^/.]+$/, '')}.json`;
+        // Extract audio file creation time
+        const creationTime = await getAudioCreationTime(file, logger);
+        if (creationTime) {
+            logger.info('Audio recording time: %s', creationTime.toISOString());
+        } else {
+            logger.warn('Could not determine audio recording time for %s', file);
+        }
+
+        const outputPath = path.join(runConfig.outputDirectory, file.replace(/\.[^/.]+$/, '') + '.json');
         logger.debug('Checking if output file %s exists', outputPath);
         if (await storage.exists(outputPath)) {
             logger.info('Output file %s already exists, skipping', outputPath);
             return;
         }
+
+
 
         const transcription: OpenAI.Transcription = await OpenAI.transcribeAudio(file, logger, { model: runConfig.transcriptionModel });
         // logger.debug('Processing complete: output: %s', transcription);
@@ -36,12 +89,13 @@ export const create = (runConfig: Run.Config): Instance => {
         const classifiedTranscription = {
             ...contextCompletion,
             text: transcription.text,
+            recordingTime: creationTime ? creationTime.toISOString() : undefined
         }
 
         await storage.writeFile(outputPath, JSON.stringify(classifiedTranscription, null, 2), 'utf8');
         logger.debug('Wrote classified transcription to %s', outputPath);
 
-        const noteOutputPath = `${runConfig.outputDirectory}/${file.replace(/\.[^/.]+$/, '')}.md`;
+        const noteOutputPath = path.join(runConfig.outputDirectory, file.replace(/\.[^/.]+$/, '') + '.md');
         const noteOutputExists = await storage.exists(noteOutputPath);
         if (noteOutputExists) {
             logger.info('Note output file %s already exists, skipping', noteOutputPath);

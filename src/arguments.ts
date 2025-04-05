@@ -20,7 +20,7 @@ export const configure = async (): Promise<[Run.Config]> => {
         .option('--model <model>', 'OpenAI model to use', DEFAULT_MODEL)
         .option('-r, --recursive', 'recursive mode, process all files in the input directory', DEFAULT_RECURSIVE)
         .option('-o, --output-directory <outputDirectory>', 'output directory', DEFAULT_OUTPUT_DIRECTORY)
-        .option('-d, --input-directory <inputDirectory>', 'input directory', DEFAULT_INPUT_DIRECTORY)
+        .option('-i, --input-directory <inputDirectory>', 'input directory', DEFAULT_INPUT_DIRECTORY)
         .option('-a, --audio-extensions [audioExtensions...]', 'audio extensions to include in the summary', DEFAULT_AUDIO_EXTENSIONS)
         .version(VERSION);
 

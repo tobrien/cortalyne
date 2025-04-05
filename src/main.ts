@@ -35,7 +35,7 @@ export async function main() {
 
         const process: ProcessInstance = Process.create(runConfig);
 
-        const filePattern = `${runConfig.recursive ? '**' : '*'}/*.{${runConfig.audioExtensions.join(',')}}`;
+        const filePattern = `${runConfig.recursive ? '**/' : ''}*.{${runConfig.audioExtensions.join(',')}}`;
 
         logger.info('Processing files in %s with pattern %s', inputDirectory, filePattern);
         let fileCount = 0;
