@@ -28,16 +28,16 @@ describe('constants', () => {
     });
 
     it('should have correct date format strings', () => {
-        expect(DATE_FORMAT_MONTH_DAY).toBe('MM-DD');
+        expect(DATE_FORMAT_MONTH_DAY).toBe('M-D');
         expect(DATE_FORMAT_YEAR).toBe('YYYY');
-        expect(DATE_FORMAT_YEAR_MONTH).toBe('YYYY-MM');
-        expect(DATE_FORMAT_YEAR_MONTH_DAY).toBe('YYYY-MM-DD');
-        expect(DATE_FORMAT_YEAR_MONTH_DAY_SLASH).toBe('YYYY/MM/DD');
-        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES).toBe('YYYY-MM-DD-HHmm');
-        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS).toBe('YYYY-MM-DD-HHmmss');
-        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS_MILLISECONDS).toBe('YYYY-MM-DD-HHmmss.SSS');
-        expect(DATE_FORMAT_MONTH).toBe('MM');
-        expect(DATE_FORMAT_DAY).toBe('DD');
+        expect(DATE_FORMAT_YEAR_MONTH).toBe('YYYY-M');
+        expect(DATE_FORMAT_YEAR_MONTH_DAY).toBe('YYYY-M-D');
+        expect(DATE_FORMAT_YEAR_MONTH_DAY_SLASH).toBe('YYYY/M/D');
+        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES).toBe('YYYY-M-D-HHmm');
+        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS).toBe('YYYY-M-D-HHmmss');
+        expect(DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS_MILLISECONDS).toBe('YYYY-M-D-HHmmss.SSS');
+        expect(DATE_FORMAT_MONTH).toBe('M');
+        expect(DATE_FORMAT_DAY).toBe('D');
         expect(DATE_FORMAT_HOURS).toBe('HHmm');
         expect(DATE_FORMAT_MINUTES).toBe('mm');
         expect(DATE_FORMAT_SECONDS).toBe('ss');
