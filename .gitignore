@@ -6,4 +6,5 @@ node_modules
 coverage/
 test/
 output/
+input/
 .transote/

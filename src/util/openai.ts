@@ -1,7 +1,7 @@
 import { OpenAI } from 'openai';
-import { Logger } from 'winston';
+import { ChatCompletionMessageParam } from 'openai/resources';
 import * as Storage from './storage';
-
+import { getLogger } from '../logging';
 export interface Transcription {
     text: string;
 }
@@ -14,7 +14,9 @@ export class OpenAIError extends Error {
 }
 
 
-export async function createCompletion(prompt: string, logger: Logger, options: { responseFormat?: any, model?: string } = { model: "gpt-4o-mini" }): Promise<string | any> {
+export async function createCompletion(messages: ChatCompletionMessageParam[], options: { responseFormat?: any, model?: string, debug?: boolean, debugFile?: string } = { model: "gpt-4o-mini" }): Promise<string | any> {
+    const logger = getLogger();
+    const storage = Storage.create({ log: logger.debug });
     try {
         const apiKey = process.env.OPENAI_API_KEY;
         if (!apiKey) {
@@ -25,14 +27,19 @@ export async function createCompletion(prompt: string, logger: Logger, options: 
             apiKey: apiKey,
         });
 
-        logger.debug('Sending prompt to OpenAI: %s', prompt);
+        logger.debug('Sending prompt to OpenAI: %j', messages);
 
         const completion = await openai.chat.completions.create({
             model: options.model || "gpt-4o-mini",
-            messages: [{ role: "user", content: prompt }],
+            messages,
             max_completion_tokens: 10000,
             response_format: options.responseFormat,
         });
+
+        if (options.debug && options.debugFile) {
+            await storage.writeFile(options.debugFile, JSON.stringify(completion, null, 2), 'utf8');
+            logger.debug('Wrote debug file to %s', options.debugFile);
+        }
 
         const response = completion.choices[0]?.message?.content?.trim();
         if (!response) {
@@ -52,7 +59,8 @@ export async function createCompletion(prompt: string, logger: Logger, options: 
     }
 }
 
-export async function transcribeAudio(filePath: string, logger: Logger, options: { model?: string } = { model: "whisper-1" }): Promise<Transcription> {
+export async function transcribeAudio(filePath: string, options: { model?: string, debug?: boolean, debugFile?: string } = { model: "whisper-1" }): Promise<Transcription> {
+    const logger = getLogger();
     const storage = Storage.create({ log: logger.debug });
     try {
         const apiKey = process.env.OPENAI_API_KEY;
@@ -72,6 +80,11 @@ export async function transcribeAudio(filePath: string, logger: Logger, options:
             file: audioStream,
             response_format: "json",
         });
+
+        if (options.debug && options.debugFile) {
+            await storage.writeFile(options.debugFile, JSON.stringify(transcription, null, 2), 'utf8');
+            logger.debug('Wrote debug file to %s', options.debugFile);
+        }
 
         const response = transcription;
         if (!response) {

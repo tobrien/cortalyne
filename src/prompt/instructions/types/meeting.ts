@@ -1,4 +1,20 @@
-export const INSTRUCTION = `## Instructions for Generating a Meeting Summary
+import { createInstruction } from "@tobrien/minorprompt";
+
+import { Section } from "@tobrien/minorprompt";
+
+import { Instruction } from "@tobrien/minorprompt";
+import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
+
+export const INSTRUCTION = `
+Task #1 - Organize information from the raw transcript that is about a meeting into the format defined below.
+
+Task #2 - Analyze the transcript and determine the participants, meeting initiation, tasks and follow-up actions, outcomes and decisions, and meeting summary if they are present.
+
+Task #3 - Produce a note in Markdown format that is roughly the same Length or longer than the original transcript that contains information about the meeting preserving as much detail as possible.
+
+If there is context available, use it the information in the context to help you identify people, projects, plans, and other entities mentioned in the transcript.
+
+#### Instructions for Generating a Meeting Summary
 
 A "meeting" summary typically includes the meeting title, participants, summary of activities or discussions, outcomes, key decisions, and follow-up tasks.
 
@@ -8,7 +24,7 @@ The summary should also include all of the thoughts, ideas, emotions, feelings, 
 
 If the meeting notes are long, please capture as many notes as possible and don't truncate the contents to fit within a particular format.
 
-### Meeting Title
+#### Meeting Title
 
 Determine the meeting title based on the following priority:
 
@@ -22,7 +38,7 @@ If the title isn't explicitly stated, indicate this clearly:
 Title: *(Title not explicitly identified—suggested: "Project Launch Meeting")*
 \`\`\`
 
-### Participants
+#### Participants
 
 List all meeting participants explicitly mentioned or clearly identified in the transcript:
 
@@ -33,9 +49,11 @@ List all meeting participants explicitly mentioned or clearly identified in the 
 - Michael Brown
 \`\`\`
 
-### Meeting Activities and Discussion
+Use the context provided to help you identify the participants.
 
-Summarize clearly and concisely the main activities, discussions, presentations, or debates that took place during the meeting. Group logically related points together:
+#### Meeting Activities and Discussion
+
+Capture clearly and concisely all activities, discussions, presentations, thoughts, or debates that took place during the meeting that were described in the transcript. Group logically related points together:
 
 \`\`\`markdown
 ## Summary of Discussion
@@ -44,7 +62,7 @@ Summarize clearly and concisely the main activities, discussions, presentations,
 - Evaluated marketing strategies presented by the marketing team.
 \`\`\`
 
-### Meeting Outcomes and Decisions
+#### Meeting Outcomes and Decisions
 
 Explicitly state the key outcomes, agreements, or decisions made during the meeting:
 
@@ -55,7 +73,7 @@ Explicitly state the key outcomes, agreements, or decisions made during the meet
 - Approved the proposed marketing plan with minor revisions.
 \`\`\`
 
-### Follow-Up Tasks
+#### Follow-Up Tasks
 
 Clearly document actionable follow-up tasks, indicating priority or status when relevant (e.g., "Urgent," "Overdue"):
 
@@ -84,10 +102,13 @@ Title: Quarterly Marketing Review
 - Bob Williams
 - Carlos Mendoza
 
-## Summary of Discussion
-- Presented quarterly performance metrics.
-- Discussed the impact of recent marketing campaigns.
-- Identified challenges in current lead generation strategies.
+## Meeting Activities and Discussion
+
+- *Presented quarterly performance metrics.* - There was a somehwat detailed presentation of the quarterly performance metrics.  And the team delved into the details of the metrics with the charts.  This section can be very long if the transcript has a lot of information about a particular topic.
+
+- Discussed the impact of recent marketing campaigns - No one had feedback, we move don quickly.
+
+- Identified challenges in current lead generation strategies. - This was a very short section that just mentioned that there were some challenges in the current lead generation strategies.
 
 ## Outcomes and Decisions
 - Decided to increase digital marketing budget by 15%.
@@ -99,4 +120,13 @@ Title: Quarterly Marketing Review
 - Bob Williams to organize software implementation meeting next week.
 - Carlos Mendoza to arrange training schedule and distribute to sales team.
 \`\`\`
-`; 
+`;
+
+export const create = async (configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
+    const instructions: (Instruction | Section<Instruction>)[] = [];
+
+    const overrideContent = await customizeContent(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/meeting.md', INSTRUCTION);
+    const instruction = createInstruction(overrideContent);
+    instructions.push(instruction);
+    return instructions;
+}

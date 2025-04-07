@@ -1,6 +1,6 @@
 import { Command } from "commander";
 import { Input } from "./arguments.d";
-import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_INPUT_DIRECTORY, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_RECURSIVE, DEFAULT_TIMEZONE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
+import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, ALLOWED_MODELS, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_INPUT_DIRECTORY, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OVERRIDES, DEFAULT_RECURSIVE, DEFAULT_TIMEZONE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
 import { getLogger } from "./logging";
 import * as Run from "./run";
 import * as Storage from "./util/storage";
@@ -28,6 +28,10 @@ export const configure = async (): Promise<[RunConfig]> => {
         .option('-a, --audio-extensions [audioExtensions...]', 'audio extensions to include in the summary', DEFAULT_AUDIO_EXTENSIONS)
         .option('--output-structure <type>', 'output directory structure (none/year/month/day)')
         .option('--filename-options [filenameOptions...]', 'filename format options (space-separated list of: date,time,subject) example \'date subject\'', ['date', 'time', 'subject'])
+        .option('--config-dir <configDir>', 'config directory', DEFAULT_CONFIG_DIR)
+        .option('--overrides', 'allow overrides of the default configuration', DEFAULT_OVERRIDES)
+        .option('--classify-model <classifierModel>', 'classifier model to use')
+        .option('--compose-model <composeModel>', 'compose model to use')
         .version(VERSION);
 
     program.parse();
@@ -53,6 +57,10 @@ async function validateOptions(options: Input): Promise<{
     inputDirectory: string;
     outputDirectory: string;
     audioExtensions: string[];
+    configDir: string;
+    overrides: boolean;
+    classifyModel: string;
+    composeModel: string;
 }> {
 
     // Validate timezone
@@ -61,6 +69,11 @@ async function validateOptions(options: Input): Promise<{
 
     if (!options.openaiApiKey) {
         throw new Error('OpenAI API key is required, set OPENAI_API_KEY environment variable');
+    }
+
+
+    if (!options.configDir) {
+        await validateConfigDirectory(options.configDir);
     }
 
     if (!options.inputDirectory) {
@@ -79,6 +92,9 @@ async function validateOptions(options: Input): Promise<{
     validateOutputStructure(options.outputStructure);
     validateFilenameOptions(options.filenameOptions, options.outputStructure as OutputStructure);
 
+    validateModel(options.model, true, '--model');
+    validateModel(options.classifyModel, false, '--classify-model');
+    validateModel(options.composeModel, false, '--compose-model');
 
     return {
         dryRun: options.dryRun,
@@ -91,7 +107,29 @@ async function validateOptions(options: Input): Promise<{
         inputDirectory: options.inputDirectory ?? DEFAULT_INPUT_DIRECTORY,
         outputDirectory: options.outputDirectory ?? DEFAULT_OUTPUT_DIRECTORY,
         audioExtensions: options.audioExtensions ?? DEFAULT_AUDIO_EXTENSIONS,
+        configDir: options.configDir ?? DEFAULT_CONFIG_DIR,
+        overrides: options.overrides ?? DEFAULT_OVERRIDES,
+        classifyModel: options.classifyModel ?? DEFAULT_MODEL,
+        composeModel: options.composeModel ?? DEFAULT_MODEL,
     };
+}
+
+function validateModel(model: string | undefined, required: boolean, modelOptionName: string) {
+    if (required && !model) {
+        throw new Error(`Model for ${modelOptionName} is required`);
+    }
+
+    if (model && !ALLOWED_MODELS.includes(model)) {
+        throw new Error(`Invalid model: ${model}. Valid models are: ${ALLOWED_MODELS.join(', ')}`);
+    }
+}
+
+async function validateConfigDirectory(configDir: string) {
+    const logger = getLogger();
+    const storage = Storage.create({ log: logger.info });
+    if (!storage.isDirectoryReadable(configDir)) {
+        throw new Error(`Config directory does not exist: ${configDir}`);
+    }
 }
 
 async function validateInputDirectory(inputDirectory: string) {

@@ -1,6 +1,10 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from 'winston';
 
+export interface Media {
+    getAudioCreationTime: (filePath: string) => Promise<Date | null>;
+}
+
 const ffprobeAsync = (filePath: string): Promise<any> => {
     return new Promise((resolve, reject) => {
         ffmpeg.ffprobe(filePath, (err, metadata) => {

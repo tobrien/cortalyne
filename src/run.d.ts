@@ -16,4 +16,8 @@ export interface Config {
     audioExtensions: string[];
     outputStructure: OutputStructure;
     filenameOptions: FilenameOption[];
+    configDir: string;
+    overrides: boolean;
+    classifyModel: string;
+    composeModel: string;
 }

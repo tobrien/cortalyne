@@ -65,6 +65,7 @@ export default defineConfig({
             formats: ['es'],
         },
         rollupOptions: {
+            external: ['@tobrien/minorprompt', '@tobrien/minorprompt/formatter', '@tobrien/minorprompt/chat'],
             input: 'src/main.ts',
             output: {
                 format: 'esm',

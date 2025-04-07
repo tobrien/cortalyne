@@ -1,4 +1,4 @@
-import { DEFAULT_AUDIO_EXTENSIONS, DEFAULT_CONTENT_TYPES, DEFAULT_DEBUG, DEFAULT_DIFF, DEFAULT_DRY_RUN, DEFAULT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_LOG, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_RECURSIVE, DEFAULT_TIMEZONE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE } from "./constants";
+import { DEFAULT_AUDIO_EXTENSIONS, DEFAULT_CONFIG_DIR, DEFAULT_CONTENT_TYPES, DEFAULT_DEBUG, DEFAULT_DIFF, DEFAULT_DRY_RUN, DEFAULT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_LOG, DEFAULT_MODEL, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_OVERRIDES, DEFAULT_RECURSIVE, DEFAULT_TIMEZONE, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE } from "./constants";
 
 import { Config } from "./run.d";
 import { FilenameOption, OutputStructure } from "./output.d";
@@ -19,6 +19,10 @@ export const createConfig = (params: {
     audioExtensions?: string[];
     outputStructure?: OutputStructure;
     filenameOptions?: FilenameOption[];
+    configDir?: string;
+    overrides?: boolean;
+    classifyModel?: string;
+    composeModel?: string;
 }): Config => {
     return {
         dryRun: params.dryRun ?? DEFAULT_DRY_RUN,
@@ -36,5 +40,9 @@ export const createConfig = (params: {
         audioExtensions: params.audioExtensions ?? DEFAULT_AUDIO_EXTENSIONS,
         outputStructure: params.outputStructure ?? DEFAULT_OUTPUT_STRUCTURE,
         filenameOptions: params.filenameOptions ?? DEFAULT_FILENAME_OPTIONS,
+        configDir: params.configDir ?? DEFAULT_CONFIG_DIR,
+        overrides: params.overrides ?? DEFAULT_OVERRIDES,
+        classifyModel: params.classifyModel ?? DEFAULT_MODEL,
+        composeModel: params.composeModel ?? DEFAULT_MODEL,
     }
 }

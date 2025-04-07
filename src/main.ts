@@ -3,7 +3,6 @@ import 'dotenv/config';
 import * as Arguments from './arguments';
 import { PROGRAM_NAME, VERSION } from './constants';
 import { getLogger, setLogLevel } from './logging';
-import { ExitError } from './phases';
 import * as Process from './process';
 import { Instance as ProcessInstance } from './process.d';
 import { Config as RunConfig } from './run.d';
@@ -47,11 +46,7 @@ export async function main() {
 
         logger.info('Processed %d files', fileCount);
     } catch (error: any) {
-        if (error instanceof ExitError) {
-            logger.error('Exiting due to Error');
-        } else {
-            logger.error('Exiting due to Error: %s, %s', error.message, error.stack);
-        }
+        logger.error('Exiting due to Error: %s, %s', error.message, error.stack);
         process.exit(1);
     }
 }
