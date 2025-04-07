@@ -1,6 +1,6 @@
 {
     "name": "@tobrien/transote",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Command-line tool to turn audio into intelligent notes and summaries.",
     "main": "dist/main.js",
     "type": "module",
