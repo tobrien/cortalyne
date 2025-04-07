@@ -6,8 +6,15 @@ export interface Input {
     model: string;
     openaiApiKey: string;
     recursive: boolean;
+    timezone: string;
     inputDirectory: string;
     outputDirectory: string;
     audioExtensions: string[];
+    outputStructure?: string;
+    filenameOptions?: string[];
+    configDir: string;
+    overrides: boolean;
+    classifyModel?: string;
+    composeModel?: string;
 }
 

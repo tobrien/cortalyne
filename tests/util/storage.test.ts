@@ -363,7 +363,7 @@ describe('Storage Utility', () => {
         it('should iterate over files in a directory', async () => {
             // Setup mocks for the chain of function calls
             // @ts-ignore
-            mockGlob.mockResolvedValueOnce(['/test/dir/file1.txt', '/test/dir/file2.txt']);
+            mockGlob.mockResolvedValueOnce(['file1.txt', 'file2.txt']);
 
             await storage.forEachFileIn('/test/dir', async (file: string) => {
                 expect(file).toMatch(/^\/test\/dir\/file[12]\.txt$/)

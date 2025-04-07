@@ -1,70 +1,45 @@
-import { zodResponseFormat } from 'openai/helpers/zod';
-import { DEFAULT_CLASSIFIED_RESPONSE_SCHEMA, DEFAULT_CLASSIFY_INSTRUCTIONS, DEFAULT_NOTE_INSTRUCTIONS, NOTE_INSTRUCTION_TYPES } from './constants';
 import * as Logging from './logging';
-import { Instance } from './process.d';
-import * as Run from './run';
-import * as OpenAI from './util/openai';
-import * as Storage from './util/storage';
+import * as Output from './output';
+import * as ClassifyPhase from './phases/classify';
+import * as ComposePhase from './phases/compose';
+import * as LocatePhase from './phases/locate';
+import { ClassifiedTranscription, Instance } from './process.d';
+import { Config as RunConfig } from './run.d';
 
-export const create = (runConfig: Run.Config): Instance => {
+// Helper function to promisify ffmpeg.
+
+export const create = (runConfig: RunConfig): Instance => {
     const logger = Logging.getLogger();
-    const storage = Storage.create({ log: logger.debug });
+    const output = Output.create(runConfig.timezone, runConfig.outputStructure, runConfig.filenameOptions);
 
-    const process = async (file: string) => {
-        logger.debug('Processing file %s', file);
+    const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(runConfig);
+    const composePhase: ComposePhase.Instance = ComposePhase.create(runConfig);
+    const locatePhase: LocatePhase.Instance = LocatePhase.create(runConfig);
 
-        const outputPath = `${runConfig.outputDirectory}/${file.replace(/\.[^/.]+$/, '')}.json`;
-        logger.debug('Checking if output file %s exists', outputPath);
-        if (await storage.exists(outputPath)) {
-            logger.info('Output file %s already exists, skipping', outputPath);
-            return;
-        }
+    const process = async (audioFile: string) => {
+        logger.verbose('Processing file %s', audioFile);
 
-        const transcription: OpenAI.Transcription = await OpenAI.transcribeAudio(file, logger, { model: runConfig.transcriptionModel });
-        // logger.debug('Processing complete: output: %s', transcription);
-
-        const prompt = `
-            <instructions>${DEFAULT_CLASSIFY_INSTRUCTIONS}</instructions>\n\n
-            <transcript>\n${transcription.text}\n</transcript>
-        `;
+        // Locate the contents in time and on the filesystem
+        logger.debug('Locating file %s', audioFile);
+        const { creationTime, outputPath, transcriptionFilename, hash } = await locatePhase.locate(audioFile);
 
 
-        logger.debug('Classified TranscriptionPrompt: %s', prompt);
-        logger.debug('Response Format: %s', zodResponseFormat(DEFAULT_CLASSIFIED_RESPONSE_SCHEMA, 'classifiedTranscription'));
-        const contextCompletion = await OpenAI.createCompletion(prompt, logger, { responseFormat: zodResponseFormat(DEFAULT_CLASSIFIED_RESPONSE_SCHEMA, 'classifiedTranscription'), model: runConfig.model });
+        // Create the transcription
+        logger.debug('Classifying file %s', audioFile);
+        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, transcriptionFilename, hash, audioFile);
 
-        const classifiedTranscription = {
-            ...contextCompletion,
-            text: transcription.text,
-        }
+        // // Create the note
+        const noteFilename = output.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
+        logger.debug('Composing Note %s in %s', noteFilename, outputPath);
+        await composePhase.compose(classifiedTranscription, outputPath, noteFilename, hash);
 
-        await storage.writeFile(outputPath, JSON.stringify(classifiedTranscription, null, 2), 'utf8');
-        logger.debug('Wrote classified transcription to %s', outputPath);
-
-        const noteOutputPath = `${runConfig.outputDirectory}/${file.replace(/\.[^/.]+$/, '')}.md`;
-        const noteOutputExists = await storage.exists(noteOutputPath);
-        if (noteOutputExists) {
-            logger.info('Note output file %s already exists, skipping', noteOutputPath);
-            return;
-        }
-
-        const notePrompt = `
-            <instructions>\n
-                ${DEFAULT_NOTE_INSTRUCTIONS}\n
-                ${NOTE_INSTRUCTION_TYPES[classifiedTranscription.type as keyof typeof NOTE_INSTRUCTION_TYPES]}\n
-            </instructions>\n\n
-            <classifiedTranscript>${JSON.stringify(classifiedTranscription, null, 2)}</classifiedTranscript>
-        `;
-
-        logger.debug('Note Prompt: %s', notePrompt);
-        const noteCompletion: string = await OpenAI.createCompletion(notePrompt, logger, { model: runConfig.model });
-
-        await storage.writeFile(noteOutputPath, Buffer.from(noteCompletion, 'utf8'), 'utf8');
-        logger.debug('Wrote note to %s', noteOutputPath);
-
+        logger.info('Processed file %s', audioFile);
+        return;
     }
 
     return {
         process,
     }
 }
+
+

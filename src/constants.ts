@@ -1,18 +1,6 @@
 import { z } from 'zod';
 
-import { INSTRUCTION as DEFAULT_EMAIL_INSTRUCTIONS } from './prompt/email';
-
-import { INSTRUCTION as DEFAULT_DOCUMENT_INSTRUCTIONS } from './prompt/document';
-
-import { INSTRUCTION as DEFAULT_MEETING_INSTRUCTIONS } from './prompt/meeting';
-
-import { INSTRUCTION as DEFAULT_UPDATE_INSTRUCTIONS } from './prompt/update';
-
-import { INSTRUCTION as DEFAULT_CALL_INSTRUCTIONS } from './prompt/call';
-
-import { INSTRUCTION as DEFAULT_IDEA_INSTRUCTIONS } from './prompt/idea';
-
-import { INSTRUCTION as DEFAULT_OTHER_INSTRUCTIONS } from './prompt/other';
+import { FilenameOption, OutputStructure } from './output.d';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'transote';
@@ -20,16 +8,17 @@ export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
 export const DEFAULT_BINARY_TO_TEXT_ENCODING = 'base64';
 export const DEFAULT_DIFF = true;
 export const DEFAULT_LOG = false;
-export const DATE_FORMAT_MONTH_DAY = 'MM-DD';
+export const DEFAULT_TIMEZONE = 'Etc/UTC';
+export const DATE_FORMAT_MONTH_DAY = 'M-D';
 export const DATE_FORMAT_YEAR = 'YYYY';
-export const DATE_FORMAT_YEAR_MONTH = 'YYYY-MM';
-export const DATE_FORMAT_YEAR_MONTH_DAY = 'YYYY-MM-DD';
-export const DATE_FORMAT_YEAR_MONTH_DAY_SLASH = 'YYYY/MM/DD';
-export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES = 'YYYY-MM-DD-HHmm';
-export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS = 'YYYY-MM-DD-HHmmss';
-export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS_MILLISECONDS = 'YYYY-MM-DD-HHmmss.SSS';
-export const DATE_FORMAT_MONTH = 'MM';
-export const DATE_FORMAT_DAY = 'DD';
+export const DATE_FORMAT_YEAR_MONTH = 'YYYY-M';
+export const DATE_FORMAT_YEAR_MONTH_DAY = 'YYYY-M-D';
+export const DATE_FORMAT_YEAR_MONTH_DAY_SLASH = 'YYYY/M/D';
+export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES = 'YYYY-M-D-HHmm';
+export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS = 'YYYY-M-D-HHmmss';
+export const DATE_FORMAT_YEAR_MONTH_DAY_HOURS_MINUTES_SECONDS_MILLISECONDS = 'YYYY-M-D-HHmmss.SSS';
+export const DATE_FORMAT_MONTH = 'M';
+export const DATE_FORMAT_DAY = 'D';
 export const DATE_FORMAT_HOURS = 'HHmm';
 export const DATE_FORMAT_MINUTES = 'mm';
 export const DATE_FORMAT_SECONDS = 'ss';
@@ -55,7 +44,6 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
     attendees: z.array(z.string()).optional(),
     subject: z.string().optional(),
     recipients: z.array(z.string()).optional(),
-    topic: z.string().optional(),
     sections: z.array(z.object({
         title: z.string(),
         description: z.string(),
@@ -68,16 +56,30 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
     text: z.string(),
 });
 
-export { INSTRUCTION as DEFAULT_CLASSIFY_INSTRUCTIONS } from './prompt/classify';
+export const DEFAULT_OUTPUT_STRUCTURE = 'month' as OutputStructure;
+export const DEFAULT_FILENAME_OPTIONS = ['date', 'subject'] as FilenameOption[];
 
-export { INSTRUCTION as DEFAULT_NOTE_INSTRUCTIONS } from './prompt/note';
+export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as OutputStructure[];
+export const ALLOWED_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
 
-export const NOTE_INSTRUCTION_TYPES = {
-    email: DEFAULT_EMAIL_INSTRUCTIONS,
-    document: DEFAULT_DOCUMENT_INSTRUCTIONS,
-    meeting: DEFAULT_MEETING_INSTRUCTIONS,
-    update: DEFAULT_UPDATE_INSTRUCTIONS,
-    call: DEFAULT_CALL_INSTRUCTIONS,
-    idea: DEFAULT_IDEA_INSTRUCTIONS,
-    other: DEFAULT_OTHER_INSTRUCTIONS,
-};
+export const DEFAULT_CONFIG_DIR = `./.${PROGRAM_NAME}`;
+
+export const DEFAULT_PERSONAS_DIR = `/personas`;
+
+export const DEFAULT_PERSONA_CLASSIFIER_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/traits.md`;
+export const DEFAULT_PERSONA_CLASSIFIER_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/instructions.md`;
+
+export const DEFAULT_PERSONA_DICTATOR_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/dictator/traits.md`;
+export const DEFAULT_PERSONA_DICTATOR_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/dictator/instructions.md`;
+
+export const DEFAULT_INSTRUCTIONS_DIR = `/instructions`;
+
+export const DEFAULT_TYPE_INSTRUCTIONS_DIR = `${DEFAULT_INSTRUCTIONS_DIR}/types`;
+
+export const DEFAULT_INSTRUCTIONS_CLASSIFY_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/classify.md`;
+export const DEFAULT_INSTRUCTIONS_COMPOSE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/compose.md`;
+
+// TODO: Add more models, but also this should be a part of an OpenAI specific extension.
+export const ALLOWED_MODELS: string[] = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'o3-mini', 'o3-preview', 'o1-pro', 'o1-preview-2024-09-12'];
+
+export const DEFAULT_OVERRIDES = false;

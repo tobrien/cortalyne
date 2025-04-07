@@ -1,7 +1,8 @@
 // eslint-disable-next-line no-restricted-imports
 import * as fs from 'fs';
 import { glob } from 'glob';
-
+import path from 'path';
+import crypto from 'crypto';
 /**
  * This module exists to isolate filesystem operations from the rest of the codebase.
  * This makes testing easier by avoiding direct fs mocking in jest configuration.
@@ -24,7 +25,9 @@ export interface Utility {
     readFile: (path: string, encoding: string) => Promise<string>;
     readStream: (path: string) => Promise<fs.ReadStream>;
     writeFile: (path: string, data: string | Buffer, encoding: string) => Promise<void>;
-    forEachFileIn: (directory: string, callback: (file: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
+    forEachFileIn: (directory: string, callback: (path: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
+    hashFile: (path: string, length: number) => Promise<string>;
+    listFiles: (directory: string) => Promise<string[]>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -112,7 +115,7 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         try {
             const files = await glob(options.pattern, { cwd: directory, nodir: true });
             for (const file of files) {
-                await callback(file);
+                await callback(path.join(directory, file));
             }
         } catch (err: any) {
             throw new Error(`Failed to glob pattern ${options.pattern} in ${directory}: ${err.message}`);
@@ -121,6 +124,15 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
 
     const readStream = async (path: string): Promise<fs.ReadStream> => {
         return fs.createReadStream(path);
+    }
+
+    const hashFile = async (path: string, length: number): Promise<string> => {
+        const file = await readFile(path, 'utf8');
+        return crypto.createHash('sha256').update(file).digest('hex').slice(0, length);
+    }
+
+    const listFiles = async (directory: string): Promise<string[]> => {
+        return await fs.promises.readdir(directory);
     }
 
     return {
@@ -137,5 +149,7 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         readStream,
         writeFile,
         forEachFileIn,
+        hashFile,
+        listFiles,
     };
 }
