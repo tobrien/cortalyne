@@ -7,6 +7,10 @@
     "bin": {
         "transote": "./dist/main.js"
     },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/tobrien/transote.git"
+    },
     "packageManager": "pnpm@10.7.1",
     "scripts": {
         "build": "vite build",
@@ -27,7 +31,7 @@
     "author": "Tim O'Brien <tobrien@discursive.com>",
     "license": "Apache-2.0",
     "dependencies": {
-        "@tobrien/minorprompt": "^0.0.1",
+        "@tobrien/minorprompt": "^0.0.2",
         "@types/fluent-ffmpeg": "^2.1.27",
         "commander": "^13.1.0",
         "dayjs": "^1.11.13",
@@ -66,8 +70,6 @@
         "vite-plugin-node": "^5.0.0"
     },
     "pnpm": {
-        "overrides": {
-            "@tobrien/minorprompt": "link:../minorprompt"
-        }
+        "overrides": {}
     }
 }
