@@ -152,6 +152,7 @@ Transote provides a variety of command line options to customize its behavior:
 | `--transcription-model <model>` | OpenAI transcription model | `whisper-1` |
 | `--output-structure <type>` | Output directory structure | `none` |
 | `--filename-options [options...]` | Filename format options | `date,time,subject` |
+| `--context-directories [dirs...]` | Directories to search for context files | `[]` |
 | `--config-dir <dir>` | Configuration directory | `~/.transote` |
 | `--overrides` | Allow overrides of default configuration | `false` |
 | `--openai-api-key <key>` | OpenAI API key | From env var |
@@ -195,6 +196,11 @@ transote --input-directory ./recordings --filename-options "time subject"
 Use a custom configuration directory:
 ```bash
 transote --input-directory ./recordings --config-dir ~/my-transote-config
+```
+
+Add context from existing knowledge:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes ./project-docs
 ```
 
 ### Debugging and Verbose Output
@@ -370,6 +376,49 @@ Result:
 ```
 
 **Note:** When using `--output-structure day`, the `date` filename option becomes redundant and is automatically disabled.
+
+### Context-Enhanced Notes
+
+Transote can enhance your notes with relevant context from existing files using the `--context-directories` option. This feature allows the AI to access and reference information from your knowledge base when processing audio recordings.
+
+#### How Context Directories Work
+
+When you specify one or more context directories, Transote will:
+1. Search those directories for relevant files based on the content of your recording
+2. Extract information from the most relevant files
+3. Use this information to provide additional context for the AI when composing your note
+4. Create more informed, connected notes that reference your existing knowledge
+
+This is particularly useful for:
+- Meeting notes that reference previous meetings
+- Project updates that need historical context
+- Ideas that build on previous concepts
+- Any recording that would benefit from connection to your existing notes
+
+#### Examples
+
+Basic usage with a single context directory:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes
+```
+
+Using multiple context directories:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes ./project-docs ./reference-materials
+```
+
+Combined with other options:
+```bash
+transote --input-directory ./recordings --output-directory ./enhanced-notes --context-directories ./my-notes --model gpt-4
+```
+
+#### Best Practices
+
+For optimal results with context directories:
+- Organize your context files in a way that makes semantic sense
+- Use descriptive filenames and clear content in your context files
+- Consider using the `--verbose` flag to see which context files are being used
+- Start with smaller context directories before scaling to larger knowledge bases
 
 ## Configuration and Customization
 
@@ -557,6 +606,8 @@ Customizing instructions can be powerful but comes with risks:
 - Significant modifications might require adjustments to the `--model` parameter
 
 Start with small changes to the `-pre.md` and `-post.md` files before attempting complete overrides, and always test thoroughly with the `--debug` flag to monitor effects.
+
+
 
 ## Requirements
 
