@@ -55,11 +55,11 @@ describe('classify instructions', () => {
                 generateOverrideContent: mockGenerateOverrideContent
             });
 
-            expect(result).toHaveLength(9); // 7 default sections + prepend + append
+            expect(result).toHaveLength(10); // 7 default sections + prepend + append
             expect(result[0]).toEqual(expect.objectContaining({
                 text: 'prepend instructions'
             }));
-            expect(result[8]).toEqual(expect.objectContaining({
+            expect(result[9]).toEqual(expect.objectContaining({
                 text: 'append instructions'
             }));
         });
@@ -74,7 +74,7 @@ describe('classify instructions', () => {
                 generateOverrideContent: mockGenerateOverrideContent
             });
 
-            expect(result).toHaveLength(7); // 7 default sections
+            expect(result).toHaveLength(8); // 7 default sections
             expect(result[0]).toEqual(expect.objectContaining({
                 text: expect.stringContaining('Task #1 - Analyze the transcript')
             }));
