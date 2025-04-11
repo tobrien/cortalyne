@@ -16,5 +16,6 @@ export interface Input {
     overrides: boolean;
     classifyModel?: string;
     composeModel?: string;
+    contextDirectories?: string[];
 }
 

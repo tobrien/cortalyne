@@ -20,12 +20,21 @@ jest.unstable_mockModule('../src/phases/locate', () => ({
     create: jest.fn()
 }));
 
+jest.unstable_mockModule('../src/prompt/prompts', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../src/prompt/context', () => ({
+    loadContextFromDirectories: jest.fn()
+}));
+
 let Logging: any;
 let Output: any;
 let ClassifyPhase: any;
 let ComposePhase: any;
 let LocatePhase: any;
 let Process: any;
+let Prompts: any;
 
 describe('process', () => {
 
@@ -34,6 +43,7 @@ describe('process', () => {
     let mockClassifyPhase: any;
     let mockComposePhase: any;
     let mockLocatePhase: any;
+    let mockPrompts: any;
     let processInstance: any;
 
     const mockRunConfig = {
@@ -41,7 +51,19 @@ describe('process', () => {
         outputStructure: 'test-structure',
         filenameOptions: {},
         verbose: false,
-        debug: false
+        debug: false,
+        classifyModel: {
+            name: 'test-model',
+            maxTokens: 1000,
+            temperature: 0.7
+        },
+        composeModel: {
+            name: 'test-model',
+            maxTokens: 1000,
+            temperature: 0.7
+        },
+        configDir: '/test/config',
+        contextDirectories: ['/test/context']
     };
 
     beforeEach(async () => {
@@ -54,6 +76,7 @@ describe('process', () => {
         ComposePhase = await import('../src/phases/compose');
         LocatePhase = await import('../src/phases/locate');
         Process = await import('../src/process');
+        Prompts = await import('../src/prompt/prompts');
 
         // Setup logger mock
         mockLogger = {
@@ -68,6 +91,21 @@ describe('process', () => {
             constructFilename: jest.fn().mockReturnValue('test-note.md')
         };
         (Output.create as jest.Mock).mockReturnValue(mockOutput);
+
+        // Setup prompts mock
+        mockPrompts = {
+            createClassificationPrompt: jest.fn().mockImplementation(() => {
+                return Promise.resolve({});
+            }),
+            createComposePrompt: jest.fn().mockImplementation(() => {
+                return Promise.resolve({});
+            }),
+            format: jest.fn().mockReturnValue({
+                model: 'test-model',
+                messages: []
+            })
+        };
+        (Prompts.create as jest.Mock).mockReturnValue(mockPrompts);
 
         // Setup phase mocks
         mockClassifyPhase = {
@@ -148,5 +186,6 @@ describe('process', () => {
             expect(mockClassifyPhase.classify).not.toHaveBeenCalled();
             expect(mockComposePhase.compose).not.toHaveBeenCalled();
         });
+
     });
 });

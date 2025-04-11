@@ -8,11 +8,11 @@ import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
 export const INSTRUCTION = `
 Task #1 - Organize information from the raw transcript about an email that is being described into the format defined below.
 
-Task #2 - Analyze the transcript and determine if this is a discussion of a email to be created, revised, and reviewed, or if this is a discussion of an email that was received by the dictator.
+Task #2 - Analyze the transcript and determine if this is a discussion of a email to be created, revised, and reviewed, or if this is a discussion of an email that was received by the you.
 
 Task #3 - Understand and capture ideas in the raw transcript about the email, and identify the recipients, subject, and any other details about the email including who might have been copied on the email or who might have responded to the email.
 
-Task #4 - When reading the transcript look to directions to draft an email, and if the dictator asks you to draft an email, do so in the format defined below.    Also, if the user asks for multiple draft emails, separate them into multiple draft email sections.
+Task #4 - When reading the transcript look to directions to draft an email, and if the you asks you to draft an email, do so in the format defined below.    Also, if the user asks for multiple draft emails, separate them into multiple draft email sections.
 
 #### Instructions for Generating an Email Note
 
@@ -63,8 +63,8 @@ To: *(Recipient not explicitly identified)*
 
 The subject should be determined with the following priority:
 
-1. Explicit statement by the speaker ("email about Boat Race").
-2. Clearly identified subject mentioned by the speaker.
+1. Your made an Explicit statement in your audio recording ("email about Boat Race").
+2. Clearly identified subject mentioned in your audio recording.
 3. General context of the note if no explicit subject is mentioned.
 
 If the subject is not explicitly stated, indicate this explicitly:
@@ -80,7 +80,7 @@ Tasks are actionable items explicitly indicated in the transcript. Tasks typical
 - **Urgent:** e.g., "We urgently need to finalize the schedule by tomorrow."
 - **Overdue:** e.g., "I totally forgot to confirm attendance yesterday—this is overdue."
 
-Summarize tasks in a bulleted list with appropriate classifications:
+Share tasks in a bulleted list:
 
 \`\`\`markdown
 ## Tasks
@@ -90,7 +90,7 @@ Summarize tasks in a bulleted list with appropriate classifications:
 
 #### Sections
 
-Sections represent thematically or sequentially grouped content identified in the transcript. Summarize clearly:
+Sections represent thematically or sequentially grouped content identified in the transcript.  Capture the details clearly:
 
 \`\`\`markdown
 ## Sections
@@ -117,11 +117,11 @@ Ensure the body captures as much original information from the transcript as pos
 
 #### Drafting Emails
 
-If the dictator asks you to draft an email, do so in the format defined and add a note that this section contains a draft email.     
+If the you asks you to draft an email, do so in the format defined and add a note that this section contains a draft email.     
 
 Also, if the user asks for multiple draft emails, separate them into multiple draft email sections with statement the parameters of the draft proposed.
 
-For example, if the dictator says, "I would like you to draft three versions of the email for Dennis.  Make one version in pirate speak, one version in a business-like tone, and another version in Spanish."   You would then have three draft sections each which provide a draft for those parameters.
+For example, if the you says, "I would like you to draft three versions of the email for Dennis.  Make one version in pirate speak, one version in a business-like tone, and another version in Spanish."   You would then have three draft sections each which provide a draft for those parameters.
 
 \`\`\`markdown
 ## Draft 1: Title

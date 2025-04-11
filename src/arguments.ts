@@ -32,6 +32,7 @@ export const configure = async (): Promise<[RunConfig]> => {
         .option('--overrides', 'allow overrides of the default configuration', DEFAULT_OVERRIDES)
         .option('--classify-model <classifierModel>', 'classifier model to use')
         .option('--compose-model <composeModel>', 'compose model to use')
+        .option('--context-directories [contextDirectories...]', 'directories containing context files to be included in prompts')
         .version(VERSION);
 
     program.parse();
@@ -61,6 +62,7 @@ async function validateOptions(options: Input): Promise<{
     overrides: boolean;
     classifyModel: string;
     composeModel: string;
+    contextDirectories?: string[];
 }> {
 
     // Validate timezone
@@ -72,19 +74,19 @@ async function validateOptions(options: Input): Promise<{
     }
 
 
-    if (!options.configDir) {
+    if (options.configDir) {
         await validateConfigDirectory(options.configDir);
     }
 
-    if (!options.inputDirectory) {
+    if (options.inputDirectory) {
         await validateInputDirectory(options.inputDirectory);
     }
 
-    if (!options.outputDirectory) {
+    if (options.outputDirectory) {
         await validateOutputDirectory(options.outputDirectory);
     }
 
-    if (!options.audioExtensions) {
+    if (options.audioExtensions) {
         await validateAudioExtensions(options.audioExtensions);
     }
 
@@ -95,6 +97,10 @@ async function validateOptions(options: Input): Promise<{
     validateModel(options.model, true, '--model');
     validateModel(options.classifyModel, false, '--classify-model');
     validateModel(options.composeModel, false, '--compose-model');
+
+    if (options.contextDirectories) {
+        await validateContextDirectories(options.contextDirectories);
+    }
 
     return {
         dryRun: options.dryRun,
@@ -111,6 +117,7 @@ async function validateOptions(options: Input): Promise<{
         overrides: options.overrides ?? DEFAULT_OVERRIDES,
         classifyModel: options.classifyModel ?? DEFAULT_MODEL,
         composeModel: options.composeModel ?? DEFAULT_MODEL,
+        contextDirectories: options.contextDirectories,
     };
 }
 
@@ -193,4 +200,14 @@ export const validateTimezone = (timezone: string): string => {
         return timezone;
     }
     throw new ArgumentError('--timezone', `Invalid timezone: ${timezone}. Valid options are: ${validOptions.join(', ')}`);
+}
+
+async function validateContextDirectories(contextDirectories: string[]) {
+    const logger = getLogger();
+    const storage = Storage.create({ log: logger.info });
+    for (const directory of contextDirectories) {
+        if (!storage.isDirectoryReadable(directory)) {
+            throw new Error(`Context directory does not exist or is not readable: ${directory}`);
+        }
+    }
 }

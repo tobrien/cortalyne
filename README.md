@@ -30,7 +30,7 @@ The classify phase transforms audio into structured data:
 The compose phase creates the final intelligent note:
 - Takes the classified transcription from the previous phase
 - Selects type-specific instructions based on classification (meeting, email, etc.)
-- Applies a "dictator" persona to represent the speaker's voice
+- Applies a "you" persona to represent the speaker's voice
 - Generates a well-structured, enhanced markdown note
 - Formats the content according to the note type's requirements
 
@@ -152,6 +152,7 @@ Transote provides a variety of command line options to customize its behavior:
 | `--transcription-model <model>` | OpenAI transcription model | `whisper-1` |
 | `--output-structure <type>` | Output directory structure | `none` |
 | `--filename-options [options...]` | Filename format options | `date,time,subject` |
+| `--context-directories [dirs...]` | Directories to search for context files | `[]` |
 | `--config-dir <dir>` | Configuration directory | `~/.transote` |
 | `--overrides` | Allow overrides of default configuration | `false` |
 | `--openai-api-key <key>` | OpenAI API key | From env var |
@@ -195,6 +196,11 @@ transote --input-directory ./recordings --filename-options "time subject"
 Use a custom configuration directory:
 ```bash
 transote --input-directory ./recordings --config-dir ~/my-transote-config
+```
+
+Add context from existing knowledge:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes ./project-docs
 ```
 
 ### Debugging and Verbose Output
@@ -371,6 +377,49 @@ Result:
 
 **Note:** When using `--output-structure day`, the `date` filename option becomes redundant and is automatically disabled.
 
+### Context-Enhanced Notes
+
+Transote can enhance your notes with relevant context from existing files using the `--context-directories` option. This feature allows the AI to access and reference information from your knowledge base when processing audio recordings.
+
+#### How Context Directories Work
+
+When you specify one or more context directories, Transote will:
+1. Search those directories for relevant files based on the content of your recording
+2. Extract information from the most relevant files
+3. Use this information to provide additional context for the AI when composing your note
+4. Create more informed, connected notes that reference your existing knowledge
+
+This is particularly useful for:
+- Meeting notes that reference previous meetings
+- Project updates that need historical context
+- Ideas that build on previous concepts
+- Any recording that would benefit from connection to your existing notes
+
+#### Examples
+
+Basic usage with a single context directory:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes
+```
+
+Using multiple context directories:
+```bash
+transote --input-directory ./recordings --context-directories ./my-notes ./project-docs ./reference-materials
+```
+
+Combined with other options:
+```bash
+transote --input-directory ./recordings --output-directory ./enhanced-notes --context-directories ./my-notes --model gpt-4
+```
+
+#### Best Practices
+
+For optimal results with context directories:
+- Organize your context files in a way that makes semantic sense
+- Use descriptive filenames and clear content in your context files
+- Consider using the `--verbose` flag to see which context files are being used
+- Start with smaller context directories before scaling to larger knowledge bases
+
 ## Configuration and Customization
 
 Transote can be customized using a configuration directory.
@@ -420,15 +469,15 @@ To customize how Transote processes recordings identified as "email" type:
    transote --input-directory ./recordings --overrides
    ```
 
-#### Example: Customizing Dictator Persona
+#### Example: Customizing You Persona
 
-The "dictator" persona represents how the system interprets your recordings. To customize:
+The "you" persona represents how the system interprets your recordings. To customize:
 
 1. Create the following structure:
    ```
    .transote/
    └── personas/
-       └── dictator/
+       └── you/
            ├── traits.md           # Override traits
            ├── traits-pre.md       # Prepend traits
            ├── traits-post.md      # Append traits
@@ -466,7 +515,7 @@ Transote supports customization for the following components:
 | Persona | Description | File Paths in configDir |
 |---------|-------------|------------|
 | `classifier` | Determines the type of content in your recordings, this is the person used when analyzing and classifying a raw transcript | `/personas/classifier/traits.md`<br>`/personas/classifier/instructions.md` |
-| `dictator` | Represents the speaker/recorder of the content, this is the persona used when composing a final version of a note. | `/personas/dictator/traits.md`<br>`/personas/dictator/instructions.md` |
+| `you` | Represents the speaker/recorder of the content, this is the persona used when composing a final version of a note. | `/personas/you/traits.md`<br>`/personas/you/instructions.md` |
 
 #### Instructions
 
@@ -488,9 +537,9 @@ Transote supports customization for the following components:
 | `other` | Miscellaneous content types | `/instructions/types/other.md` |
 
 Remember that for each file path above, you can create three versions:
-- The base file (e.g., `/personas/dictator/traits.md`) for complete override
-- A "-pre" version (e.g., `/personas/dictator/traits-pre.md`) to prepend content
-- A "-post" version (e.g., `/personas/dictator/traits-post.md`) to append content
+- The base file (e.g., `/personas/you/traits.md`) for complete override
+- A "-pre" version (e.g., `/personas/you/traits-pre.md`) to prepend content
+- A "-post" version (e.g., `/personas/you/traits-post.md`) to append content
 
 All paths are relative to your configuration directory (default: `./.transote`).
 
@@ -505,7 +554,7 @@ Let's say you want all your email notes to be composed in pirate language. Creat
 ```
 .transote/
 └── personas/
-    └── dictator/
+    └── you/
         └── traits-pre.md
 ```
 
@@ -557,6 +606,8 @@ Customizing instructions can be powerful but comes with risks:
 - Significant modifications might require adjustments to the `--model` parameter
 
 Start with small changes to the `-pre.md` and `-post.md` files before attempting complete overrides, and always test thoroughly with the `--debug` flag to monitor effects.
+
+
 
 ## Requirements
 

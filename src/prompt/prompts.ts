@@ -7,10 +7,11 @@ import { stringifyJSON } from '../util/general';
 import * as ClassifyInstructions from './instructions/classify';
 import * as ComposeInstructions from './instructions/compose';
 import * as ClassifyPersona from './persona/classifier';
-import * as DictatorPersona from './persona/dictator';
+import * as YouPersona from './persona/you';
 import path from 'path';
 import { getLogger } from '../logging';
 import * as Storage from '../util/storage';
+import * as Context from './context';
 
 export interface Factory {
     createClassificationPrompt: (transcription: string) => Promise<MinorPrompt.Instance>;
@@ -32,17 +33,27 @@ export const create = (model: Chat.Model, runConfig: RunConfig): Factory => {
         });
         prompt.addContent(transcription);
 
+        const contextSections = await Context.loadContextFromDirectories(runConfig.contextDirectories);
+        contextSections.forEach((section) => {
+            prompt.addContext(section);
+        });
+
         return prompt;
     };
 
     const createComposePrompt = async (transcription: ClassifiedTranscription, noteType: string): Promise<MinorPrompt.Instance> => {
         const prompt: MinorPrompt.Instance = MinorPrompt.create();
-        prompt.addPersona(await DictatorPersona.create(runConfig.configDir, { customizeContent }));
-        const instructions = await ComposeInstructions.create(noteType, runConfig.configDir, { customizeContent });
+        prompt.addPersona(await YouPersona.create(runConfig.configDir, { customizeContent }));
+        const instructions = await ComposeInstructions.create(noteType, runConfig.configDir, { customizeContent }, runConfig.contextDirectories);
         instructions.forEach((instruction) => {
             prompt.addInstruction(instruction);
         });
         prompt.addContent(stringifyJSON(transcription));
+
+        const contextSections = await Context.loadContextFromDirectories(runConfig.contextDirectories);
+        contextSections.forEach((section) => {
+            prompt.addContext(section);
+        });
 
         return prompt;
     }

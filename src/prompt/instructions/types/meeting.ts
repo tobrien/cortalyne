@@ -6,13 +6,15 @@ import { Instruction } from "@tobrien/minorprompt";
 import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
 
 export const INSTRUCTION = `
-Task #1 - Organize information from the raw transcript that is about a meeting into the format defined below.
+Task #1 - Organize information from the raw transcript of an audio recording you made about a meeting into the format defined below.
 
-Task #2 - Analyze the transcript and determine the participants, meeting initiation, tasks and follow-up actions, outcomes and decisions, and meeting summary if they are present.
+Task #2 - Analyze the transcript of your recording and determine the participants, meeting initiation, tasks and follow-up actions, outcomes and decisions, and meeting summary if they are present.
 
-Task #3 - Produce a note in Markdown format that is roughly the same Length or longer than the original transcript that contains information about the meeting preserving as much detail as possible.
+Task #3 - Produce a note in Markdown format that is roughly the same length or longer than the original transcript of your recording that contains information about the meeting preserving as much detail as possible.
 
-If there is context available, use it the information in the context to help you identify people, projects, plans, and other entities mentioned in the transcript.
+Remember that this is your meeting and you are capturing notes on your meeting.  When you write a note on a meeting that is yours, please use the word "I" to refer to yourself.
+
+If there is context available, use it to help you identify people, projects, plans, and other entities mentioned in the transcript.
 
 #### Instructions for Generating a Meeting Summary
 

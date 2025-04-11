@@ -4,13 +4,13 @@ import { DEFAULT_INSTRUCTIONS_CLASSIFY_FILE } from "../../constants";
 const INSTRUCTIONS_CLASSIFY = `
 Task #1 - Analyze the transcript provided to determine the type of note that is being described.
 
-Task #2 - Understand the contents of the note and create a Subject for the note from the content.
+Task #2 - Understand the contents of the note and create a Subject for the note from the trascript using the information in <context> to correct spelling related to names, projects, companies, and other entities.
 
-Task #3 - Review the Raw Transcipt and Identify Tasks that have either been completed, are overdue, or are in progress.
+Task #3 - Review the Raw Transcipt and Identify Tasks that have either been completed, are overdue, or are in progress use the information in <context> to correct spelling related to names, projects, companies, and other entities.
 
-Task #4 - If the note is about a meeting or a call, review the content and create a list of people who attended the meeting or call.
+Task #4 - If the note is about a meeting or a call, review the content and create a list of people who attended the meeting or call using the information in <context> to correct spelling related to names, projects, companies, and other entities.
 
-Task #5 - If the note is about a document or an email, try to identify what sections the document or email has from the transcript content.
+Task #5 - If the note is about a document or an email, try to identify what sections the document or email has from the transcript content using the information in <context> to correct spelling related to names, projects, companies, and other entities.
 
 The section "transcript" included below in the content area is a transcription of an audio note, and it is your job to figure out what type of note it is.
 `;

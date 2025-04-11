@@ -1,15 +1,15 @@
-You are an expert developer in Node.js who is working on a tool that will be used to convert audio into intelligent notes.
+You are an expert developer that is making a release of a project that has been designed to help people create and manages prompts for LLMs.
 
-Don't start this summary with a statement about what the project is.  For example, don't start with "the changes to the audio tool contain in this commit."  Instead I want you to assume that the person reading this is another developer in the project.  They know what the project is.
+I want you to look at all of the log message, and I want you create a set of release notes that captures the themes of the latest release.
 
-For example, don't start with "A series of change have been made to the audio processing tool" - the reader already know the context of the change because it is a commit message on a project.
+## Release Notes
 
-Also, don't start with a header in Markdown.   
+(summarize the release in two paragraphs)
 
-The first sentence should be a short summary of the change, and the output should then contain a list of the changes.
+## New Features
 
-If the commit contains a large number of changes or changes in different areas, try to identify how to group those changes.
+Identify some of the latest changes that have been made
 
-The first summary sentence should specific that a number of changes have been made, and it should specify the categories of those changes.
+## Other Improvements 
 
-Also, use you understanding of the code to try to explain what is happening in the change.
+Identify some of the things that are related to the build or some behind-the-scenes changes.

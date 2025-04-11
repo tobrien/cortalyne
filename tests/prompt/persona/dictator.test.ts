@@ -5,9 +5,9 @@ jest.unstable_mockModule('../../../src/logging', () => ({
 }));
 
 let Logging: any;
-let Dictator: any;
+let You: any;
 
-describe('dictator', () => {
+describe('you', () => {
     let mockLogger: any;
     let mockCustomizeContent: any;
 
@@ -18,7 +18,7 @@ describe('dictator', () => {
         jest.clearAllMocks();
 
         Logging = await import('../../../src/logging');
-        Dictator = await import('../../../src/prompt/persona/dictator');
+        You = await import('../../../src/prompt/persona/you');
 
         // Setup logger mock
         mockLogger = {
@@ -31,7 +31,7 @@ describe('dictator', () => {
     });
 
     describe('create', () => {
-        it('should create dictator persona with default traits and instructions', async () => {
+        it('should create you persona with default traits and instructions', async () => {
             const defaultTraits = 'default traits';
             const defaultInstructions = 'default instructions';
 
@@ -41,20 +41,20 @@ describe('dictator', () => {
                 return content;
             });
 
-            const persona = await Dictator.create(mockConfigDir, { customizeContent: mockCustomizeContent });
+            const persona = await You.create(mockConfigDir, { customizeContent: mockCustomizeContent });
 
             expect(persona).toBeDefined();
             expect(mockCustomizeContent).toHaveBeenCalledTimes(2);
             expect(mockLogger.debug).toHaveBeenCalledTimes(2);
-            expect(mockLogger.debug).toHaveBeenCalledWith('Final Dictator traits: %s', defaultTraits);
-            expect(mockLogger.debug).toHaveBeenCalledWith('Final Dictator instructions: %s', defaultInstructions);
+            expect(mockLogger.debug).toHaveBeenCalledWith('Final You traits: %s', defaultTraits);
+            expect(mockLogger.debug).toHaveBeenCalledWith('Final You instructions: %s', defaultInstructions);
         });
 
         it('should handle errors during persona creation', async () => {
             const error = new Error('Customization failed');
             mockCustomizeContent.mockRejectedValue(error);
 
-            await expect(Dictator.create(mockConfigDir, { customizeContent: mockCustomizeContent }))
+            await expect(You.create(mockConfigDir, { customizeContent: mockCustomizeContent }))
                 .rejects
                 .toThrow('Customization failed');
         });
