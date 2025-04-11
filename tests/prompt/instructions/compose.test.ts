@@ -1,161 +1,162 @@
 import { jest } from '@jest/globals';
 
-jest.unstable_mockModule('../../../src/logging', () => ({
-    getLogger: jest.fn()
+jest.unstable_mockModule('../../../src/constants', () => ({
+    DEFAULT_INSTRUCTIONS_COMPOSE_FILE: 'test-compose.md'
 }));
 
-jest.unstable_mockModule('../../../src/util/storage', () => ({
+jest.unstable_mockModule('../../../src/prompt/context', () => ({
+    loadContextFromDirectories: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/call', () => ({
     create: jest.fn()
 }));
 
-jest.unstable_mockModule('../../../src/util/openai', () => ({
-    createCompletion: jest.fn()
+jest.unstable_mockModule('../../../src/prompt/instructions/types/document', () => ({
+    create: jest.fn()
 }));
 
-let Logging: any;
-let Storage: any;
-let OpenAI: any;
+jest.unstable_mockModule('../../../src/prompt/instructions/types/email', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/idea', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/meeting', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/note', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/other', () => ({
+    create: jest.fn()
+}));
+
+jest.unstable_mockModule('../../../src/prompt/instructions/types/update', () => ({
+    create: jest.fn()
+}));
+
+let Constants: any;
+let Context: any;
+let CallInstructions: any;
+let DocumentInstructions: any;
+let EmailInstructions: any;
+let IdeaInstructions: any;
+let MeetingInstructions: any;
+let NoteInstructions: any;
+let OtherInstructions: any;
+let UpdateInstructions: any;
 let Compose: any;
 
 describe('compose', () => {
-    let mockLogger: any;
-    let mockStorage: any;
-    let mockCreateCompletion: any;
-
-    const mockConfig = {
-        composeModel: 'test-model',
-        debug: false,
-        configDir: '/test/config',
-        overrides: false
-    };
+    let mockCustomizeContent: jest.Mock;
+    let mockContextSections: any[];
 
     beforeEach(async () => {
         // Reset mocks
         jest.clearAllMocks();
 
-        Logging = await import('../../../src/logging');
-        Storage = await import('../../../src/util/storage');
-        OpenAI = await import('../../../src/util/openai');
-        Compose = await import('../../../src/phases/compose');
+        Constants = await import('../../../src/constants');
+        Context = await import('../../../src/prompt/context');
+        CallInstructions = await import('../../../src/prompt/instructions/types/call');
+        DocumentInstructions = await import('../../../src/prompt/instructions/types/document');
+        EmailInstructions = await import('../../../src/prompt/instructions/types/email');
+        IdeaInstructions = await import('../../../src/prompt/instructions/types/idea');
+        MeetingInstructions = await import('../../../src/prompt/instructions/types/meeting');
+        NoteInstructions = await import('../../../src/prompt/instructions/types/note');
+        OtherInstructions = await import('../../../src/prompt/instructions/types/other');
+        UpdateInstructions = await import('../../../src/prompt/instructions/types/update');
+        Compose = await import('../../../src/prompt/instructions/compose');
 
-        // Setup logger mock
-        mockLogger = {
-            debug: jest.fn(),
-            info: jest.fn()
-        };
-        (Logging.getLogger as jest.Mock).mockReturnValue(mockLogger);
+        // Setup customizeContent mock
+        // @ts-ignore
+        mockCustomizeContent = jest.fn().mockResolvedValue('customized instructions');
 
-        // Setup storage mock
-        mockStorage = {
-            listFiles: jest.fn(),
-            exists: jest.fn(),
-            readFile: jest.fn(),
-            writeFile: jest.fn()
-        };
-        (Storage.create as jest.Mock).mockReturnValue(mockStorage);
-
-        // Setup OpenAI mock
-        mockCreateCompletion = jest.fn();
-        (OpenAI.createCompletion as jest.Mock).mockImplementation(mockCreateCompletion);
+        // Setup context sections mock
+        mockContextSections = [
+            { type: 'section', content: 'context section 1' },
+            { type: 'section', content: 'context section 2' }
+        ];
+        // @ts-ignore
+        (Context.loadContextFromDirectories as jest.Mock).mockResolvedValue(mockContextSections);
     });
 
-    describe('compose', () => {
-        it('should skip if note file with hash already exists', async () => {
-            const transcription = {
-                text: 'test transcription',
-                type: 'test',
-                categories: ['test'],
-                confidence: 0.9,
-                summary: 'test summary',
-                recordingTime: new Date().toISOString()
-            };
-            const outputPath = '/test/output';
-            const filename = 'test';
-            const hash = 'abc123';
+    describe('create', () => {
+        it('should create instructions with default process instructions and type-specific instructions', async () => {
+            const type = 'note';
+            const configDir = '/test/config';
+            const contextDirectories = ['/test/context'];
 
-            mockStorage.listFiles.mockResolvedValue([`${filename}-${hash}.md`]);
+            // Setup note instructions mock
+            const mockNoteInstructions = [
+                { type: 'instruction', content: 'note instruction 1' },
+                { type: 'instruction', content: 'note instruction 2' }
+            ];
+            // @ts-ignore
+            (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
-            const composeInstance = Compose.create(mockConfig);
-            const result = await composeInstance.compose(transcription, outputPath, filename, hash);
+            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent }, contextDirectories);
 
-            expect(result).toBeUndefined();
-            expect(mockCreateCompletion).not.toHaveBeenCalled();
+            // Verify customizeContent was called with correct arguments
+            expect(mockCustomizeContent).toHaveBeenCalledWith(
+                configDir,
+                Constants.DEFAULT_INSTRUCTIONS_COMPOSE_FILE,
+                expect.any(String)
+            );
+
+            // Verify note instructions were created
+            expect(NoteInstructions.create).toHaveBeenCalledWith(configDir, { customizeContent: mockCustomizeContent });
+
+            // Verify context was loaded
+            expect(Context.loadContextFromDirectories).toHaveBeenCalledWith(contextDirectories);
+
+            // Verify result contains all expected instructions
+            expect(result).toHaveLength(5); // note instructions + process instruction + context sections
+            expect(result[0]).toEqual(mockNoteInstructions[0]);
+            expect(result[1]).toEqual(mockNoteInstructions[1]);
+            expect(result[2]).toEqual(expect.objectContaining({ text: 'customized instructions' }));
+            expect(result[3]).toEqual(mockContextSections[0]);
+            expect(result[4]).toEqual(mockContextSections[1]);
         });
 
-        it('should return existing content if output file exists', async () => {
-            const transcription = {
-                text: 'test transcription',
-                type: 'test',
-                categories: ['test'],
-                confidence: 0.9,
-                summary: 'test summary',
-                recordingTime: new Date().toISOString()
-            };
-            const outputPath = '/test/output';
-            const filename = 'test';
-            const hash = 'abc123';
-            const existingContent = 'existing note content';
+        it('should handle unknown note types gracefully', async () => {
+            const type = 'unknown';
+            const configDir = '/test/config';
 
-            mockStorage.listFiles.mockResolvedValue([]);
-            mockStorage.exists.mockResolvedValue(true);
-            mockStorage.readFile.mockResolvedValue(existingContent);
+            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent });
 
-            const composeInstance = Compose.create(mockConfig);
-            const result = await composeInstance.compose(transcription, outputPath, filename, hash);
+            // Verify customizeContent was called
+            expect(mockCustomizeContent).toHaveBeenCalled();
 
-            expect(result).toBe(existingContent);
-            expect(mockCreateCompletion).not.toHaveBeenCalled();
+            // Verify no type-specific instructions were created
+            expect(result).toHaveLength(1); // only process instruction
+            expect(result[0]).toEqual(expect.objectContaining({ text: 'customized instructions' }));
         });
 
-        it('should create new note and save it', async () => {
-            const transcription = {
-                text: 'test transcription',
-                type: 'test',
-                categories: ['test'],
-                confidence: 0.9,
-                summary: 'test summary',
-                recordingTime: new Date().toISOString()
-            };
-            const outputPath = '/test/output';
-            const filename = 'test';
-            const hash = 'abc123';
-            const noteCompletion = 'new note content';
+        it('should work without context directories', async () => {
+            const type = 'note';
+            const configDir = '/test/config';
 
-            mockStorage.listFiles.mockResolvedValue([]);
-            mockStorage.exists.mockResolvedValue(false);
-            mockCreateCompletion.mockResolvedValue(noteCompletion);
+            // Setup note instructions mock
+            const mockNoteInstructions = [
+                { type: 'instruction', content: 'note instruction' }
+            ];
+            // @ts-ignore
+            (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
-            const composeInstance = Compose.create(mockConfig);
-            const result = await composeInstance.compose(transcription, outputPath, filename, hash);
+            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent });
 
-            expect(result).toBe(noteCompletion);
-            expect(mockCreateCompletion).toHaveBeenCalled();
-            expect(mockStorage.writeFile).toHaveBeenCalled();
-        });
+            // Verify context was not loaded
+            expect(Context.loadContextFromDirectories).not.toHaveBeenCalled();
 
-        it('should handle errors during composition', async () => {
-            const transcription = {
-                text: 'test transcription',
-                type: 'test',
-                categories: ['test'],
-                confidence: 0.9,
-                summary: 'test summary',
-                recordingTime: new Date().toISOString()
-            };
-            const outputPath = '/test/output';
-            const filename = 'test';
-            const hash = 'abc123';
-            const error = new Error('Composition failed');
-
-            mockStorage.listFiles.mockResolvedValue([]);
-            mockStorage.exists.mockResolvedValue(false);
-            mockCreateCompletion.mockRejectedValue(error);
-
-            const composeInstance = Compose.create(mockConfig);
-
-            await expect(composeInstance.compose(transcription, outputPath, filename, hash))
-                .rejects
-                .toThrow('Composition failed');
+            // Verify result contains only note and process instructions
+            expect(result).toHaveLength(2);
+            expect(result[0]).toEqual(mockNoteInstructions[0]);
+            expect(result[1]).toEqual(expect.objectContaining({ text: 'customized instructions' }));
         });
     });
 });

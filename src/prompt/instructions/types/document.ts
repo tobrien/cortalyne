@@ -4,7 +4,7 @@ import { createInstruction } from "@tobrien/minorprompt";
 import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
 
 export const INSTRUCTION = `
-Task #1 - Organize information from the raw transcript about a document that is being described into the format defined below.
+Task #1 - Organize information from the raw transcript of an audio recording you made about a document that is being described into the format defined below.
 
 Task #2 - Analyze the transcript and determine if this is a discussion of a document to be created, revised, and reviewed, or if this is a discussion of a document that already exists.
 
@@ -13,6 +13,8 @@ Task #3 - Understand and capture ideas in the raw transcript about the document'
 Task #4 - Read the transcript and look for any questions that are identified about the document that need to be answered.    Also, record any external resources that are mentioned that should be used for research.
 
 Task #5 - Read the transcript and look for any requests to draft a section of the document, or the draft the document.   If a request is made to draft a larger document, you can return a lengthy response.
+
+Remember that this is your document and you are capturing notes on your document.  When you write a note on a document that is yours, please use the word "I" to refer to yourself.
 
 #### Instructions for Generating a Document Note
 
@@ -49,8 +51,8 @@ This note is intended as a clear and structured starting point, though it might 
 
 The title should be determined with the following priority:
 
-1. Explicit statement by the speaker ("document on Company Policy Updates").
-2. Clearly identified subject mentioned by the speaker.
+1. Your made an Explicit statement in your audio recording ("document on Company Policy Updates").
+2. Clearly identified subject mentioned in your audio recording.
 3. General context of the note if no explicit title is mentioned.
 
 If the title is not explicitly stated, indicate this explicitly:
@@ -66,7 +68,7 @@ Tasks are actionable items explicitly indicated in the transcript relevant to do
 - **Urgent:** e.g., "We urgently need to finalize section two by tomorrow."
 - **Overdue:** e.g., "The summary of findings was supposed to be ready yesterday—this is overdue."
 
-Summarize tasks in a bulleted list with appropriate classifications:
+Share tasks in a bulleted list:
 
 \`\`\`markdown
 ## Tasks
@@ -94,7 +96,7 @@ Sections represent thematically or sequentially grouped content identified in th
 
 #### Draft Sections
 
-If the dictators ask for a draft of the document, you can return a lengthy response if required.    If draft is included please add it to a section called "Draft".
+If the yous ask for a draft of the document, you can return a lengthy response if required.    If draft is included please add it to a section called "Draft".
 
 #### Body
 
@@ -103,7 +105,7 @@ The Body contains the primary content, ideas, outlines of sections, or specific 
 This body should capture the same level of detail that was shared in the transcript, but should make effort to organize the information in a way that is easy to understand and use.
 
 - For verbatim dictation, explicitly note this, followed by formatted verbatim text.
-- For non-verbatim content, provide a structured summary or key points clearly outlined.
+- For non-verbatim content, provide a structured readout of the details you shared in your audio recording.
 
 Clearly indicate and format corrections or restarts if present.
 

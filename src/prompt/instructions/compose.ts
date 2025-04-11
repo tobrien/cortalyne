@@ -1,5 +1,6 @@
 import { Instruction, Section, createInstruction } from "@tobrien/minorprompt";
 import { DEFAULT_INSTRUCTIONS_COMPOSE_FILE } from "../../constants";
+import * as Context from "../../prompt/context";
 import * as CallInstructions from "./types/call";
 import * as DocumentInstructions from "./types/document";
 import * as EmailInstructions from "./types/email";
@@ -10,13 +11,15 @@ import * as OtherInstructions from "./types/other";
 import * as UpdateInstructions from "./types/update";
 
 const INSTRUCTIONS_PROCESS = `
-Capture and organize the information from the transcript into a more structured format as defined by the note type.
+You are capturing and organize the information from a transcript of your audio recording into a more structured format.
 
-Produce an organized and formatted not in a Markdown format that is roughly the same length as the original transcript.
+Produce an organized and formatted note in a Markdown format that is roughly the same length as your original transcript.
 
-Consult the specific instructions for this note type that are included for further guidance.
+Remember that this is your note, and you are the one who recorded it.  You should write it in the first-person, and you should use the word "I" when refering to your ideas and thoughts.
 
-The content area of this message contains the row transcript of an audio now, and the context contains information from a prior step that gather information about the note type, note subject, the people, projects, and places involved in this note.
+Consult the specific instructions for this note type that are included for further guidance on how to record your audio note.
+
+The <content> area of this message contains the row transcript of an audio now, and the <context> contains information the note type, note subject, the people, projects, and places involved in this note.
 `;
 
 const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }) => Promise<(Instruction | Section<Instruction>)[]>> = {
@@ -30,7 +33,10 @@ const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, { customizeCont
     update: UpdateInstructions.create,
 }
 
-export const create = async (type: string, configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
+export const create = async (type: string, configDir: string,
+    { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> },
+    contextDirectories?: string[]
+): Promise<(Instruction | Section<Instruction>)[]> => {
     const instructions: (Instruction | Section<Instruction>)[] = [];
 
     const overrideContent = await customizeContent(configDir, DEFAULT_INSTRUCTIONS_COMPOSE_FILE, INSTRUCTIONS_PROCESS);
@@ -42,6 +48,12 @@ export const create = async (type: string, configDir: string, { customizeContent
 
     const instruction = createInstruction(overrideContent);
     instructions.push(instruction);
+
+    // Load context from directories using the shared utility
+    if (contextDirectories && contextDirectories.length > 0) {
+        const contextSections = await Context.loadContextFromDirectories(contextDirectories);
+        instructions.push(...contextSections);
+    }
 
     return instructions;
 }

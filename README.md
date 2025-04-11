@@ -30,7 +30,7 @@ The classify phase transforms audio into structured data:
 The compose phase creates the final intelligent note:
 - Takes the classified transcription from the previous phase
 - Selects type-specific instructions based on classification (meeting, email, etc.)
-- Applies a "dictator" persona to represent the speaker's voice
+- Applies a "you" persona to represent the speaker's voice
 - Generates a well-structured, enhanced markdown note
 - Formats the content according to the note type's requirements
 
@@ -420,15 +420,15 @@ To customize how Transote processes recordings identified as "email" type:
    transote --input-directory ./recordings --overrides
    ```
 
-#### Example: Customizing Dictator Persona
+#### Example: Customizing You Persona
 
-The "dictator" persona represents how the system interprets your recordings. To customize:
+The "you" persona represents how the system interprets your recordings. To customize:
 
 1. Create the following structure:
    ```
    .transote/
    └── personas/
-       └── dictator/
+       └── you/
            ├── traits.md           # Override traits
            ├── traits-pre.md       # Prepend traits
            ├── traits-post.md      # Append traits
@@ -466,7 +466,7 @@ Transote supports customization for the following components:
 | Persona | Description | File Paths in configDir |
 |---------|-------------|------------|
 | `classifier` | Determines the type of content in your recordings, this is the person used when analyzing and classifying a raw transcript | `/personas/classifier/traits.md`<br>`/personas/classifier/instructions.md` |
-| `dictator` | Represents the speaker/recorder of the content, this is the persona used when composing a final version of a note. | `/personas/dictator/traits.md`<br>`/personas/dictator/instructions.md` |
+| `you` | Represents the speaker/recorder of the content, this is the persona used when composing a final version of a note. | `/personas/you/traits.md`<br>`/personas/you/instructions.md` |
 
 #### Instructions
 
@@ -488,9 +488,9 @@ Transote supports customization for the following components:
 | `other` | Miscellaneous content types | `/instructions/types/other.md` |
 
 Remember that for each file path above, you can create three versions:
-- The base file (e.g., `/personas/dictator/traits.md`) for complete override
-- A "-pre" version (e.g., `/personas/dictator/traits-pre.md`) to prepend content
-- A "-post" version (e.g., `/personas/dictator/traits-post.md`) to append content
+- The base file (e.g., `/personas/you/traits.md`) for complete override
+- A "-pre" version (e.g., `/personas/you/traits-pre.md`) to prepend content
+- A "-post" version (e.g., `/personas/you/traits-post.md`) to append content
 
 All paths are relative to your configuration directory (default: `./.transote`).
 
@@ -505,7 +505,7 @@ Let's say you want all your email notes to be composed in pirate language. Creat
 ```
 .transote/
 └── personas/
-    └── dictator/
+    └── you/
         └── traits-pre.md
 ```
 

@@ -20,4 +20,5 @@ export interface Config {
     overrides: boolean;
     classifyModel: string;
     composeModel: string;
+    contextDirectories?: string[];
 }

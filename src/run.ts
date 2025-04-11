@@ -23,6 +23,7 @@ export const createConfig = (params: {
     overrides?: boolean;
     classifyModel?: string;
     composeModel?: string;
+    contextDirectories?: string[];
 }): Config => {
     return {
         dryRun: params.dryRun ?? DEFAULT_DRY_RUN,
@@ -44,5 +45,6 @@ export const createConfig = (params: {
         overrides: params.overrides ?? DEFAULT_OVERRIDES,
         classifyModel: params.classifyModel ?? DEFAULT_MODEL,
         composeModel: params.composeModel ?? DEFAULT_MODEL,
+        contextDirectories: params.contextDirectories,
     }
 }
