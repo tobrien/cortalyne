@@ -12,7 +12,9 @@ Task #3 - If the idea is about a project, a person, a place, or a thing, please 
 
 Task #4 - When reading the transcript look for directions to do research into this idea and identify information that might need to be gathered to further develop the idea.
 
-Remember that this is your idea and you are capturing notes on your idea.  When you write a note on an idea that is yours, please use the word "I" to refer to yourself.
+Remember that this is your idea and you are capturing notes on your idea.  When you write a note on an idea that is yours, please use the word "I" to refer to yourself when necessary.
+
+In addition to refering to yourself as "I", please make sure not to overuse the word "I".   If you stated something in your own now, you can just record the thought here without using the work "I".  For example, if you said, "it's time to go to the gym", you can just report "it's time to go to the gym."  You do not have to add "I said it is time to go to the gym."  Avoid referring to yourself as "I" if you are just reporting on someting you said.
 
 ## Instructions for Creating an Idea Note
 

@@ -1,15 +1,15 @@
 {
-    "name": "@tobrien/transote",
-    "version": "0.1.0",
-    "description": "Command-line tool to turn audio into intelligent notes and summaries.",
+    "name": "@tobrien/cortalyne",
+    "version": "0.1.1",
+    "description": "Cortalyne doesn’t help you think. It removes what gets in the way.",
     "main": "dist/main.js",
     "type": "module",
     "bin": {
-        "transote": "./dist/main.js"
+        "cortalyne": "./dist/main.js"
     },
     "repository": {
         "type": "git",
-        "url": "git+https://github.com/tobrien/transote.git"
+        "url": "git+https://github.com/tobrien/cortalyne.git"
     },
     "packageManager": "pnpm@10.7.1",
     "scripts": {
@@ -24,9 +24,10 @@
         "prepublishOnly": "pnpm run clean && pnpm run build"
     },
     "keywords": [
-        "gmail",
-        "export",
-        "gmail-export"
+        "focus",
+        "productivity",
+        "notes",
+        "genai"
     ],
     "author": "Tim O'Brien <tobrien@discursive.com>",
     "license": "Apache-2.0",

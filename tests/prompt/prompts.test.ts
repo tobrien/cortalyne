@@ -285,4 +285,71 @@ describe('Prompts', () => {
         });
     });
 
+    describe('generateOverrideContent', () => {
+        it('should handle partial override files', async () => {
+            // Setup storage mock for partial files
+            mockStorage.exists.mockImplementation(async (path: string) => {
+                if (path.endsWith('-pre.md')) {
+                    return true;
+                }
+                return false;
+            });
+            mockStorage.readFile.mockImplementation(async (path: string) => {
+                if (path.endsWith('-pre.md')) {
+                    return 'prepend content';
+                }
+                return '';
+            });
+
+            const configDir = '/test/config';
+            const overrideFile = 'partial.md';
+
+            const result = await factory.generateOverrideContent(configDir, overrideFile);
+
+            expect(mockStorage.exists).toHaveBeenCalledTimes(3);
+            expect(mockStorage.readFile).toHaveBeenCalledTimes(1);
+            expect(result).toEqual({
+                prepend: 'prepend content'
+            });
+        });
+
+        it('should handle read errors gracefully', async () => {
+            // Setup storage mock to throw error on read
+            try {
+                mockStorage.exists.mockResolvedValue(true);
+                mockStorage.readFile.mockRejectedValue(new Error('Read error'));
+
+                const configDir = '/test/config';
+                const overrideFile = 'error.md';
+
+                const result = await factory.generateOverrideContent(configDir, overrideFile);
+
+                expect(mockStorage.exists).toHaveBeenCalledTimes(3);
+                expect(mockStorage.readFile).toHaveBeenCalledTimes(3);
+                expect(result).toEqual({});
+            } catch (error) {
+                console.error('Error in generateOverrideContent:', error);
+            }
+        });
+
+        it('should handle empty file content', async () => {
+            // Setup storage mock for empty files
+            mockStorage.exists.mockResolvedValue(true);
+            mockStorage.readFile.mockResolvedValue('');
+
+            const configDir = '/test/config';
+            const overrideFile = 'empty.md';
+
+            const result = await factory.generateOverrideContent(configDir, overrideFile);
+
+            expect(mockStorage.exists).toHaveBeenCalledTimes(3);
+            expect(mockStorage.readFile).toHaveBeenCalledTimes(3);
+            expect(result).toEqual({
+                override: '',
+                prepend: '',
+                append: ''
+            });
+        });
+    });
+
 });

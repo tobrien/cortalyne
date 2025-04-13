@@ -1,12 +1,12 @@
-# Transote: Transcripts to Intelligent Notes
+# cortalyne: Transcripts to Intelligent Notes
 
 > **Note:** This utility is currently in pre-release status. Features and interfaces may change before the final release.
 
-Transote is a powerful command-line utility that transforms audio recordings into intelligent, context-enhanced notes. It uses AI to transcribe, classify, and enhance audio content, making it more useful and actionable.
+cortalyne is a powerful command-line utility that transforms audio recordings into intelligent, context-enhanced notes. It uses AI to transcribe, classify, and enhance audio content, making it more useful and actionable.
 
 ## How It Works
 
-Transote processes each audio file through three distinct phases:
+cortalyne processes each audio file through three distinct phases:
 
 ### 1. Locate Phase
 
@@ -56,7 +56,7 @@ Each phase builds on the previous one, gradually transforming raw audio into a u
 
 ```bash
 # Install globally
-npm install -g @tobrien/transote
+npm install -g @tobrien/cortalyne
 
 # Create a .env file with your OpenAI API key in your working directory
 echo "OPENAI_API_KEY=your-api-key" > .env
@@ -66,8 +66,8 @@ echo "OPENAI_API_KEY=your-api-key" > .env
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/transote.git
-cd transote
+git clone https://github.com/yourusername/cortalyne.git
+cd cortalyne
 
 # Install dependencies
 npm install
@@ -85,36 +85,36 @@ echo "OPENAI_API_KEY=your-api-key" > .env
 
 ```bash
 # Run directly
-transote --input-directory ./recordings --output-directory ./notes
+cortalyne --input-directory ./recordings --output-directory ./notes
 
 # Or run with npx
-npx @tobrien/transote --input-directory ./recordings --output-directory ./notes
+npx @tobrien/cortalyne --input-directory ./recordings --output-directory ./notes
 ```
 
 ### If not installed globally:
 
 ```bash
 # Run with npx without installing
-npx @tobrien/transote --input-directory ./recordings --output-directory ./notes
+npx @tobrien/cortalyne --input-directory ./recordings --output-directory ./notes
 ```
 
 Additional options:
 ```bash
 # Process files recursively
-transote --input-directory ./recordings --output-directory ./notes --recursive
+cortalyne --input-directory ./recordings --output-directory ./notes --recursive
 
 # Enable verbose logging
-transote --input-directory ./recordings --output-directory ./notes --verbose
+cortalyne --input-directory ./recordings --output-directory ./notes --verbose
 
 # Specify custom AI model
-transote --input-directory ./recordings --output-directory ./notes --model gpt-4
+cortalyne --input-directory ./recordings --output-directory ./notes --model gpt-4
 ```
 
 
 
 ## Output Files
 
-Transote generates two output files for each processed audio file:
+cortalyne generates two output files for each processed audio file:
 
 1. **JSON Classification File** (`filename.json`):
    - Contains structured data about the transcript
@@ -138,7 +138,7 @@ The output files are saved to the directory specified with the `--output-directo
 
 ## Command Line Options
 
-Transote provides a variety of command line options to customize its behavior:
+cortalyne provides a variety of command line options to customize its behavior:
 
 | Option | Description | Default |
 |--------|-------------|---------|
@@ -153,7 +153,7 @@ Transote provides a variety of command line options to customize its behavior:
 | `--output-structure <type>` | Output directory structure | `none` |
 | `--filename-options [options...]` | Filename format options | `date,time,subject` |
 | `--context-directories [dirs...]` | Directories to search for context files | `[]` |
-| `--config-dir <dir>` | Configuration directory | `~/.transote` |
+| `--config-dir <dir>` | Configuration directory | `~/.cortalyne` |
 | `--overrides` | Allow overrides of default configuration | `false` |
 | `--openai-api-key <key>` | OpenAI API key | From env var |
 | `--timezone <timezone>` | Timezone for date calculations | `UTC` |
@@ -165,54 +165,54 @@ Transote provides a variety of command line options to customize its behavior:
 
 Process all audio files in the current directory:
 ```bash
-transote --input-directory . --output-directory ./notes
+cortalyne --input-directory . --output-directory ./notes
 ```
 
 Process files recursively with verbose logging:
 ```bash
-transote --input-directory ./recordings --output-directory ./notes --recursive --verbose
+cortalyne --input-directory ./recordings --output-directory ./notes --recursive --verbose
 ```
 
 Specify different models for classification and composition phases:
 ```bash
-transote --classify-model gpt-4 --compose-model gpt-3.5-turbo --input-directory ./recordings
+cortalyne --classify-model gpt-4 --compose-model gpt-3.5-turbo --input-directory ./recordings
 ```
 
 Use a single model for all AI operations:
 ```bash
-transote --model gpt-4-turbo --input-directory ./recordings
+cortalyne --model gpt-4-turbo --input-directory ./recordings
 ```
 
 Organize output files by date structure:
 ```bash
-transote --input-directory ./recordings --output-structure month
+cortalyne --input-directory ./recordings --output-structure month
 ```
 
 Customize filename format:
 ```bash
-transote --input-directory ./recordings --filename-options "time subject"
+cortalyne --input-directory ./recordings --filename-options "time subject"
 ```
 
 Use a custom configuration directory:
 ```bash
-transote --input-directory ./recordings --config-dir ~/my-transote-config
+cortalyne --input-directory ./recordings --config-dir ~/my-cortalyne-config
 ```
 
 Add context from existing knowledge:
 ```bash
-transote --input-directory ./recordings --context-directories ./my-notes ./project-docs
+cortalyne --input-directory ./recordings --context-directories ./my-notes ./project-docs
 ```
 
 ### Debugging and Verbose Output
 
-Transote provides options to control the level of output detail:
+cortalyne provides options to control the level of output detail:
 
 #### Verbose Mode
 
 Use `--verbose` when you need more detailed information about the processing:
 
 ```bash
-transote --input-directory ./recordings --verbose
+cortalyne --input-directory ./recordings --verbose
 ```
 
 Verbose mode provides additional information about each step of the process, including:
@@ -226,7 +226,7 @@ Verbose mode provides additional information about each step of the process, inc
 Use `--debug` when you need to inspect the actual prompts and responses sent to and received from the AI models:
 
 ```bash
-transote --input-directory ./recordings --debug
+cortalyne --input-directory ./recordings --debug
 ```
 
 **Important:** Debug mode creates additional files in your output directory:
@@ -236,11 +236,11 @@ transote --input-directory ./recordings --debug
 Debug mode is particularly useful for:
 - Troubleshooting issues with classification or composition
 - Understanding how the AI interprets your audio content
-- Customizing or extending Transote's functionality
+- Customizing or extending cortalyne's functionality
 
 ### Output Organization
 
-Transote provides flexible options for organizing your output files using the `--output-structure` and `--filename-options` parameters.
+cortalyne provides flexible options for organizing your output files using the `--output-structure` and `--filename-options` parameters.
 
 #### Output Directory Structure
 
@@ -258,16 +258,16 @@ Examples:
 
 ```bash
 # All files in a flat structure
-transote --output-structure none
+cortalyne --output-structure none
 
 # Organize by year
-transote --output-structure year
+cortalyne --output-structure year
 
 # Organize by year and month
-transote --output-structure month
+cortalyne --output-structure month
 
 # Organize by year, month, and day
-transote --output-structure day
+cortalyne --output-structure day
 ```
 
 **Important Note on Filenames:** 
@@ -301,13 +301,13 @@ You can combine these options in any order:
 
 ```bash
 # Include only date in filename
-transote --filename-options date
+cortalyne --filename-options date
 
 # Include date and subject
-transote --filename-options date subject
+cortalyne --filename-options date subject
 
 # Include all options
-transote --filename-options date time subject
+cortalyne --filename-options date time subject
 ```
 
 **Important Note on Date Format:**
@@ -345,7 +345,7 @@ Here are some examples of how different combinations will structure your files:
 
 **Example 1:** Flat structure with date and subject
 ```
-transote --output-structure none --filename-options date subject
+cortalyne --output-structure none --filename-options date subject
 ```
 Result:
 ```
@@ -355,7 +355,7 @@ Result:
 
 **Example 2:** Monthly organization with time and subject
 ```
-transote --output-structure month --filename-options time subject
+cortalyne --output-structure month --filename-options time subject
 ```
 Result:
 ```
@@ -366,7 +366,7 @@ Result:
 
 **Example 3:** Daily organization with just subject
 ```
-transote --output-structure day --filename-options subject
+cortalyne --output-structure day --filename-options subject
 ```
 Result:
 ```
@@ -379,11 +379,11 @@ Result:
 
 ### Context-Enhanced Notes
 
-Transote can enhance your notes with relevant context from existing files using the `--context-directories` option. This feature allows the AI to access and reference information from your knowledge base when processing audio recordings.
+cortalyne can enhance your notes with relevant context from existing files using the `--context-directories` option. This feature allows the AI to access and reference information from your knowledge base when processing audio recordings.
 
 #### How Context Directories Work
 
-When you specify one or more context directories, Transote will:
+When you specify one or more context directories, cortalyne will:
 1. Search those directories for relevant files based on the content of your recording
 2. Extract information from the most relevant files
 3. Use this information to provide additional context for the AI when composing your note
@@ -399,17 +399,17 @@ This is particularly useful for:
 
 Basic usage with a single context directory:
 ```bash
-transote --input-directory ./recordings --context-directories ./my-notes
+cortalyne --input-directory ./recordings --context-directories ./my-notes
 ```
 
 Using multiple context directories:
 ```bash
-transote --input-directory ./recordings --context-directories ./my-notes ./project-docs ./reference-materials
+cortalyne --input-directory ./recordings --context-directories ./my-notes ./project-docs ./reference-materials
 ```
 
 Combined with other options:
 ```bash
-transote --input-directory ./recordings --output-directory ./enhanced-notes --context-directories ./my-notes --model gpt-4
+cortalyne --input-directory ./recordings --output-directory ./enhanced-notes --context-directories ./my-notes --model gpt-4
 ```
 
 #### Best Practices
@@ -422,19 +422,19 @@ For optimal results with context directories:
 
 ## Configuration and Customization
 
-Transote can be customized using a configuration directory.
+cortalyne can be customized using a configuration directory.
 
 ### Configuration Directory
 
-By default, Transote looks for configuration files in `./.transote`. You can specify a different location:
+By default, cortalyne looks for configuration files in `./.cortalyne`. You can specify a different location:
 
 ```bash
-transote --config-dir ~/my-transote-config
+cortalyne --config-dir ~/my-cortalyne-config
 ```
 
 ### Customizing Instructions
 
-Transote uses AI instructions to classify and process your audio recordings. You can customize these instructions in three ways:
+cortalyne uses AI instructions to classify and process your audio recordings. You can customize these instructions in three ways:
 
 1. **Append content** - Add additional instructions at the end
 2. **Prepend content** - Add additional instructions at the beginning
@@ -452,11 +452,11 @@ For any instruction file, three variations are supported:
 
 #### Example: Customizing Email Type Instructions
 
-To customize how Transote processes recordings identified as "email" type:
+To customize how cortalyne processes recordings identified as "email" type:
 
 1. Create a directory structure in your config directory:
    ```
-   .transote/
+   .cortalyne/
    └── instructions/
        └── types/
            ├── email.md           # Complete override (requires --overrides)
@@ -464,9 +464,9 @@ To customize how Transote processes recordings identified as "email" type:
            └── email-post.md      # Content to append
    ```
 
-2. Run Transote with the `--overrides` flag if using complete overrides:
+2. Run cortalyne with the `--overrides` flag if using complete overrides:
    ```bash
-   transote --input-directory ./recordings --overrides
+   cortalyne --input-directory ./recordings --overrides
    ```
 
 #### Example: Customizing You Persona
@@ -475,7 +475,7 @@ The "you" persona represents how the system interprets your recordings. To custo
 
 1. Create the following structure:
    ```
-   .transote/
+   .cortalyne/
    └── personas/
        └── you/
            ├── traits.md           # Override traits
@@ -501,14 +501,14 @@ The "you" persona represents how the system interprets your recordings. To custo
 Complete overrides (using filename.md without the -pre or -post suffix) will replace core functionality and require the `--overrides` flag. Use with caution:
 
 ```bash
-transote --input-directory ./recordings --overrides
+cortalyne --input-directory ./recordings --overrides
 ```
 
-Without this flag, Transote will refuse to run if override files exist to prevent accidental changes to core functionality.
+Without this flag, cortalyne will refuse to run if override files exist to prevent accidental changes to core functionality.
 
 ### Available Customization Files
 
-Transote supports customization for the following components:
+cortalyne supports customization for the following components:
 
 #### Personas
 
@@ -541,18 +541,18 @@ Remember that for each file path above, you can create three versions:
 - A "-pre" version (e.g., `/personas/you/traits-pre.md`) to prepend content
 - A "-post" version (e.g., `/personas/you/traits-post.md`) to append content
 
-All paths are relative to your configuration directory (default: `./.transote`).
+All paths are relative to your configuration directory (default: `./.cortalyne`).
 
 ### Customization Examples
 
-Here are practical examples of how to customize Transote for specific needs:
+Here are practical examples of how to customize cortalyne for specific needs:
 
 #### Example 1: Pirate Language for Email Notes
 
 Let's say you want all your email notes to be composed in pirate language. Create the following file:
 
 ```
-.transote/
+.cortalyne/
 └── personas/
     └── you/
         └── traits-pre.md
@@ -564,14 +564,14 @@ Add this content to the `traits-pre.md` file:
 Everything you generate is using Pirate language. And you have to say "arrrr" every few sentences. You are a pirate captain on the Black Flag.
 ```
 
-When Transote processes an audio file classified as "email" type, the output will now use pirate language.
+When cortalyne processes an audio file classified as "email" type, the output will now use pirate language.
 
 #### Example 2: Spanish Translation for Ideas
 
 To have all "idea" type notes translated to Spanish, create:
 
 ```
-.transote/
+.cortalyne/
 └── instructions/
     └── types/
         └── idea-post.md
@@ -587,9 +587,9 @@ Translate all the output to Spanish, maintaining the same markdown formatting st
 
 To verify your customizations are being applied correctly:
 
-1. Run Transote in debug mode:
+1. Run cortalyne in debug mode:
    ```bash
-   transote --input-directory ./recordings --debug
+   cortalyne --input-directory ./recordings --debug
    ```
 
 2. Check the output directory for the `.request.json` files to see if your customized instructions are included in the prompts sent to the AI.
@@ -607,11 +607,7 @@ Customizing instructions can be powerful but comes with risks:
 
 Start with small changes to the `-pre.md` and `-post.md` files before attempting complete overrides, and always test thoroughly with the `--debug` flag to monitor effects.
 
-
-
 ## Requirements
 
 - Node.js
 - OpenAI API key (set in .env file)
-
-

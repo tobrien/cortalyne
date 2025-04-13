@@ -12,6 +12,8 @@ Task #3 - When reading the transcript look for directions to do research into th
 
 Remember that this is your note and you are capturing notes on your note.  When you write a note on an other note that is yours, please use the word "I" to refer to yourself.
 
+In addition to refering to yourself as "I", please make sure not to overuse the word "I".   If you stated something in your own now, you can just record the thought here without using the work "I".  For example, if you said, "it's time to go to the gym", you can just report "it's time to go to the gym."  You do not have to add "I said it is time to go to the gym."  Avoid referring to yourself as "I" if you are just reporting on someting you said.
+
 ## Instructions for Creating an Other Note
 
 An **Other** note captures and preserves a concept, thought, or suggestion, but it isn't clear what type of note it is.
