@@ -19,7 +19,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const logger = Logging.getLogger();
 
     const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(config, operator);
-    const composePhase: ComposePhase.Instance = ComposePhase.create(config, operator);
+    const composePhase: ComposePhase.Instance = ComposePhase.create(config);
     const locatePhase: LocatePhase.Instance = LocatePhase.create(config, operator);
 
     const process = async (audioFile: string) => {

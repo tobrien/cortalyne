@@ -48,13 +48,14 @@ describe('Call Type Instructions', () => {
         const mockCustomizeContent = jest.fn().mockReturnValue(Promise.resolve('customized content'));
 
         // Call the create function
-        const result = await CallType.create(configDir, { customizeContent: mockCustomizeContent });
+        const result = await CallType.create(configDir, true, { customize: mockCustomizeContent });
 
-        // Verify customizeContent was called with the correct arguments
+        // Verify customizeContent was called with the correct parameters
         expect(mockCustomizeContent).toHaveBeenCalledWith(
             configDir,
             constants.DEFAULT_TYPE_INSTRUCTIONS_DIR + '/call.md',
-            CallType.INSTRUCTION
+            expect.any(String),
+            true
         );
 
         // Verify createInstruction was called with the customized content

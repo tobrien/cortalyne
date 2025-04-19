@@ -2,20 +2,20 @@ import * as Chat from '@tobrien/minorprompt/chat';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import path from 'path';
 import * as Logging from '../logging';
-import { ClassifiedTranscription } from '../processor';
-import * as Prompt from '../prompt/prompts';
 import { Config } from '../main';
+import { ClassifiedTranscription } from '../processor';
+import * as Override from '../prompt/override';
+import * as Prompt from '../prompt/prompts';
+import { stringifyJSON } from '../util/general';
 import * as OpenAI from '../util/openai';
 import * as Storage from '../util/storage';
-import { stringifyJSON } from '../util/general';
-import * as Cabazooka from '@tobrien/cabazooka';
 // Helper function to promisify ffmpeg.
 
 export interface Instance {
     compose: (transcription: ClassifiedTranscription, outputPath: string, filename: string, hash: string) => Promise<any>;
 }
 
-export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
+export const create = (config: Config): Instance => {
     const logger = Logging.getLogger();
     const storage = Storage.create({ log: logger.debug });
     const prompts = Prompt.create(config.composeModel as Chat.Model, config);
@@ -38,7 +38,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             return existingContent;
         }
 
-        const chatRequest: Chat.Request = prompts.format(await prompts.createComposePrompt(transcription, transcription.type));
+        const chatRequest: Chat.Request = Override.format(await prompts.createComposePrompt(transcription, transcription.type), config.model as Chat.Model);
 
         if (config.debug) {
             const requestOutputPath = noteOutputPath.replace('.md', '.request.json');

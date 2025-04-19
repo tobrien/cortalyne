@@ -1,16 +1,16 @@
+import * as Cabazooka from '@tobrien/cabazooka';
 import * as Chat from '@tobrien/minorprompt/chat';
+import { Config } from 'main';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import path from 'path';
+import { ClassifiedTranscription } from 'processor';
 import { DEFAULT_CLASSIFIED_RESPONSE_SCHEMA } from '../constants';
 import * as Logging from '../logging';
 import * as Prompt from '../prompt/prompts';
+import { stringifyJSON } from '../util/general';
 import * as OpenAI from '../util/openai';
 import * as Storage from '../util/storage';
-import { stringifyJSON } from '../util/general';
-import { ClassifiedTranscription } from 'processor';
-import { Config } from 'main';
-import * as Cabazooka from '@tobrien/cabazooka';
+import * as Override from '../prompt/override';
 // Helper function to promisify ffmpeg.
 export interface Instance {
     classify: (creation: Date, outputPath: string, filename: string, hash: string, audioFile: string) => Promise<ClassifiedTranscription>;
@@ -47,7 +47,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const transcription: OpenAI.Transcription = await OpenAI.transcribeAudio(audioFile, { model: config.transcriptionModel, debug: config.debug, debugFile: jsonOutputPath.replace('.json', '.transcription.response.json') });
         // logger.debug('Processing complete: output: %s', transcription);
 
-        const chatRequest: Chat.Request = prompts.format(await prompts.createClassificationPrompt(transcription.text));
+        const chatRequest: Chat.Request = Override.format(await prompts.createClassificationPrompt(transcription.text), config.model as Chat.Model);
 
         if (config.debug) {
             const requestOutputPath = jsonOutputPath.replace('.json', '.request.json');

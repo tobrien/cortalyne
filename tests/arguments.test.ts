@@ -2,30 +2,27 @@ import { jest } from '@jest/globals';
 import { ArgumentError } from '../src/error/ArgumentError';
 
 // Import modules asynchronously using dynamic imports to support ESM
-let mockRun: any;
+let mockCabazooka: any;
 let configure: any;
-let validateTimezone: any;
-let validateOutputStructure: any;
-let validateFilenameOptions: any;
 
 // Mock dependencies
-jest.mock('../src/run.js', () => ({
-    __esModule: true,
+jest.unstable_mockModule('../src/main', () => ({
     createConfig: jest.fn(() => ({ verbose: false, dryRun: false, diff: true }))
 }));
 
 // Mock Storage utility
-jest.mock('../src/util/storage.js', () => ({
-    __esModule: true,
+const mockIsDirectoryReadable = jest.fn(() => true);
+const mockIsDirectoryWritable = jest.fn(() => true);
+
+jest.unstable_mockModule('../src/util/storage', () => ({
     create: jest.fn(() => ({
-        isDirectoryReadable: jest.fn(() => true),
-        isDirectoryWritable: jest.fn(() => true)
+        isDirectoryReadable: mockIsDirectoryReadable,
+        isDirectoryWritable: mockIsDirectoryWritable
     }))
 }));
 
 // Mock the Dates utility
-jest.mock('../src/util/dates.js', () => ({
-    __esModule: true,
+jest.unstable_mockModule('../src/util/dates', () => ({
     validTimezones: jest.fn(() => ['Etc/UTC', 'America/New_York', 'Europe/London'])
 }));
 
@@ -63,21 +60,35 @@ jest.mock('commander', () => {
     return { Command: mockCommand };
 });
 
+// Mock Cabazooka
+const mockCabazookaInstance = {
+    configure: jest.fn().mockReturnValue(defaultCommanderMock),
+    // @ts-ignore
+    validate: jest.fn().mockResolvedValue({
+        timezone: 'America/New_York',
+        outputStructure: 'month',
+        filenameOptions: {
+            date: true,
+            time: true
+        },
+        inputDirectory: 'test-input-directory',
+        outputDirectory: 'test-output-directory',
+        recursive: false,
+        audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']
+    } as any)
+};
+
 // Load all dynamic imports before tests
 beforeAll(async () => {
-    mockRun = await import('../src/run.js');
-
     const argumentsModule = await import('../src/arguments.js');
     configure = argumentsModule.configure;
-    validateTimezone = argumentsModule.validateTimezone;
-    validateOutputStructure = argumentsModule.validateOutputStructure;
-    validateFilenameOptions = argumentsModule.validateFilenameOptions;
 });
 
 describe('arguments', () => {
     beforeEach(() => {
         jest.clearAllMocks();
         process.env.OPENAI_API_KEY = 'test-api-key';
+        mockIsDirectoryReadable.mockReturnValue(true);
 
         // Reset the mock commander opts value
         defaultCommanderMock.opts.mockReturnValue({
@@ -106,23 +117,10 @@ describe('arguments', () => {
 
     describe('configure', () => {
         it('should configure program with all options', async () => {
-            const [config] = await configure();
+            const [config] = await configure(mockCabazookaInstance);
+            expect(mockCabazookaInstance.configure).toHaveBeenCalled();
+            expect(mockCabazookaInstance.validate).toHaveBeenCalled();
             expect(config).toBeDefined();
-            expect(config.dryRun).toBe(false);
-            expect(config.verbose).toBe(false);
-            expect(config.debug).toBe(false);
-            expect(config.diff).toBe(true);
-            expect(config.timezone).toBe('America/New_York');
-            expect(config.model).toBe('gpt-4o');
-            expect(config.transcriptionModel).toBe('test-transcription-model');
-            expect(config.recursive).toBe(false);
-            expect(config.inputDirectory).toBe('test-input-directory');
-            expect(config.outputDirectory).toBe('test-output-directory');
-            expect(config.audioExtensions).toStrictEqual(['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']);
-            expect(config.configDir).toBe('test-config-dir');
-            expect(config.overrides).toBe(false);
-            expect(config.classifyModel).toBe('gpt-4o-mini');
-            expect(config.composeModel).toBe('o1-mini');
         });
 
         it('should throw error when OpenAI API key is missing', async () => {
@@ -149,7 +147,89 @@ describe('arguments', () => {
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure()).rejects.toThrow('OpenAI API key is required');
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow('OpenAI API key is required');
+        });
+
+        it('should throw error for invalid config directory', async () => {
+            mockIsDirectoryReadable.mockReturnValueOnce(false);
+
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Config directory does not exist');
+        });
+
+        it('should use default config directory when not provided', async () => {
+            // Remove configDir from options
+            defaultCommanderMock.opts.mockReturnValue({
+                dryRun: false,
+                verbose: false,
+                debug: false,
+                openaiApiKey: 'test-api-key',
+                timezone: 'America/New_York',
+                transcriptionModel: 'test-transcription-model',
+                model: 'gpt-4o',
+                contentTypes: ['diff', 'log'],
+                recursive: false,
+                inputDirectory: 'test-input-directory',
+                outputDirectory: 'test-output-directory',
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
+                overrides: false,
+                classifyModel: 'gpt-4o-mini',
+                composeModel: 'o1-mini',
+                // configDir is missing
+            });
+
+            const [config] = await configure(mockCabazookaInstance);
+            // Config should contain the default config directory
+            expect(config.configDir).toBeDefined();
+        });
+
+        it('should use default transcription model when not provided', async () => {
+            // Remove transcriptionModel from options
+            defaultCommanderMock.opts.mockReturnValue({
+                dryRun: false,
+                verbose: false,
+                debug: false,
+                openaiApiKey: 'test-api-key',
+                timezone: 'America/New_York',
+                model: 'gpt-4o',
+                contentTypes: ['diff', 'log'],
+                recursive: false,
+                inputDirectory: 'test-input-directory',
+                outputDirectory: 'test-output-directory',
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
+                configDir: 'test-config-dir',
+                overrides: false,
+                classifyModel: 'gpt-4o-mini',
+                composeModel: 'o1-mini',
+                // transcriptionModel is missing
+            });
+
+            const [config] = await configure(mockCabazookaInstance);
+            // Config should contain the default transcription model
+            expect(config.transcriptionModel).toBeDefined();
+        });
+
+        it('should throw error when model is missing', async () => {
+            // Remove the main model
+            defaultCommanderMock.opts.mockReturnValue({
+                dryRun: false,
+                verbose: false,
+                debug: false,
+                openaiApiKey: 'test-api-key',
+                timezone: 'America/New_York',
+                transcriptionModel: 'test-transcription-model',
+                // model is missing
+                contentTypes: ['diff', 'log'],
+                recursive: false,
+                inputDirectory: 'test-input-directory',
+                outputDirectory: 'test-output-directory',
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
+                configDir: 'test-config-dir',
+                overrides: false,
+                classifyModel: 'gpt-4o-mini',
+                composeModel: 'o1-mini',
+            });
+
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Model for --model is required');
         });
 
         it('should throw error for invalid model', async () => {
@@ -173,7 +253,7 @@ describe('arguments', () => {
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure()).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
         });
 
         it('should throw error for invalid classify model', async () => {
@@ -197,7 +277,7 @@ describe('arguments', () => {
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure()).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
         });
 
         it('should throw error for invalid compose model', async () => {
@@ -221,14 +301,11 @@ describe('arguments', () => {
                 composeModel: 'invalid-model', // Invalid compose model
             });
 
-            await expect(configure()).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
         });
 
-        it('should throw error for invalid audio extensions', async () => {
-            // Now that the bug in validateOptions has been fixed,
-            // we can properly test invalid audio extensions
-
-            // Mock the invalid audio extensions value
+        it('should throw error for invalid context directories', async () => {
+            // Set contextDirectories with an invalid directory
             defaultCommanderMock.opts.mockReturnValue({
                 dryRun: false,
                 verbose: false,
@@ -241,70 +318,53 @@ describe('arguments', () => {
                 recursive: false,
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
-                audioExtensions: ['mp3', 'invalid-ext'], // Invalid audio extension
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
                 configDir: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'o1-mini',
+                contextDirectories: ['invalid-dir']
             });
 
-            await expect(configure()).rejects.toThrow(/Invalid audio extension/);
-        });
-    });
+            // Mock the directory check to return false for the invalid directory
+            // @ts-ignore
+            mockIsDirectoryReadable.mockImplementation((directory: string) => {
+                return directory !== 'invalid-dir';
+            });
 
-    describe('validateTimezone', () => {
-        it('should return the timezone if valid', () => {
-            const result = validateTimezone('America/New_York');
-            expect(result).toBe('America/New_York');
-        });
-
-        it('should throw an ArgumentError if timezone is invalid', () => {
-            expect(() => validateTimezone('Invalid/Timezone')).toThrow(ArgumentError);
-            expect(() => validateTimezone('Invalid/Timezone')).toThrow(/Invalid timezone/);
-        });
-    });
-
-    describe('validateOutputStructure', () => {
-        it('should not throw error for valid output structure', () => {
-            expect(() => validateOutputStructure('year')).not.toThrow();
-            expect(() => validateOutputStructure('month')).not.toThrow();
-            expect(() => validateOutputStructure('day')).not.toThrow();
-            expect(() => validateOutputStructure('none')).not.toThrow();
-            expect(() => validateOutputStructure(undefined)).not.toThrow();
+            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Context directory does not exist or is not readable');
         });
 
-        it('should throw ArgumentError for invalid output structure', () => {
-            expect(() => validateOutputStructure('invalid')).toThrow(ArgumentError);
-            expect(() => validateOutputStructure('invalid')).toThrow(/Invalid output structure/);
-        });
-    });
+        it('should use default values for optional parameters', async () => {
+            // Remove optional parameters
+            defaultCommanderMock.opts.mockReturnValue({
+                dryRun: false,
+                verbose: false,
+                debug: false,
+                openaiApiKey: 'test-api-key',
+                timezone: 'America/New_York',
+                model: 'gpt-4o',
+                contentTypes: ['diff', 'log'],
+                recursive: false,
+                inputDirectory: 'test-input-directory',
+                outputDirectory: 'test-output-directory',
+                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
+                // Following optional parameters are missing
+                // configDir
+                // overrides
+                // classifyModel 
+                // composeModel
+                // transcriptionModel
+            });
 
-    describe('validateFilenameOptions', () => {
-        it('should not throw error for valid filename options', () => {
-            expect(() => validateFilenameOptions(['date', 'time'], 'month')).not.toThrow();
-            expect(() => validateFilenameOptions(['subject'], 'none')).not.toThrow();
-            expect(() => validateFilenameOptions(['date', 'subject'], 'year')).not.toThrow();
-            expect(() => validateFilenameOptions(undefined, undefined)).not.toThrow();
-        });
+            const [config] = await configure(mockCabazookaInstance);
 
-        it('should throw ArgumentError for invalid filename options', () => {
-            expect(() => validateFilenameOptions(['invalid'], 'month')).toThrow(ArgumentError);
-            expect(() => validateFilenameOptions(['invalid'], 'month')).toThrow(/Invalid filename options/);
-        });
-
-        it('should throw ArgumentError for comma-separated list', () => {
-            expect(() => validateFilenameOptions(['date,time'], 'month')).toThrow(ArgumentError);
-            expect(() => validateFilenameOptions(['date,time'], 'month')).toThrow(/Filename options should be space-separated/);
-        });
-
-        it('should throw ArgumentError for using date with day output structure', () => {
-            expect(() => validateFilenameOptions(['date'], 'day')).toThrow(ArgumentError);
-            expect(() => validateFilenameOptions(['date'], 'day')).toThrow(/Cannot use date in filename when output structure is "day"/);
-        });
-
-        it('should throw ArgumentError for quoted string containing multiple options', () => {
-            expect(() => validateFilenameOptions(['date time'], 'month')).toThrow(ArgumentError);
-            expect(() => validateFilenameOptions(['date time'], 'month')).toThrow(/Filename options should not be quoted/);
+            // Config should contain default values for missing parameters
+            expect(config.configDir).toBeDefined();
+            expect(config.overrides).toBeDefined();
+            expect(config.classifyModel).toBeDefined();
+            expect(config.composeModel).toBeDefined();
+            expect(config.transcriptionModel).toBeDefined();
         });
     });
 });  

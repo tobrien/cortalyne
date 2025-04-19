@@ -123,13 +123,13 @@ If a task is completed, then the status should be "completed".  If a task is in 
 If a task is about a project, person, company, or other entity that is not present in the context, then it should be ignored.
 `;
 
-export const create = async (configDir: string, { generateOverrideContent }: { generateOverrideContent: (configDir: string, overrideFile: string) => Promise<{ override?: string, prepend?: string, append?: string }> }): Promise<(Instruction | Section<Instruction>)[]> => {
+export const create = async (configDir: string, overrides: boolean, { overrideContent }: { overrideContent: (configDir: string, overrideFile: string, overrides: boolean) => Promise<{ override?: string, prepend?: string, append?: string }> }): Promise<(Instruction | Section<Instruction>)[]> => {
     const instructions: (Instruction | Section<Instruction>)[] = [];
 
-    const overrideContent = await generateOverrideContent(configDir, DEFAULT_INSTRUCTIONS_CLASSIFY_FILE);
+    const content = await overrideContent(configDir, DEFAULT_INSTRUCTIONS_CLASSIFY_FILE, overrides);
 
-    if (overrideContent.override) {
-        const instruction = createInstruction(overrideContent.override);
+    if (content.override) {
+        const instruction = createInstruction(content.override);
         instructions.push(instruction);
     } else {
         const instruction = createInstruction(INSTRUCTIONS_CLASSIFY);
@@ -164,13 +164,13 @@ export const create = async (configDir: string, { generateOverrideContent }: { g
         instructions.push(tasksSection);
     }
 
-    if (overrideContent.prepend) {
-        const instruction = createInstruction(overrideContent.prepend);
+    if (content.prepend) {
+        const instruction = createInstruction(content.prepend);
         instructions.unshift(instruction);
     }
 
-    if (overrideContent.append) {
-        const instruction = createInstruction(overrideContent.append);
+    if (content.append) {
+        const instruction = createInstruction(content.append);
         instructions.push(instruction);
     }
 

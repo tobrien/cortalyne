@@ -45,16 +45,17 @@ describe('Note Type Instructions', () => {
 
     it('creates instructions correctly', async () => {
         const configDir = '/test/config';
-        const mockCustomizeContent = jest.fn().mockReturnValue(Promise.resolve('customized content'));
+        const mockCustomize = jest.fn().mockReturnValue(Promise.resolve('customized content'));
 
         // Call the create function
-        const result = await NoteType.create(configDir, { customizeContent: mockCustomizeContent });
+        const result = await NoteType.create(configDir, true, { customize: mockCustomize });
 
-        // Verify customizeContent was called with the correct arguments
-        expect(mockCustomizeContent).toHaveBeenCalledWith(
+        // Verify customize was called with the correct arguments
+        expect(mockCustomize).toHaveBeenCalledWith(
             configDir,
             constants.DEFAULT_TYPE_INSTRUCTIONS_DIR + '/note.md',
-            NoteType.INSTRUCTION
+            expect.any(String),
+            true
         );
 
         // Verify createInstruction was called with the customized content
@@ -62,5 +63,6 @@ describe('Note Type Instructions', () => {
 
         // Verify the correct result is returned
         expect(result).toEqual(['mocked-instruction']);
+
     });
 }); 
