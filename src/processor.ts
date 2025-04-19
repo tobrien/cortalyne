@@ -28,7 +28,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         // Locate the contents in time and on the filesystem
         logger.debug('Locating file %s', audioFile);
         const { creationTime, outputPath, transcriptionFilename, hash } = await locatePhase.locate(audioFile);
-
+        logger.debug('Locate complete: %s', JSON.stringify({ creationTime, outputPath, transcriptionFilename, hash }));
 
         // Create the transcription
         logger.debug('Classifying file %s', audioFile);

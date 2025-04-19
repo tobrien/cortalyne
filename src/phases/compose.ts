@@ -41,12 +41,15 @@ export const create = (config: Config): Instance => {
         const chatRequest: Chat.Request = Override.format(await prompts.createComposePrompt(transcription, transcription.type), config.model as Chat.Model);
 
         if (config.debug) {
-            const requestOutputPath = noteOutputPath.replace('.md', '.request.json');
+            const debugDir = path.join(outputPath, 'debug');
+            await storage.createDirectory(debugDir);
+            const requestOutputPath = path.join(debugDir, filename + '.request.json');
             await storage.writeFile(requestOutputPath, stringifyJSON(chatRequest), 'utf8');
             logger.debug('Wrote chat request to %s', requestOutputPath);
         }
 
-        const noteCompletion: string = await OpenAI.createCompletion(chatRequest.messages as ChatCompletionMessageParam[], { model: config.model, debug: config.debug, debugFile: noteOutputPath.replace('.md', '.response.json') });
+        const debugResponsePath = config.debug ? path.join(outputPath, 'debug', filename + '.response.json') : undefined;
+        const noteCompletion: string = await OpenAI.createCompletion(chatRequest.messages as ChatCompletionMessageParam[], { model: config.model, debug: config.debug, debugFile: debugResponsePath });
 
         await storage.writeFile(noteOutputPath, Buffer.from(noteCompletion, 'utf8'), 'utf8');
         logger.debug('Wrote note to %s', noteOutputPath);
