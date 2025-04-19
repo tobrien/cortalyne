@@ -45,16 +45,17 @@ describe('Email Type Instructions', () => {
 
     it('creates instructions correctly', async () => {
         const configDir = '/test/config';
-        const mockCustomizeContent = jest.fn().mockReturnValue(Promise.resolve('customized content'));
+        const mockCustomize = jest.fn().mockReturnValue(Promise.resolve('customized content'));
 
         // Call the create function
-        const result = await EmailType.create(configDir, { customizeContent: mockCustomizeContent });
+        const result = await EmailType.create(configDir, true, { customize: mockCustomize });
 
-        // Verify customizeContent was called with the correct arguments
-        expect(mockCustomizeContent).toHaveBeenCalledWith(
+        // Verify customize was called with the correct arguments
+        expect(mockCustomize).toHaveBeenCalledWith(
             configDir,
             constants.DEFAULT_TYPE_INSTRUCTIONS_DIR + '/email.md',
-            EmailType.INSTRUCTION
+            expect.any(String),
+            true
         );
 
         // Verify createInstruction was called with the customized content

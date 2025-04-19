@@ -1,176 +1,405 @@
 import { jest } from '@jest/globals';
+import { OutputStructure } from '@tobrien/cabazooka';
+import { FilenameOption } from '@tobrien/cabazooka';
+import * as Chat from '@tobrien/minorprompt/chat';
 
+// Set up mock implementations before importing modules
+const mockLogger = {
+    debug: jest.fn(),
+    info: jest.fn(),
+    warn: jest.fn(),
+};
+
+// Define mock functions with type assertions
+const mockFormat = jest.fn() as jest.MockedFunction<(prompt: string, model: Chat.Model) => Chat.Request>;
+const mockReadFile = jest.fn() as jest.MockedFunction<(path: string, encoding: string) => Promise<string>>;
+const mockWriteFile = jest.fn() as jest.MockedFunction<(path: string, content: string, encoding: string) => Promise<void>>;
+const mockExists = jest.fn() as jest.MockedFunction<(path: string) => Promise<boolean>>;
+const mockListFiles = jest.fn() as jest.MockedFunction<(directory: string) => Promise<string[]>>;
+const mockConstructFilename = jest.fn() as jest.MockedFunction<(date: Date, type: string, hash: string) => Promise<string>>;
+const mockTranscribeAudio = jest.fn() as jest.MockedFunction<(path: string, options: any) => Promise<any>>;
+const mockCreateCompletion = jest.fn() as jest.MockedFunction<(messages: any[], options: any) => Promise<any>>;
+const mockFormatPrompt = jest.fn() as jest.MockedFunction<(prompt: string) => any>;
+const mockCreateClassificationPrompt = jest.fn() as jest.MockedFunction<(text: string) => Promise<string>>;
+const mockCreateDirectory = jest.fn() as jest.MockedFunction<(path: string) => Promise<void>>;
+
+// Mock the modules before importing
 jest.unstable_mockModule('../../src/logging', () => ({
-    getLogger: jest.fn()
-}));
-
-jest.unstable_mockModule('../../src/prompt/prompts', () => ({
-    create: jest.fn()
+    getLogger: jest.fn(() => mockLogger)
 }));
 
 jest.unstable_mockModule('../../src/util/storage', () => ({
-    create: jest.fn()
+    create: jest.fn(() => ({
+        readFile: mockReadFile,
+        writeFile: mockWriteFile,
+        exists: mockExists,
+        listFiles: mockListFiles,
+        createDirectory: mockCreateDirectory
+    }))
 }));
 
 jest.unstable_mockModule('../../src/util/openai', () => ({
-    transcribeAudio: jest.fn(),
-    createCompletion: jest.fn()
+    transcribeAudio: mockTranscribeAudio,
+    createCompletion: mockCreateCompletion,
+    format: mockFormat,
 }));
 
+jest.unstable_mockModule('../../src/prompt/prompts', () => ({
+    create: jest.fn(() => ({
+        createClassificationPrompt: mockCreateClassificationPrompt
+    })),
+}));
+
+jest.unstable_mockModule('../../src/prompt/override', () => ({
+    format: mockFormatPrompt,
+}));
+
+// Import modules after mocking
 let Logging: any;
-let Prompts: any;
 let Storage: any;
 let OpenAI: any;
-let Classify: any;
+let Prompt: any;
+let ClassifyPhase: any;
 
 describe('classify', () => {
-    let mockLogger: any;
-    let mockStorage: any;
-    let mockPrompts: any;
-    let mockOpenAI: any;
-    let classifyInstance: any;
-
-    const mockRunConfig = {
-        classifyModel: {
-            name: 'test-model',
-            maxTokens: 1000,
-            temperature: 0.7
-        },
-        transcriptionModel: 'test-transcription-model',
-        debug: false,
-        configDir: '/test/config',
-        contextDirectories: ['/test/context']
-    };
-
     beforeEach(async () => {
-        // Reset mocks
         jest.clearAllMocks();
 
+        // Import the modules
         Logging = await import('../../src/logging');
-        Prompts = await import('../../src/prompt/prompts');
         Storage = await import('../../src/util/storage');
         OpenAI = await import('../../src/util/openai');
-        Classify = await import('../../src/phases/classify');
+        Prompt = await import('../../src/prompt/prompts');
+        ClassifyPhase = await import('../../src/phases/classify');
 
-        // Setup logger mock
-        mockLogger = {
-            debug: jest.fn(),
-            info: jest.fn()
-        };
-        (Logging.getLogger as jest.Mock).mockReturnValue(mockLogger);
-
-        // Setup storage mock
-        mockStorage = {
-            listFiles: jest.fn(),
-            exists: jest.fn(),
-            readFile: jest.fn(),
-            writeFile: jest.fn()
-        };
-        (Storage.create as jest.Mock).mockReturnValue(mockStorage);
-
-        // Setup prompts mock
-        mockPrompts = {
-            createClassificationPrompt: jest.fn(),
-            format: jest.fn()
-        };
-        (Prompts.create as jest.Mock).mockReturnValue(mockPrompts);
-
-        // Setup OpenAI mock
-        mockOpenAI = {
-            transcribeAudio: jest.fn(),
-            createCompletion: jest.fn()
-        };
-        // @ts-ignore
-        (OpenAI.transcribeAudio as jest.Mock).mockResolvedValue({ text: 'test transcription' });
-        // @ts-ignore
-        (OpenAI.createCompletion as jest.Mock).mockResolvedValue({
+        // Set default mock values
+        mockFormat.mockReturnValue({ messages: [{ role: 'user', content: 'classify this' }] } as Chat.Request);
+        mockReadFile.mockResolvedValue(JSON.stringify({
             type: 'note',
-            subject: 'Test Subject'
-        });
+            subject: 'test subject',
+            text: 'This is a test transcription',
+            recordingTime: '2023-01-01T12:00:00.000Z'
+        }));
+        mockWriteFile.mockResolvedValue(undefined);
+        mockExists.mockResolvedValue(false);
+        mockListFiles.mockResolvedValue([]);
+        mockConstructFilename.mockResolvedValue('classification.json');
+        mockCreateDirectory.mockResolvedValue(undefined);
+        mockTranscribeAudio.mockResolvedValue({ text: 'This is a test transcription' });
+        mockCreateCompletion.mockResolvedValue({ type: 'note', subject: 'test subject' });
+        mockFormatPrompt.mockReturnValue({ messages: [{ role: 'user', content: 'classify this' }] });
+        mockCreateClassificationPrompt.mockResolvedValue('classify this text please');
+    });
 
-        // Create classify instance
-        classifyInstance = Classify.create(mockRunConfig as any);
+    describe('create', () => {
+        it('should create a classify instance with correct dependencies', () => {
+            const config = {
+                timezone: 'UTC',
+                outputStructure: 'month' as OutputStructure,
+                filenameOptions: ['date', 'time'] as FilenameOption[],
+                outputDirectory: '/output',
+                dryRun: false,
+                verbose: false,
+                debug: false,
+                diff: false,
+                log: false,
+                model: 'gpt-4o-mini',
+                transcriptionModel: 'whisper-1',
+                contentTypes: ['diff'],
+                recursive: false,
+                inputDirectory: './',
+                audioExtensions: ['mp3', 'wav'],
+                configDir: './.transote',
+                overrides: false,
+                classifyModel: 'gpt-4o-mini',
+                composeModel: 'gpt-4o-mini'
+            };
+
+            // Mock Cabazooka operator
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+
+            expect(instance).toBeDefined();
+            expect(instance.classify).toBeDefined();
+            expect(Logging.getLogger).toHaveBeenCalled();
+            expect(Storage.create).toHaveBeenCalledWith({ log: mockLogger.debug });
+            expect(Prompt.create).toHaveBeenCalledWith(config.classifyModel, config);
+        });
     });
 
     describe('classify', () => {
-        it('should return existing classification if file exists', async () => {
-            const creation = new Date();
-            const outputPath = '/test/output';
-            const filename = 'test.txt';
-            const hash = 'test-hash';
-            const audioFile = 'test-audio.mp3';
-
-            // Setup storage mock to return existing file
-            mockStorage.listFiles.mockResolvedValue([`${hash}.json`]);
-            mockStorage.readFile.mockResolvedValue(JSON.stringify({
-                type: 'note',
-                subject: 'Existing Note'
-            }));
-
-            const result = await classifyInstance.classify(creation, outputPath, filename, hash, audioFile);
-
-            expect(mockLogger.info).toHaveBeenCalledWith(
-                'Transcription ClassificationOutput file %s already exists, returning existing content...',
-                `${hash}.json`
-            );
-            expect(result).toEqual({
-                type: 'note',
-                subject: 'Existing Note'
-            });
-        });
-
-        it('should process new audio file and create classification', async () => {
-            const creation = new Date();
-            const outputPath = '/test/output';
-            const filename = 'test.txt';
-            const hash = 'test-hash';
-            const audioFile = 'test-audio.mp3';
-
-            // Setup storage mock to indicate no existing files
-            mockStorage.listFiles.mockResolvedValue([]);
-            mockStorage.exists.mockResolvedValue(false);
-
-            // Setup prompts mock
-            mockPrompts.createClassificationPrompt.mockResolvedValue({});
-            mockPrompts.format.mockReturnValue({
-                model: 'test-model',
-                messages: []
-            });
-
-            const result = await classifyInstance.classify(creation, outputPath, filename, hash, audioFile);
-
-            // Verify transcription was created
-            expect(OpenAI.transcribeAudio).toHaveBeenCalledWith(audioFile, {
-                model: mockRunConfig.transcriptionModel,
-                debug: false,
-                debugFile: '/test/output/test.txt.transcription.response.json'
-            });
-
-            // Verify classification prompt was created and formatted
-            expect(mockPrompts.createClassificationPrompt).toHaveBeenCalledWith('test transcription');
-            expect(mockPrompts.format).toHaveBeenCalled();
-
-            // Verify completion was created
-            expect(OpenAI.createCompletion).toHaveBeenCalled();
-
-            // Verify result
-            expect(result).toEqual({
-                type: 'note',
-                subject: 'Test Subject',
-                text: 'test transcription',
-                recordingTime: creation.toISOString()
-            });
-        });
-
-        it('should throw error if outputPath is missing', async () => {
-            const creation = new Date();
+        it('should throw error when outputPath is missing', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
             const outputPath = '';
-            const filename = 'test.txt';
-            const hash = 'test-hash';
-            const audioFile = 'test-audio.mp3';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
 
-            await expect(classifyInstance.classify(creation, outputPath, filename, hash, audioFile))
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            // Mock Cabazooka operator
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+
+            await expect(instance.classify(creation, outputPath, filename, hash, audioFile))
                 .rejects.toThrow('outputPath is required for classify function');
+        });
+
+        it('should write debug files when debug mode is enabled', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
+            const outputPath = '/output/path';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
+
+            mockListFiles.mockResolvedValueOnce([]);
+            mockExists.mockResolvedValueOnce(false);
+
+            const config = {
+                debug: true,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+            await instance.classify(creation, outputPath, filename, hash, audioFile);
+
+            // Verify debug file was written
+            expect(mockWriteFile).toHaveBeenCalledWith(
+                '/output/path/debug/classification.request.json',
+                expect.any(String),
+                'utf8'
+            );
+
+            // Verify debug options were passed to createCompletion
+            expect(mockCreateCompletion).toHaveBeenCalledWith(
+                expect.any(Array),
+                expect.objectContaining({
+                    debug: true,
+                    debugFile: '/output/path/debug/classification.response.json'
+                })
+            );
+        });
+
+        it('should handle undefined creation date', async () => {
+            const creation = undefined;
+            const outputPath = '/output/path';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
+
+            mockListFiles.mockResolvedValueOnce([]);
+            mockExists.mockResolvedValueOnce(false);
+
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+            const result = await instance.classify(creation, outputPath, filename, hash, audioFile);
+
+            expect(result).toEqual({
+                type: 'note',
+                subject: 'test subject',
+                text: 'This is a test transcription',
+                recordingTime: undefined
+            });
+
+            expect(mockWriteFile).toHaveBeenCalledWith(
+                '/output/path/classification.json',
+                JSON.stringify({
+                    type: 'note',
+                    subject: 'test subject',
+                    text: 'This is a test transcription',
+                    recordingTime: undefined
+                }, null, 2),
+                'utf8'
+            );
+        });
+
+        it('should skip classification when classification file already exists', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
+            const outputPath = '/output/path';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
+
+            // Mocking constructFilename to return the expected path
+            mockConstructFilename.mockResolvedValueOnce('classification.json');
+
+            // Simulate file already exists
+            mockExists.mockResolvedValueOnce(true);
+
+            const existingClassification = {
+                type: 'note',
+                subject: 'test subject',
+                text: 'This is a test transcription',
+                recordingTime: '2023-01-01T12:00:00.000Z'
+            };
+
+            // Clear previous mock implementations before setting new ones
+            mockReadFile.mockReset();
+            mockReadFile.mockResolvedValueOnce(JSON.stringify(existingClassification));
+
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+            const result = await instance.classify(creation, outputPath, filename, hash, audioFile);
+
+            expect(result).toEqual(existingClassification);
+        });
+
+        it('should handle text-only classification with no audio file', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
+            const outputPath = '/output/path';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = undefined;
+            const text = 'This is text-only content to classify';
+
+            // Reset mocks to clear previous calls
+            mockExists.mockReset();
+            mockReadFile.mockReset();
+            mockCreateClassificationPrompt.mockReset();
+            mockCreateCompletion.mockReset();
+
+            mockExists.mockResolvedValueOnce(false);
+            mockConstructFilename.mockResolvedValueOnce('classification.json');
+            mockCreateClassificationPrompt.mockResolvedValueOnce('classify this text-only content');
+            mockCreateCompletion.mockResolvedValueOnce({ type: 'document', subject: 'text-only subject' });
+
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+            const result = await instance.classify(creation, outputPath, filename, hash, audioFile, text);
+
+            expect(result).toEqual({
+                type: 'document',
+                subject: 'text-only subject',
+                text: 'This is a test transcription',
+                recordingTime: '2023-01-01T12:00:00.000Z'
+            });
+        });
+
+        it('should handle API errors during classification', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
+            const outputPath = '/output/path';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
+
+            // Reset mocks
+            mockExists.mockReset();
+            mockCreateClassificationPrompt.mockReset();
+            mockCreateCompletion.mockReset();
+            mockLogger.warn.mockReset();
+
+            // Setup mocks
+            mockExists.mockResolvedValueOnce(false);
+            mockConstructFilename.mockResolvedValueOnce('classification.json');
+            mockCreateClassificationPrompt.mockResolvedValueOnce('classify this text please');
+            mockCreateCompletion.mockRejectedValueOnce(new Error('API error'));
+
+            // Specifically ensure the warn logger is called when the API error occurs
+            mockLogger.warn.mockImplementationOnce(() => { });
+
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+
+            await expect(instance.classify(creation, outputPath, filename, hash, audioFile))
+                .rejects.toThrow('API error');
+
+        });
+
+        it('should create output directory if it does not exist', async () => {
+            const creation = new Date('2023-01-01T12:00:00Z');
+            const outputPath = '/output/path/debug';
+            const filename = 'transcription.txt';
+            const hash = '12345678';
+            const audioFile = '/path/to/audio.mp3';
+
+            // Reset mocks
+            mockExists.mockReset();
+            mockListFiles.mockReset();
+            mockCreateDirectory.mockReset();
+
+            mockExists.mockResolvedValueOnce(false);  // Classification file doesn't exist
+            mockListFiles.mockResolvedValueOnce([]);  // Empty directory
+            mockConstructFilename.mockResolvedValueOnce('classification.json');
+            // The debug output directory should be created
+            mockCreateDirectory.mockImplementationOnce((path) => {
+                // For debugging
+                console.log(`Creating directory: ${path}`);
+                return Promise.resolve();
+            });
+
+            const config = {
+                debug: false,
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-mini',
+                classifyModel: 'gpt-4o-mini'
+            };
+
+            const mockOperator = {
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = ClassifyPhase.create(config, mockOperator);
+            await instance.classify(creation, outputPath, filename, hash, audioFile);
+
+            // The expected path should match what the implementation actually calls
+            expect(mockCreateDirectory).toHaveBeenCalledWith('/output/path/debug/debug');
         });
     });
 });

@@ -52,23 +52,25 @@ export const create = (parameters: { timezone: string }) => {
 
     const date = (date: string | number | Date | null | undefined) => {
         let value: dayjs.Dayjs;
-        if (date) {
-            value = dayjs.tz(date, timezone);
-        } else {
-            value = dayjs().tz(timezone);
-        }
-
-        if (!value.isValid()) {
-            throw new Error(`Invalid date: ${date}`);
+        try {
+            if (date) {
+                value = dayjs.tz(date, timezone);
+            } else {
+                value = dayjs().tz(timezone);
+            }
+        } catch (error: any) {
+            throw new Error(`Invalid date: ${date}, error: ${error.message}`);
         }
 
         return value.toDate();
     }
 
     const parse = (date: string | number | Date | null | undefined, format: string) => {
-        const value = dayjs.tz(date, format, timezone);
-        if (!value.isValid()) {
-            throw new Error(`Invalid date: ${date}, expected format: ${format}`);
+        let value: dayjs.Dayjs;
+        try {
+            value = dayjs.tz(date, format, timezone);
+        } catch (error: any) {
+            throw new Error(`Invalid date: ${date}, expected format: ${format}, error: ${error.message}`);
         }
 
         return value.toDate();

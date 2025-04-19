@@ -1,6 +1,6 @@
 import { Instruction, Section, createInstruction } from "@tobrien/minorprompt";
 import { DEFAULT_INSTRUCTIONS_COMPOSE_FILE } from "../../constants";
-import * as Context from "../../prompt/context";
+import * as Context from "../context";
 import * as CallInstructions from "./types/call";
 import * as DocumentInstructions from "./types/document";
 import * as EmailInstructions from "./types/email";
@@ -22,7 +22,7 @@ Consult the specific instructions for this note type that are included for furth
 The <content> area of this message contains the row transcript of an audio now, and the <context> contains information the note type, note subject, the people, projects, and places involved in this note.
 `;
 
-const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }) => Promise<(Instruction | Section<Instruction>)[]>> = {
+const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }) => Promise<(Instruction | Section<Instruction>)[]>> = {
     call: CallInstructions.create,
     email: EmailInstructions.create,
     idea: IdeaInstructions.create,
@@ -33,17 +33,17 @@ const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, { customizeCont
     update: UpdateInstructions.create,
 }
 
-export const create = async (type: string, configDir: string,
-    { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> },
+export const create = async (type: string, configDir: string, overrides: boolean,
+    { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> },
     contextDirectories?: string[]
 ): Promise<(Instruction | Section<Instruction>)[]> => {
     const instructions: (Instruction | Section<Instruction>)[] = [];
 
-    const overrideContent = await customizeContent(configDir, DEFAULT_INSTRUCTIONS_COMPOSE_FILE, INSTRUCTIONS_PROCESS);
+    const overrideContent = await customize(configDir, DEFAULT_INSTRUCTIONS_COMPOSE_FILE, INSTRUCTIONS_PROCESS, overrides);
 
     const factory = INSTRUCTIONS_FACTORIES[type];
     if (factory) {
-        instructions.push(...await factory(configDir, { customizeContent }));
+        instructions.push(...await factory(configDir, overrides, { customize }));
     }
 
     const instruction = createInstruction(overrideContent);

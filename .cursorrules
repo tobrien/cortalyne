@@ -1,0 +1,8 @@
+When writing tests make use of @ts-ignore to simplify things.  Don't spend too much effort trying to address these errors.
+
+When mocking ESM modules in Jest, we need to make use of this approach:
+
+    // Mock the modules before importing
+    jest.unstable_mockModule('../../src/logging', () => ({
+        getLogger: jest.fn(() => mockLogger)
+    }));

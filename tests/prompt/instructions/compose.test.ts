@@ -40,6 +40,7 @@ jest.unstable_mockModule('../../../src/prompt/instructions/types/update', () => 
     create: jest.fn()
 }));
 
+// Move imports here, outside beforeEach
 let Constants: any;
 let Context: any;
 let CallInstructions: any;
@@ -53,13 +54,11 @@ let UpdateInstructions: any;
 let Compose: any;
 
 describe('compose', () => {
-    let mockCustomizeContent: jest.Mock;
+    let mockCustomize: jest.Mock;
     let mockContextSections: any[];
 
-    beforeEach(async () => {
-        // Reset mocks
-        jest.clearAllMocks();
-
+    // Load modules once before any test runs in this describe block
+    beforeAll(async () => {
         Constants = await import('../../../src/constants');
         Context = await import('../../../src/prompt/context');
         CallInstructions = await import('../../../src/prompt/instructions/types/call');
@@ -71,10 +70,15 @@ describe('compose', () => {
         OtherInstructions = await import('../../../src/prompt/instructions/types/other');
         UpdateInstructions = await import('../../../src/prompt/instructions/types/update');
         Compose = await import('../../../src/prompt/instructions/compose');
+    });
+
+    beforeEach(async () => {
+        // Reset mocks only
+        jest.clearAllMocks();
 
         // Setup customizeContent mock
         // @ts-ignore
-        mockCustomizeContent = jest.fn().mockResolvedValue('customized instructions');
+        mockCustomize = jest.fn().mockResolvedValue('customized instructions');
 
         // Setup context sections mock
         mockContextSections = [
@@ -83,6 +87,9 @@ describe('compose', () => {
         ];
         // @ts-ignore
         (Context.loadContextFromDirectories as jest.Mock).mockResolvedValue(mockContextSections);
+        // Re-apply mocks if necessary (sometimes needed depending on test structure)
+        // @ts-ignore
+        (NoteInstructions.create as jest.Mock).mockResolvedValue([]); // Reset to default or specific value if needed per test
     });
 
     describe('create', () => {
@@ -99,17 +106,18 @@ describe('compose', () => {
             // @ts-ignore
             (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
-            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent }, contextDirectories);
+            const result = await Compose.create(type, configDir, true, { customize: mockCustomize }, contextDirectories);
 
             // Verify customizeContent was called with correct arguments
-            expect(mockCustomizeContent).toHaveBeenCalledWith(
+            expect(mockCustomize).toHaveBeenCalledWith(
                 configDir,
                 Constants.DEFAULT_INSTRUCTIONS_COMPOSE_FILE,
-                expect.any(String)
+                expect.any(String),
+                true
             );
 
             // Verify note instructions were created
-            expect(NoteInstructions.create).toHaveBeenCalledWith(configDir, { customizeContent: mockCustomizeContent });
+            expect(NoteInstructions.create).toHaveBeenCalledWith(configDir, true, { customize: mockCustomize });
 
             // Verify context was loaded
             expect(Context.loadContextFromDirectories).toHaveBeenCalledWith(contextDirectories);
@@ -127,10 +135,10 @@ describe('compose', () => {
             const type = 'unknown';
             const configDir = '/test/config';
 
-            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent });
+            const result = await Compose.create(type, configDir, true, { customize: mockCustomize });
 
             // Verify customizeContent was called
-            expect(mockCustomizeContent).toHaveBeenCalled();
+            expect(mockCustomize).toHaveBeenCalled();
 
             // Verify no type-specific instructions were created
             expect(result).toHaveLength(1); // only process instruction
@@ -148,7 +156,7 @@ describe('compose', () => {
             // @ts-ignore
             (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
-            const result = await Compose.create(type, configDir, { customizeContent: mockCustomizeContent });
+            const result = await Compose.create(type, configDir, true, { customize: mockCustomize });
 
             // Verify context was not loaded
             expect(Context.loadContextFromDirectories).not.toHaveBeenCalled();

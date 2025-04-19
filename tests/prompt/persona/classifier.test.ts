@@ -41,7 +41,7 @@ describe('classifier', () => {
                 return content;
             });
 
-            const persona = await Classifier.create(mockConfigDir, { customizeContent: mockCustomizeContent });
+            const persona = await Classifier.create(mockConfigDir, true, { customize: mockCustomizeContent });
 
             expect(persona).toBeDefined();
             expect(mockCustomizeContent).toHaveBeenCalledTimes(2);
@@ -54,7 +54,7 @@ describe('classifier', () => {
             const error = new Error('Customization failed');
             mockCustomizeContent.mockRejectedValue(error);
 
-            await expect(Classifier.create(mockConfigDir, { customizeContent: mockCustomizeContent }))
+            await expect(Classifier.create(mockConfigDir, true, { customize: mockCustomizeContent }))
                 .rejects
                 .toThrow('Customization failed');
         });

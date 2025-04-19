@@ -9,7 +9,7 @@ let You: any;
 
 describe('you', () => {
     let mockLogger: any;
-    let mockCustomizeContent: any;
+    let mockCustomize: any;
 
     const mockConfigDir = '/test/config';
 
@@ -27,7 +27,7 @@ describe('you', () => {
         (Logging.getLogger as jest.Mock).mockReturnValue(mockLogger);
 
         // Setup customizeContent mock
-        mockCustomizeContent = jest.fn();
+        mockCustomize = jest.fn();
     });
 
     describe('create', () => {
@@ -35,16 +35,16 @@ describe('you', () => {
             const defaultTraits = 'default traits';
             const defaultInstructions = 'default instructions';
 
-            mockCustomizeContent.mockImplementation((configDir: string, file: string, content: string) => {
+            mockCustomize.mockImplementation((configDir: string, file: string, content: string) => {
                 if (file.includes('traits')) return defaultTraits;
                 if (file.includes('instructions')) return defaultInstructions;
                 return content;
             });
 
-            const persona = await You.create(mockConfigDir, { customizeContent: mockCustomizeContent });
+            const persona = await You.create(mockConfigDir, true, { customize: mockCustomize });
 
             expect(persona).toBeDefined();
-            expect(mockCustomizeContent).toHaveBeenCalledTimes(2);
+            expect(mockCustomize).toHaveBeenCalledTimes(2);
             expect(mockLogger.debug).toHaveBeenCalledTimes(2);
             expect(mockLogger.debug).toHaveBeenCalledWith('Final You traits: %s', defaultTraits);
             expect(mockLogger.debug).toHaveBeenCalledWith('Final You instructions: %s', defaultInstructions);
@@ -52,9 +52,9 @@ describe('you', () => {
 
         it('should handle errors during persona creation', async () => {
             const error = new Error('Customization failed');
-            mockCustomizeContent.mockRejectedValue(error);
+            mockCustomize.mockRejectedValue(error);
 
-            await expect(You.create(mockConfigDir, { customizeContent: mockCustomizeContent }))
+            await expect(You.create(mockConfigDir, true, { customize: mockCustomize }))
                 .rejects
                 .toThrow('Customization failed');
         });

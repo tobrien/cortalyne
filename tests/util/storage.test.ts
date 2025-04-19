@@ -1,4 +1,5 @@
 import { jest } from '@jest/globals';
+import crypto from 'crypto';
 
 // Mock the fs module
 var fs: {
@@ -9,7 +10,9 @@ var fs: {
         readFile: jest.Mock<() => Promise<string>>,
         writeFile: jest.Mock<() => Promise<void>>,
         lstatSync: jest.Mock<() => Promise<any>>,
+        readdir: jest.Mock<() => Promise<string[]>>,
     },
+    createReadStream: jest.Mock<() => Promise<any>>,
     constants: {
         R_OK: number,
         W_OK: number
@@ -24,6 +27,8 @@ const mockMkdir = jest.fn<() => Promise<void>>();
 const mockReadFile = jest.fn<() => Promise<string>>();
 const mockWriteFile = jest.fn<() => Promise<void>>();
 const mockLstatSync = jest.fn<() => Promise<any>>();
+const mockReaddir = jest.fn<() => Promise<string[]>>();
+const mockCreateReadStream = jest.fn<() => Promise<any>>();
 
 jest.unstable_mockModule('fs', () => ({
     __esModule: true,
@@ -33,8 +38,10 @@ jest.unstable_mockModule('fs', () => ({
         mkdir: mockMkdir,
         readFile: mockReadFile,
         writeFile: mockWriteFile,
-        lstatSync: mockLstatSync
+        lstatSync: mockLstatSync,
+        readdir: mockReaddir
     },
+    createReadStream: mockCreateReadStream,
     constants: {
         R_OK: 4,
         W_OK: 2
@@ -368,6 +375,103 @@ describe('Storage Utility', () => {
             await storage.forEachFileIn('/test/dir', async (file: string) => {
                 expect(file).toMatch(/^\/test\/dir\/file[12]\.txt$/)
             });
+        });
+
+        it('should throw error if glob fails', async () => {
+            // @ts-ignore
+            mockGlob.mockRejectedValueOnce(new Error('Glob failed'));
+
+            await expect(storage.forEachFileIn('/test/dir', async () => { })).rejects.toThrow(
+                'Failed to glob pattern *.* in /test/dir: Glob failed'
+            );
+        });
+    });
+
+    describe('readStream', () => {
+        it('should return a read stream', async () => {
+            const mockStream = { pipe: jest.fn() }; // Mock stream object
+            // @ts-ignore
+            mockCreateReadStream.mockReturnValueOnce(mockStream);
+
+            const stream = await storage.readStream('/test/file.txt');
+
+            expect(stream).toBe(mockStream);
+            expect(mockCreateReadStream).toHaveBeenCalledWith('/test/file.txt');
+        });
+    });
+
+    describe('hashFile', () => {
+        it('should return the correct hash of the file content', async () => {
+            const fileContent = 'this is the file content';
+            const expectedHash = crypto.createHash('sha256').update(fileContent).digest('hex').slice(0, 10);
+            mockReadFile.mockResolvedValueOnce(fileContent);
+
+            const hash = await storage.hashFile('/test/file.txt', 10);
+
+            expect(hash).toBe(expectedHash);
+            expect(mockReadFile).toHaveBeenCalledWith('/test/file.txt', { encoding: 'utf8' });
+        });
+    });
+
+    describe('listFiles', () => {
+        it('should return a list of files in the directory', async () => {
+            const expectedFiles = ['file1.txt', 'file2.js'];
+            // @ts-ignore
+            mockReaddir.mockResolvedValueOnce(expectedFiles);
+
+            const files = await storage.listFiles('/test/dir');
+
+            expect(files).toEqual(expectedFiles);
+            expect(mockReaddir).toHaveBeenCalledWith('/test/dir');
+        });
+    });
+
+    describe('isDirectoryReadable', () => {
+        it('should return true if path exists, is a directory, and is readable', async () => {
+            // Setup mocks for the chain of function calls
+            mockStat.mockResolvedValueOnce({ isFile: () => false, isDirectory: () => false }); // exists
+            mockStat.mockResolvedValueOnce({ // isDirectory
+                isDirectory: () => true,
+                isFile: () => false
+            });
+            mockAccess.mockResolvedValueOnce(undefined); // isReadable
+
+            const result = await storage.isDirectoryReadable('/test/dir');
+
+            expect(result).toBe(true);
+        });
+
+        it('should return false if path does not exist', async () => {
+            mockStat.mockRejectedValueOnce(new Error('Path does not exist'));
+
+            const result = await storage.isDirectoryReadable('/test/dir');
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if path is not a directory', async () => {
+            mockStat.mockResolvedValueOnce({ isFile: () => false, isDirectory: () => false }); // exists
+            mockStat.mockResolvedValueOnce({ // isDirectory
+                isDirectory: () => false,
+                isFile: () => true
+            });
+
+            const result = await storage.isDirectoryReadable('/test/file.txt');
+
+            expect(result).toBe(false);
+        });
+
+        it('should return false if path is not readable', async () => {
+            mockStat.mockResolvedValueOnce({ isFile: () => false, isDirectory: () => false }); // exists
+            mockStat.mockResolvedValueOnce({ // isDirectory
+                isDirectory: () => true,
+                isFile: () => false
+            });
+            mockAccess.mockRejectedValueOnce(new Error('Not readable')); // isReadable
+
+            const result = await storage.isDirectoryReadable('/test/dir');
+
+            expect(result).toBe(false);
         });
     });
 });

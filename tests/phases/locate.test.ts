@@ -1,5 +1,6 @@
 import { jest } from '@jest/globals';
-import { FilenameOption, OutputStructure } from '../../src/output.d';
+import { OutputStructure } from '@tobrien/cabazooka';
+import { FilenameOption } from '@tobrien/cabazooka';
 
 // Set up mock implementations before importing modules
 const mockLogger = {
@@ -11,8 +12,8 @@ const mockLogger = {
 // Define mock functions with type assertions
 const mockGetAudioCreationTime = jest.fn() as jest.MockedFunction<() => Promise<Date | null>>;
 const mockHashFile = jest.fn() as jest.MockedFunction<() => Promise<string>>;
-const mockConstructOutputDirectory = jest.fn() as jest.MockedFunction<() => string>;
-const mockConstructFilename = jest.fn() as jest.MockedFunction<() => string>;
+const mockConstructOutputDirectory = jest.fn() as jest.MockedFunction<() => Promise<string>>;
+const mockConstructFilename = jest.fn() as jest.MockedFunction<() => Promise<string>>;
 
 // Mock the modules before importing
 jest.unstable_mockModule('../../src/logging', () => ({
@@ -31,18 +32,10 @@ jest.unstable_mockModule('../../src/util/storage', () => ({
     }))
 }));
 
-jest.unstable_mockModule('../../src/output', () => ({
-    create: jest.fn(() => ({
-        constructOutputDirectory: mockConstructOutputDirectory,
-        constructFilename: mockConstructFilename
-    }))
-}));
-
 // Import modules after mocking
 let Logging: any;
 let Media: any;
 let Storage: any;
-let Output: any;
 let LocatePhase: any;
 
 describe('locate', () => {
@@ -53,14 +46,13 @@ describe('locate', () => {
         Logging = await import('../../src/logging');
         Media = await import('../../src/util/media');
         Storage = await import('../../src/util/storage');
-        Output = await import('../../src/output');
         LocatePhase = await import('../../src/phases/locate');
 
         // Set default mock values
         mockGetAudioCreationTime.mockResolvedValue(new Date('2023-01-01T12:00:00Z'));
         mockHashFile.mockResolvedValue('12345678abcdef');
-        mockConstructOutputDirectory.mockReturnValue('/output/path');
-        mockConstructFilename.mockReturnValue('transcription.txt');
+        mockConstructOutputDirectory.mockResolvedValue('/output/path');
+        mockConstructFilename.mockResolvedValue('transcription.txt');
     });
 
     describe('create', () => {
@@ -87,18 +79,19 @@ describe('locate', () => {
                 composeModel: 'gpt-4o-mini'
             };
 
-            const instance = LocatePhase.create(runConfig);
+            // Mock Cabazooka operator
+            const mockOperator = {
+                constructOutputDirectory: mockConstructOutputDirectory,
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = LocatePhase.create(runConfig, mockOperator);
 
             expect(instance).toBeDefined();
             expect(instance.locate).toBeDefined();
             expect(Logging.getLogger).toHaveBeenCalled();
             expect(Storage.create).toHaveBeenCalledWith({ log: mockLogger.debug });
             expect(Media.create).toHaveBeenCalledWith(mockLogger);
-            expect(Output.create).toHaveBeenCalledWith(
-                runConfig.timezone,
-                runConfig.outputStructure,
-                runConfig.filenameOptions
-            );
         });
     });
 
@@ -126,7 +119,13 @@ describe('locate', () => {
                 composeModel: 'gpt-4o-mini'
             };
 
-            const instance = LocatePhase.create(runConfig);
+            // Mock Cabazooka operator
+            const mockOperator = {
+                constructOutputDirectory: mockConstructOutputDirectory,
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = LocatePhase.create(runConfig, mockOperator);
             const result = await instance.locate('/path/to/audio.mp3');
 
             expect(result).toEqual({
@@ -139,6 +138,8 @@ describe('locate', () => {
 
             expect(mockGetAudioCreationTime).toHaveBeenCalledWith('/path/to/audio.mp3');
             expect(mockHashFile).toHaveBeenCalledWith('/path/to/audio.mp3', 100);
+            expect(mockConstructOutputDirectory).toHaveBeenCalledWith(new Date('2023-01-01T12:00:00Z'));
+            expect(mockConstructFilename).toHaveBeenCalledWith(new Date('2023-01-01T12:00:00Z'), 'transcription', '12345678');
         });
 
         it('should throw error when creation time cannot be determined', async () => {
@@ -166,7 +167,13 @@ describe('locate', () => {
                 composeModel: 'gpt-4o-mini'
             };
 
-            const instance = LocatePhase.create(runConfig);
+            // Mock Cabazooka operator
+            const mockOperator = {
+                constructOutputDirectory: mockConstructOutputDirectory,
+                constructFilename: mockConstructFilename
+            };
+
+            const instance = LocatePhase.create(runConfig, mockOperator);
 
             await expect(instance.locate('/path/to/audio.mp3')).rejects.toThrow(
                 'Could not determine audio recording time for /path/to/audio.mp3'

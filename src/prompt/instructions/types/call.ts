@@ -145,10 +145,10 @@ John called me and was very upset.  The call began with John Smith outlining the
 \`\`\`
 `;
 
-export const create = async (configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
+export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
     const instructions: (Instruction | Section<Instruction>)[] = [];
 
-    const overrideContent = await customizeContent(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/call.md', INSTRUCTION);
+    const overrideContent = await customize(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/call.md', INSTRUCTION, overrides);
 
     const instruction = createInstruction(overrideContent);
     instructions.push(instruction);

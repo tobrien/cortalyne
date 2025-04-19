@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
-import { FilenameOption, OutputStructure } from './output.d';
+import { FilenameOption, OutputStructure } from '@tobrien/cabazooka';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
-export const PROGRAM_NAME = 'transote';
+export const PROGRAM_NAME = 'cortalyne';
 export const DEFAULT_CHARACTER_ENCODING = 'utf-8';
 export const DEFAULT_BINARY_TO_TEXT_ENCODING = 'base64';
 export const DEFAULT_DIFF = true;

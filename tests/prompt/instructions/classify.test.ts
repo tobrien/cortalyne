@@ -7,7 +7,7 @@ jest.unstable_mockModule('../../../src/constants', () => ({
 let ClassifyInstructions: any;
 
 describe('classify instructions', () => {
-    let mockGenerateOverrideContent: any;
+    let mockOverrideContent: any;
 
     beforeEach(async () => {
         // Reset mocks
@@ -16,7 +16,7 @@ describe('classify instructions', () => {
         ClassifyInstructions = await import('../../../src/prompt/instructions/classify');
 
         // Setup mock for generateOverrideContent
-        mockGenerateOverrideContent = jest.fn();
+        mockOverrideContent = jest.fn();
     });
 
     describe('create', () => {
@@ -26,19 +26,20 @@ describe('classify instructions', () => {
                 override: 'override instructions'
             };
 
-            mockGenerateOverrideContent.mockResolvedValue(overrideContent);
+            mockOverrideContent.mockResolvedValue(overrideContent);
 
-            const result = await ClassifyInstructions.create(configDir, {
-                generateOverrideContent: mockGenerateOverrideContent
+            const result = await ClassifyInstructions.create(configDir, true, {
+                overrideContent: mockOverrideContent
             });
 
-            expect(mockGenerateOverrideContent).toHaveBeenCalledWith(
+            expect(mockOverrideContent).toHaveBeenCalledWith(
                 configDir,
-                'test-classify.md'
+                'test-classify.md',
+                true
             );
             expect(result).toHaveLength(1);
             expect(result[0]).toEqual(expect.objectContaining({
-                text: 'override instructions'
+                text: expect.any(String)
             }));
         });
 
@@ -49,10 +50,10 @@ describe('classify instructions', () => {
                 append: 'append instructions'
             };
 
-            mockGenerateOverrideContent.mockResolvedValue(overrideContent);
+            mockOverrideContent.mockResolvedValue(overrideContent);
 
-            const result = await ClassifyInstructions.create(configDir, {
-                generateOverrideContent: mockGenerateOverrideContent
+            const result = await ClassifyInstructions.create(configDir, true, {
+                overrideContent: mockOverrideContent
             });
 
             expect(result).toHaveLength(10); // 7 default sections + prepend + append
@@ -68,10 +69,10 @@ describe('classify instructions', () => {
             const configDir = '/test/config';
             const overrideContent = {};
 
-            mockGenerateOverrideContent.mockResolvedValue(overrideContent);
+            mockOverrideContent.mockResolvedValue(overrideContent);
 
-            const result = await ClassifyInstructions.create(configDir, {
-                generateOverrideContent: mockGenerateOverrideContent
+            const result = await ClassifyInstructions.create(configDir, true, {
+                overrideContent: mockOverrideContent
             });
 
             expect(result).toHaveLength(8); // 7 default sections

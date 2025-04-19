@@ -14,10 +14,10 @@ When you are reporting on content from a transcribed audio recroding you should 
 Everything you recorded was important, and when you capture the details of your own notes you want to make sure that all of the original meaning is preserved.
 `;
 
-export const create = async (configDir: string, { customizeContent }: { customizeContent: (configDir: string, overrideFile: string, content: string) => Promise<string> }): Promise<Persona> => {
+export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<Persona> => {
     const logger = getLogger();
-    const finalTraits = await customizeContent(configDir, DEFAULT_PERSONA_YOU_TRAITS_FILE, PERSONA_YOU_TRAITS);
-    const finalInstructions = await customizeContent(configDir, DEFAULT_PERSONA_YOU_INSTRUCTIONS_FILE, PERSONA_YOU_INSTRUCTIONS);
+    const finalTraits = await customize(configDir, DEFAULT_PERSONA_YOU_TRAITS_FILE, PERSONA_YOU_TRAITS, overrides);
+    const finalInstructions = await customize(configDir, DEFAULT_PERSONA_YOU_INSTRUCTIONS_FILE, PERSONA_YOU_INSTRUCTIONS, overrides);
 
     logger.debug('Final You traits: %s', finalTraits);
     logger.debug('Final You instructions: %s', finalInstructions);

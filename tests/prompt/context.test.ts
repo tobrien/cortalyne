@@ -191,6 +191,144 @@ describe('context', () => {
             }));
         });
 
+        it('should handle directories with no files', async () => {
+            const contextDirectories = ['/test/empty'];
+
+            // Setup storage mocks
+            mockStorage.exists.mockResolvedValue(false); // No context.md
+            mockStorage.listFiles.mockResolvedValue([]); // No files in the directory
+            mockStorage.isFile.mockResolvedValue(true); // Default, won't be called
+
+            const result = await Context.loadContextFromDirectories(contextDirectories);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].title).toBe('empty');
+            expect(MinorPrompt.createSection).toHaveBeenCalledWith('empty'); // Main section for the dir
+            expect(result[0].add).not.toHaveBeenCalled(); // No files added
+            // @ts-ignore - Ensure no subsection was created
+            expect(MinorPrompt.createSection).toHaveBeenCalledTimes(1);
+        });
+
+        it('should skip subdirectories found by listFiles', async () => {
+            const contextDirectories = ['/test/mixed'];
+            const fileContent = '# File Section\nFile content';
+
+            // Setup storage mocks
+            mockStorage.exists.mockResolvedValue(false); // No context.md
+            mockStorage.readFile.mockResolvedValue(fileContent);
+            mockStorage.listFiles.mockResolvedValue(['file1.md', 'subdir']);
+            // Mock isFile to return false for the subdirectory
+            mockStorage.isFile.mockImplementation(async (path: string) => !path.endsWith('subdir'));
+
+
+            const result = await Context.loadContextFromDirectories(contextDirectories);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].title).toBe('mixed');
+
+            // Verify only the file was processed
+            expect(mockStorage.readFile).toHaveBeenCalledWith('/test/mixed/file1.md', 'utf8');
+            expect(mockStorage.readFile).not.toHaveBeenCalledWith('/test/mixed/subdir');
+            // @ts-ignore - Expect section for dir and file
+            expect(MinorPrompt.createSection).toHaveBeenCalledTimes(2);
+            expect(MinorPrompt.createSection).toHaveBeenCalledWith('File Section');
+
+            const mainSection = result[0];
+            expect(mainSection.add).toHaveBeenCalledWith(expect.objectContaining({
+                title: 'File Section'
+            }));
+        });
+
+
+        it('should handle files without headers', async () => {
+            const contextDirectories = ['/test/noheader'];
+            const fileContent = 'Just plain content.';
+
+            // Setup storage mocks
+            mockStorage.exists.mockResolvedValue(false); // No context.md
+            mockStorage.listFiles.mockResolvedValue(['noheader.txt']);
+            mockStorage.isFile.mockResolvedValue(true);
+            mockStorage.readFile.mockResolvedValue(fileContent);
+
+
+            const result = await Context.loadContextFromDirectories(contextDirectories);
+
+            expect(result).toHaveLength(1);
+            expect(result[0].title).toBe('noheader');
+
+            // Verify a subsection was created using the filename as title
+            // @ts-ignore - Expect section for dir and file
+            expect(MinorPrompt.createSection).toHaveBeenCalledTimes(2);
+            expect(MinorPrompt.createSection).toHaveBeenCalledWith('noheader.txt');
+
+            // Get the mock result for the file section
+            const mockCreateSection = MinorPrompt.createSection as jest.Mock;
+            const fileSectionCallIndex = mockCreateSection.mock.calls.findIndex(
+                call => call[0] === 'noheader.txt'
+            );
+            const fileSection = mockCreateSection.mock.results[fileSectionCallIndex].value;
+
+            expect((fileSection as any).title).toBe('noheader.txt');
+            expect((fileSection as any).add).toHaveBeenCalledWith(fileContent); // Entire content added
+
+            // Verify file section was added to main section
+            const mainSection = result[0];
+            expect(mainSection.add).toHaveBeenCalledWith(expect.objectContaining({
+                title: 'noheader.txt'
+            }));
+        });
+
+        it('should handle context.md without a header', async () => {
+            const contextDirectories = ['/test/contextnoheader'];
+            const contextContent = 'Just context content.';
+            const fileContent = '# File Section\nFile content';
+
+
+            // Setup storage mocks
+            mockStorage.exists.mockResolvedValue(true); // context.md exists
+            mockStorage.readFile.mockImplementation((path: string) => {
+                if (path.endsWith('context.md')) {
+                    return contextContent; // No header here
+                }
+                return fileContent;
+            });
+            mockStorage.listFiles.mockResolvedValue(['file1.md']);
+            mockStorage.isFile.mockResolvedValue(true);
+
+            const result = await Context.loadContextFromDirectories(contextDirectories);
+
+
+            expect(result).toHaveLength(1);
+            // Title falls back to directory name
+            expect(result[0].title).toBe('contextnoheader');
+
+            // Verify the main section's add method was called with the *entire* context content
+            expect(result[0].add).toHaveBeenCalledWith(contextContent);
+
+            // Verify the file subsection was still processed correctly
+            // @ts-ignore - Expect section for dir and file
+            expect(MinorPrompt.createSection).toHaveBeenCalledTimes(2);
+            expect(MinorPrompt.createSection).toHaveBeenCalledWith('File Section');
+
+            const mockCreateSection = MinorPrompt.createSection as jest.Mock;
+            const fileSectionCallIndex = mockCreateSection.mock.calls.findIndex(
+                call => call[0] === 'File Section'
+            );
+            const fileSection = mockCreateSection.mock.results[fileSectionCallIndex].value;
+
+
+            expect((fileSection as any).title).toBe('File Section');
+            expect((fileSection as any).add).toHaveBeenCalledWith('File content');
+
+
+            // Verify file section was added to main section
+            const mainSection = result[0];
+            expect(mainSection.add).toHaveBeenCalledWith(expect.objectContaining({
+                title: 'File Section'
+            }));
+        });
+
+
         it('should handle errors when processing directories', async () => {
             const contextDirectories = ['/test/context'];
             const error = new Error('Test error');
