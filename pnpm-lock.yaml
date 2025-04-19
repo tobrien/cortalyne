@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@tobrien/cabazooka':
+        specifier: link:../cabazooka
+        version: link:../cabazooka
       '@tobrien/minorprompt':
         specifier: ^0.0.2
         version: 0.0.2

@@ -1,20 +1,26 @@
 import * as Logging from './logging';
-import * as Output from './output';
 import * as ClassifyPhase from './phases/classify';
 import * as ComposePhase from './phases/compose';
 import * as LocatePhase from './phases/locate';
-import { ClassifiedTranscription, Instance } from './process.d';
-import { Config as RunConfig } from './run.d';
+import * as Cabazooka from '@tobrien/cabazooka';
+import { Config } from './main';
+export interface ClassifiedTranscription {
+    text: string;
+    type: string;
+    subject: string;
+}
+
+export interface Instance {
+    process(file: string): Promise<void>;
+}
 
 // Helper function to promisify ffmpeg.
-
-export const create = (runConfig: RunConfig): Instance => {
+export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
     const logger = Logging.getLogger();
-    const output = Output.create(runConfig.timezone, runConfig.outputStructure, runConfig.filenameOptions);
 
-    const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(runConfig);
-    const composePhase: ComposePhase.Instance = ComposePhase.create(runConfig);
-    const locatePhase: LocatePhase.Instance = LocatePhase.create(runConfig);
+    const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(config, operator);
+    const composePhase: ComposePhase.Instance = ComposePhase.create(config, operator);
+    const locatePhase: LocatePhase.Instance = LocatePhase.create(config, operator);
 
     const process = async (audioFile: string) => {
         logger.verbose('Processing file %s', audioFile);
@@ -29,7 +35,7 @@ export const create = (runConfig: RunConfig): Instance => {
         const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, transcriptionFilename, hash, audioFile);
 
         // // Create the note
-        const noteFilename = output.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
+        const noteFilename = await operator.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
         logger.debug('Composing Note %s in %s', noteFilename, outputPath);
         await composePhase.compose(classifiedTranscription, outputPath, noteFilename, hash);
 
