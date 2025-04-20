@@ -3,6 +3,7 @@ import * as ClassifyPhase from './phases/classify';
 import * as TranscribePhase from './phases/transcribe';
 import * as ComposePhase from './phases/compose';
 import * as LocatePhase from './phases/locate';
+import * as CompletePhase from './phases/complete';
 import * as Cabazooka from '@tobrien/cabazooka';
 import { Config } from './main';
 export interface ClassifiedTranscription {
@@ -23,6 +24,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(config, operator);
     const composePhase: ComposePhase.Instance = ComposePhase.create(config);
     const locatePhase: LocatePhase.Instance = LocatePhase.create(config, operator);
+    const completePhase: CompletePhase.Instance = CompletePhase.create(config);
 
     const process = async (audioFile: string) => {
         logger.verbose('Processing file %s', audioFile);
@@ -44,6 +46,16 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const noteFilename = await operator.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
         logger.debug('Composing Note %s in %s', noteFilename, outputPath);
         await composePhase.compose(classifiedTranscription, outputPath, noteFilename, hash);
+
+        // Move the processed file to the processed directory
+        logger.debug('Completing processing for %s', audioFile);
+        await completePhase.complete(
+            classifiedTranscription.type,
+            classifiedTranscription.subject,
+            hash,
+            creationTime,
+            audioFile
+        );
 
         logger.info('Processed file %s', audioFile);
         return;

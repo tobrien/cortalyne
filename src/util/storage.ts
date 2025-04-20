@@ -28,6 +28,7 @@ export interface Utility {
     forEachFileIn: (directory: string, callback: (path: string) => Promise<void>, options?: { pattern: string }) => Promise<void>;
     hashFile: (path: string, length: number) => Promise<string>;
     listFiles: (directory: string) => Promise<string[]>;
+    deleteFile: (path: string) => Promise<void>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -135,6 +136,10 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         return await fs.promises.readdir(directory);
     }
 
+    const deleteFile = async (path: string): Promise<void> => {
+        await fs.promises.unlink(path);
+    }
+
     return {
         exists,
         isDirectory,
@@ -151,5 +156,6 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         forEachFileIn,
         hashFile,
         listFiles,
+        deleteFile,
     };
 }

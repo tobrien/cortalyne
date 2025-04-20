@@ -1,6 +1,6 @@
 import * as Cabazooka from "@tobrien/cabazooka";
 import { Command } from "commander";
-import { ALLOWED_MODELS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_MODEL, DEFAULT_OVERRIDES, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
+import { ALLOWED_MODELS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_MODEL, DEFAULT_OVERRIDES, DEFAULT_PROCESSED_DIR, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
 import { getLogger } from "./logging";
 import * as Storage from "./util/storage";
 import { Config } from "./main";
@@ -14,6 +14,7 @@ export interface Input extends Cabazooka.Input {
     openaiApiKey: string;
     configDir: string;
     overrides: boolean;
+    processedDir: string;
     classifyModel?: string;
     composeModel?: string;
     contextDirectories?: string[];
@@ -32,6 +33,7 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config
         .option('--transcription-model <transcriptionModel>', 'OpenAI transcription model to use', DEFAULT_TRANSCRIPTION_MODEL)
         .option('--model <model>', 'OpenAI model to use', DEFAULT_MODEL)
         .option('--config-dir <configDir>', 'config directory', DEFAULT_CONFIG_DIR)
+        .option('--processed-dir <processedDir>', 'directory for processed audio files', DEFAULT_PROCESSED_DIR)
         .option('--overrides', 'allow overrides of the default configuration', DEFAULT_OVERRIDES)
         .option('--classify-model <classifierModel>', 'classifier model to use')
         .option('--compose-model <composeModel>', 'compose model to use')
@@ -68,6 +70,7 @@ async function validateInput(input: Input): Promise<{
     transcriptionModel: string;
     configDir: string;
     overrides: boolean;
+    processedDir: string;
     classifyModel: string;
     composeModel: string;
     contextDirectories?: string[];
@@ -99,6 +102,7 @@ async function validateInput(input: Input): Promise<{
         model: input.model,
         transcriptionModel: input.transcriptionModel ?? DEFAULT_TRANSCRIPTION_MODEL,
         configDir: input.configDir ?? DEFAULT_CONFIG_DIR,
+        processedDir: input.processedDir ?? DEFAULT_PROCESSED_DIR,
         overrides: input.overrides ?? DEFAULT_OVERRIDES,
         classifyModel: input.classifyModel ?? DEFAULT_MODEL,
         composeModel: input.composeModel ?? DEFAULT_MODEL,

@@ -75,6 +75,17 @@ jest.unstable_mockModule('../src/phases/locate', () => ({
     create: jest.fn().mockReturnValue(mockLocateInstance)
 }));
 
+// Mock for CompletePhase
+const mockComplete = jest.fn<() => Promise<string>>().mockResolvedValue('/test/processed/2023-1-1-test-hash-123-note-test-subject.mp3');
+
+const mockCompleteInstance = {
+    complete: mockComplete
+};
+
+jest.unstable_mockModule('../src/phases/complete', () => ({
+    create: jest.fn().mockReturnValue(mockCompleteInstance)
+}));
+
 // Mock Cabazooka operator
 const mockConstructFilename = jest.fn<() => Promise<string>>().mockResolvedValue('test-note-filename.md');
 
@@ -86,6 +97,7 @@ const mockOperator = {
 const mockConfig = {
     model: 'gpt-4o',
     transcriptionModel: 'whisper-1',
+    processedDir: './processed',
     dryRun: false
 };
 
@@ -150,6 +162,15 @@ describe('Processor', () => {
                 mockLocateResult.hash
             );
 
+            // Verify complete phase was called with correct args
+            expect(mockComplete).toHaveBeenCalledWith(
+                'note',
+                'Test subject',
+                mockLocateResult.hash,
+                mockLocateResult.creationTime,
+                testFile
+            );
+
             // Verify logging
             expect(mockLogger.verbose).toHaveBeenCalledWith('Processing file %s', testFile);
             expect(mockLogger.debug).toHaveBeenCalledWith('Locating file %s', testFile);
@@ -160,6 +181,7 @@ describe('Processor', () => {
                 'test-note-filename.md',
                 mockLocateResult.outputPath
             );
+            expect(mockLogger.debug).toHaveBeenCalledWith('Completing processing for %s', testFile);
             expect(mockLogger.info).toHaveBeenCalledWith('Processed file %s', testFile);
         });
 
@@ -234,6 +256,25 @@ describe('Processor', () => {
             expect(mockTranscribe).toHaveBeenCalled();
             expect(mockClassify).toHaveBeenCalled();
             expect(mockConstructFilename).toHaveBeenCalled();
+        });
+
+        it('should handle errors from complete phase', async () => {
+            // Setup complete to throw an error
+            const testError = new Error('Complete error');
+            mockComplete.mockRejectedValueOnce(testError);
+
+            // Create a processor instance
+            const processor = processorModule.create(mockConfig, mockOperator);
+
+            // Process the file and expect it to throw
+            await expect(processor.process('/path/to/test-audio.mp3')).rejects.toThrow('Complete error');
+
+            // Verify previous phases were called
+            expect(mockLocate).toHaveBeenCalled();
+            expect(mockTranscribe).toHaveBeenCalled();
+            expect(mockClassify).toHaveBeenCalled();
+            expect(mockConstructFilename).toHaveBeenCalled();
+            expect(mockCompose).toHaveBeenCalled();
         });
     });
 });

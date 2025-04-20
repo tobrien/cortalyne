@@ -7,4 +7,5 @@ coverage/
 test/
 output/
 input/
+processed/
 .cortalyne/
