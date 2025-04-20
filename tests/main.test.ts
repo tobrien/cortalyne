@@ -79,7 +79,24 @@ const mockCabazookaInstance = {
     operate: jest.fn().mockResolvedValue(mockOperator)
 };
 
+const mockCabazookaOptions = {
+    defaults: {
+        timezone: 'America/New_York',
+        outputStructure: 'month',
+        filenameOptions: { date: true, time: true },
+        inputDirectory: 'test-input-directory',
+        outputDirectory: 'test-output-directory',
+    },
+    allowed: {
+        outputStructures: ['month'],
+        filenameOptions: ['date', 'time'],
+        extensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']
+    },
+    features: ['input', 'output', 'structured-output', 'extensions'],
+};
+
 jest.unstable_mockModule('@tobrien/cabazooka', () => ({
+    createOptions: jest.fn().mockReturnValue(mockCabazookaOptions),
     create: jest.fn().mockReturnValue(mockCabazookaInstance)
 }));
 

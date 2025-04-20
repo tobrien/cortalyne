@@ -1,10 +1,10 @@
 #!/usr/bin/env node
-import * as Cabazooka from '@tobrien/cabazooka';
 import 'dotenv/config';
 import * as Arguments from './arguments';
 import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION } from './constants';
 import { getLogger, setLogLevel } from './logging';
 import * as Processor from './processor';
+import * as Cabazooka from '@tobrien/cabazooka';
 
 export interface Config extends Cabazooka.Config {
     dryRun: boolean;
@@ -27,8 +27,7 @@ export async function main() {
     // eslint-disable-next-line no-console
     console.info(`Starting ${PROGRAM_NAME}: ${VERSION}`);
 
-
-    const cabazookaOptions: Cabazooka.Options = {
+    const cabazookaOptions = Cabazooka.createOptions({
         defaults: {
             timezone: DEFAULT_TIMEZONE,
             extensions: DEFAULT_AUDIO_EXTENSIONS,
@@ -42,9 +41,10 @@ export async function main() {
             outputStructures: ALLOWED_OUTPUT_STRUCTURES,
             filenameOptions: ALLOWED_FILENAME_OPTIONS,
         },
-    }
+        features: Cabazooka.DEFAULT_FEATURES,
+    });
 
-    const cabazooka: Cabazooka.Instance = Cabazooka.create(cabazookaOptions);
+    const cabazooka = Cabazooka.create(cabazookaOptions);
 
     const [config]: [Config] = await Arguments.configure(cabazooka);
 
