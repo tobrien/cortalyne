@@ -19,7 +19,7 @@ export interface Input extends Cabazooka.Input {
     contextDirectories?: string[];
 }
 
-export const configure = async (cabazooka: Cabazooka.Instance): Promise<[Config]> => {
+export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config]> => {
     let program = new Command();
     program
         .name(PROGRAM_NAME)
