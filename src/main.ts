@@ -17,6 +17,7 @@ export interface Config extends Cabazooka.Config {
     contentTypes: string[];
     configDir: string;
     overrides: boolean;
+    processedDir: string;
     classifyModel: string;
     composeModel: string;
     contextDirectories?: string[];

@@ -17,6 +17,20 @@ jest.unstable_mockModule('../src/logging', () => ({
     getLogger: jest.fn().mockReturnValue(mockLogger)
 }));
 
+// Mock for TranscribePhase
+// @ts-ignore
+const mockTranscribe = jest.fn().mockResolvedValue({
+    text: 'Test transcription'
+});
+
+const mockTranscribeInstance = {
+    transcribe: mockTranscribe
+};
+
+jest.unstable_mockModule('../src/phases/transcribe', () => ({
+    create: jest.fn().mockReturnValue(mockTranscribeInstance)
+}));
+
 // Mock for ClassifyPhase
 const mockClassify = jest.fn<() => Promise<ClassifiedTranscription>>().mockResolvedValue({
     text: 'Test transcription',
@@ -61,6 +75,17 @@ jest.unstable_mockModule('../src/phases/locate', () => ({
     create: jest.fn().mockReturnValue(mockLocateInstance)
 }));
 
+// Mock for CompletePhase
+const mockComplete = jest.fn<() => Promise<string>>().mockResolvedValue('/test/processed/2023-1-1-test-hash-123-note-test-subject.mp3');
+
+const mockCompleteInstance = {
+    complete: mockComplete
+};
+
+jest.unstable_mockModule('../src/phases/complete', () => ({
+    create: jest.fn().mockReturnValue(mockCompleteInstance)
+}));
+
 // Mock Cabazooka operator
 const mockConstructFilename = jest.fn<() => Promise<string>>().mockResolvedValue('test-note-filename.md');
 
@@ -72,6 +97,7 @@ const mockOperator = {
 const mockConfig = {
     model: 'gpt-4o',
     transcriptionModel: 'whisper-1',
+    processedDir: './processed',
     dryRun: false
 };
 
@@ -99,13 +125,21 @@ describe('Processor', () => {
             // Verify locate phase was called with correct args
             expect(mockLocate).toHaveBeenCalledWith(testFile);
 
-            // Verify classify phase was called with correct args
-            expect(mockClassify).toHaveBeenCalledWith(
+            // Verify transcribe phase was called with correct args
+            expect(mockTranscribe).toHaveBeenCalledWith(
                 mockLocateResult.creationTime,
                 mockLocateResult.outputPath,
                 mockLocateResult.transcriptionFilename,
                 mockLocateResult.hash,
                 testFile
+            );
+
+            // Verify classify phase was called with correct args
+            expect(mockClassify).toHaveBeenCalledWith(
+                mockLocateResult.creationTime,
+                mockLocateResult.outputPath,
+                'Test transcription', // text from mockTranscribe
+                mockLocateResult.hash
             );
 
             // Verify constructFilename was called
@@ -128,15 +162,26 @@ describe('Processor', () => {
                 mockLocateResult.hash
             );
 
+            // Verify complete phase was called with correct args
+            expect(mockComplete).toHaveBeenCalledWith(
+                'note',
+                'Test subject',
+                mockLocateResult.hash,
+                mockLocateResult.creationTime,
+                testFile
+            );
+
             // Verify logging
             expect(mockLogger.verbose).toHaveBeenCalledWith('Processing file %s', testFile);
             expect(mockLogger.debug).toHaveBeenCalledWith('Locating file %s', testFile);
-            expect(mockLogger.debug).toHaveBeenCalledWith('Classifying file %s', testFile);
+            expect(mockLogger.debug).toHaveBeenCalledWith('Transcribing file %s', testFile);
+            expect(mockLogger.debug).toHaveBeenCalledWith('Classifying transcription for file %s', testFile);
             expect(mockLogger.debug).toHaveBeenCalledWith(
                 'Composing Note %s in %s',
                 'test-note-filename.md',
                 mockLocateResult.outputPath
             );
+            expect(mockLogger.debug).toHaveBeenCalledWith('Completing processing for %s', testFile);
             expect(mockLogger.info).toHaveBeenCalledWith('Processed file %s', testFile);
         });
 
@@ -152,6 +197,26 @@ describe('Processor', () => {
             await expect(processor.process('/path/to/test-audio.mp3')).rejects.toThrow('Locate error');
 
             // Verify other phases were not called
+            expect(mockTranscribe).not.toHaveBeenCalled();
+            expect(mockClassify).not.toHaveBeenCalled();
+            expect(mockConstructFilename).not.toHaveBeenCalled();
+            expect(mockCompose).not.toHaveBeenCalled();
+        });
+
+        it('should handle errors from transcribe phase', async () => {
+            // Setup transcribe to throw an error
+            const testError = new Error('Transcribe error');
+            // @ts-ignore
+            mockTranscribe.mockRejectedValueOnce(testError);
+
+            // Create a processor instance
+            const processor = processorModule.create(mockConfig, mockOperator);
+
+            // Process the file and expect it to throw
+            await expect(processor.process('/path/to/test-audio.mp3')).rejects.toThrow('Transcribe error');
+
+            // Verify locate was called but classify and compose were not
+            expect(mockLocate).toHaveBeenCalled();
             expect(mockClassify).not.toHaveBeenCalled();
             expect(mockConstructFilename).not.toHaveBeenCalled();
             expect(mockCompose).not.toHaveBeenCalled();
@@ -168,8 +233,9 @@ describe('Processor', () => {
             // Process the file and expect it to throw
             await expect(processor.process('/path/to/test-audio.mp3')).rejects.toThrow('Classify error');
 
-            // Verify locate was called but compose was not
+            // Verify locate and transcribe were called but compose was not
             expect(mockLocate).toHaveBeenCalled();
+            expect(mockTranscribe).toHaveBeenCalled();
             expect(mockConstructFilename).not.toHaveBeenCalled();
             expect(mockCompose).not.toHaveBeenCalled();
         });
@@ -187,8 +253,28 @@ describe('Processor', () => {
 
             // Verify previous phases were called
             expect(mockLocate).toHaveBeenCalled();
+            expect(mockTranscribe).toHaveBeenCalled();
             expect(mockClassify).toHaveBeenCalled();
             expect(mockConstructFilename).toHaveBeenCalled();
+        });
+
+        it('should handle errors from complete phase', async () => {
+            // Setup complete to throw an error
+            const testError = new Error('Complete error');
+            mockComplete.mockRejectedValueOnce(testError);
+
+            // Create a processor instance
+            const processor = processorModule.create(mockConfig, mockOperator);
+
+            // Process the file and expect it to throw
+            await expect(processor.process('/path/to/test-audio.mp3')).rejects.toThrow('Complete error');
+
+            // Verify previous phases were called
+            expect(mockLocate).toHaveBeenCalled();
+            expect(mockTranscribe).toHaveBeenCalled();
+            expect(mockClassify).toHaveBeenCalled();
+            expect(mockConstructFilename).toHaveBeenCalled();
+            expect(mockCompose).toHaveBeenCalled();
         });
     });
 });

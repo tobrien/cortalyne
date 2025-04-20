@@ -63,6 +63,7 @@ export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as Out
 export const ALLOWED_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
 
 export const DEFAULT_CONFIG_DIR = `./.${PROGRAM_NAME}`;
+export const DEFAULT_PROCESSED_DIR = './processed';
 
 export const DEFAULT_PERSONAS_DIR = `/personas`;
 
