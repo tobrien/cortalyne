@@ -1,5 +1,6 @@
 import * as Logging from './logging';
 import * as ClassifyPhase from './phases/classify';
+import * as TranscribePhase from './phases/transcribe';
 import * as ComposePhase from './phases/compose';
 import * as LocatePhase from './phases/locate';
 import * as Cabazooka from '@tobrien/cabazooka';
@@ -18,6 +19,7 @@ export interface Instance {
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
     const logger = Logging.getLogger();
 
+    const transcribePhase: TranscribePhase.Instance = TranscribePhase.create(config, operator);
     const classifyPhase: ClassifyPhase.Instance = ClassifyPhase.create(config, operator);
     const composePhase: ComposePhase.Instance = ComposePhase.create(config);
     const locatePhase: LocatePhase.Instance = LocatePhase.create(config, operator);
@@ -30,11 +32,15 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const { creationTime, outputPath, transcriptionFilename, hash } = await locatePhase.locate(audioFile);
         logger.debug('Locate complete: %s', JSON.stringify({ creationTime, outputPath, transcriptionFilename, hash }));
 
-        // Create the transcription
-        logger.debug('Classifying file %s', audioFile);
-        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, transcriptionFilename, hash, audioFile);
+        // First transcribe the audio
+        logger.debug('Transcribing file %s', audioFile);
+        const transcription = await transcribePhase.transcribe(creationTime, outputPath, transcriptionFilename, hash, audioFile);
 
-        // // Create the note
+        // Then classify the transcription
+        logger.debug('Classifying transcription for file %s', audioFile);
+        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, transcription.text, hash);
+
+        // Create the note
         const noteFilename = await operator.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
         logger.debug('Composing Note %s in %s', noteFilename, outputPath);
         await composePhase.compose(classifiedTranscription, outputPath, noteFilename, hash);
