@@ -2,6 +2,7 @@ import * as Cabazooka from '@tobrien/cabazooka';
 import { Config } from 'main';
 import * as Logging from '../logging';
 import * as Storage from '../util/storage';
+import * as Media from '../util/media';
 import * as OpenAI from '../util/openai';
 import { stringifyJSON } from '../util/general';
 import path from 'path';
@@ -17,6 +18,7 @@ export interface Instance {
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
     const logger = Logging.getLogger();
     const storage = Storage.create({ log: logger.debug });
+    const media = Media.create(logger);
 
     const transcribe = async (creation: Date, outputPath: string, filename: string, hash: string, audioFile: string): Promise<Transcription> => {
         if (!outputPath) {
@@ -49,16 +51,83 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const baseDebugFilename = path.parse(transcriptOutputFilename).name;
         const transcriptionDebugFile = config.debug ? path.join(debugDir, `${baseDebugFilename}.transcription.raw.response.json`) : undefined;
 
-        // Call OpenAI to transcribe the audio
-        const transcription: OpenAI.Transcription = await OpenAI.transcribeAudio(audioFile, {
-            model: config.transcriptionModel,
-            debug: config.debug,
-            debugFile: transcriptionDebugFile
-        });
+        // Check if audio file exceeds the size limit
+        const fileSize = await media.getFileSize(audioFile);
+        logger.debug(`Audio file size: ${fileSize} bytes, max size: ${config.maxAudioSize} bytes`);
 
-        // Save the raw whisper response
+        let transcription: OpenAI.Transcription;
+
+        if (fileSize > config.maxAudioSize) {
+            logger.info(`Audio file exceeds maximum size (${fileSize} > ${config.maxAudioSize} bytes), splitting into chunks`);
+
+            // Create a temporary directory for the audio chunks
+            const tempDir = path.join(config.tempDirectory, `split_audio_${hash}`);
+            await storage.createDirectory(tempDir);
+
+            try {
+                // Split the audio file into chunks
+                const audioChunks = await media.splitAudioFile(audioFile, tempDir, config.maxAudioSize);
+                logger.info(`Split audio file into ${audioChunks.length} chunks`);
+
+                // Transcribe each chunk
+                const transcriptions: OpenAI.Transcription[] = [];
+                for (let i = 0; i < audioChunks.length; i++) {
+                    const chunkPath = audioChunks[i];
+                    logger.info(`Transcribing chunk ${i + 1}/${audioChunks.length}: ${chunkPath}`);
+
+                    const chunkDebugFile = config.debug ?
+                        path.join(debugDir, `${baseDebugFilename}.transcription.chunk${i + 1}.raw.response.json`) :
+                        undefined;
+
+                    const chunkTranscription = await OpenAI.transcribeAudio(chunkPath, {
+                        model: config.transcriptionModel,
+                        debug: config.debug,
+                        debugFile: chunkDebugFile
+                    });
+
+                    transcriptions.push(chunkTranscription);
+                }
+
+                // Combine all transcriptions
+                const combinedText = transcriptions.map(t => t.text).join(' ');
+                transcription = { text: combinedText };
+
+                // Save the combined transcription
+                if (config.debug) {
+                    // Save each individual chunk for debugging
+                    await storage.writeFile(
+                        path.join(debugDir, `${baseDebugFilename}.transcription.combined.json`),
+                        stringifyJSON({ chunks: transcriptions, combined: transcription }),
+                        'utf8'
+                    );
+                }
+
+                // Clean up temporary files if not in debug mode
+                if (!config.debug) {
+                    for (const chunk of audioChunks) {
+                        try {
+                            await storage.deleteFile(chunk);
+                        } catch (error) {
+                            logger.warn(`Failed to delete temporary chunk ${chunk}: ${error}`);
+                        }
+                    }
+                }
+            } catch (error) {
+                logger.error(`Error processing split audio files: ${error}`);
+                throw new Error(`Failed to process split audio files: ${error}`);
+            }
+        } else {
+            // If file size is within the limit, transcribe normally
+            transcription = await OpenAI.transcribeAudio(audioFile, {
+                model: config.transcriptionModel,
+                debug: config.debug,
+                debugFile: transcriptionDebugFile
+            });
+        }
+
+        // Save the transcription
         await storage.writeFile(transcriptOutputPath, stringifyJSON(transcription), 'utf8');
-        logger.debug('Wrote raw whisper response to %s', transcriptOutputPath);
+        logger.debug('Wrote transcription to %s', transcriptOutputPath);
 
         return transcription;
     }

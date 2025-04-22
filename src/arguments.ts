@@ -1,9 +1,10 @@
 import * as Cabazooka from "@tobrien/cabazooka";
 import { Command } from "commander";
-import { ALLOWED_MODELS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_MODEL, DEFAULT_OVERRIDES, DEFAULT_PROCESSED_DIR, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
+import { ALLOWED_MODELS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_MAX_AUDIO_SIZE, DEFAULT_MODEL, DEFAULT_OVERRIDES, DEFAULT_PROCESSED_DIR, DEFAULT_TEMP_DIRECTORY, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
 import { getLogger } from "./logging";
 import * as Storage from "./util/storage";
 import { Config } from "./main";
+import os from 'os';
 
 export interface Input extends Cabazooka.Input {
     dryRun: boolean;
@@ -18,6 +19,8 @@ export interface Input extends Cabazooka.Input {
     classifyModel?: string;
     composeModel?: string;
     contextDirectories?: string[];
+    maxAudioSize?: number;
+    tempDirectory?: string;
 }
 
 export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config]> => {
@@ -38,6 +41,8 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config
         .option('--classify-model <classifierModel>', 'classifier model to use')
         .option('--compose-model <composeModel>', 'compose model to use')
         .option('--context-directories [contextDirectories...]', 'directories containing context files to be included in prompts')
+        .option('--max-audio-size <maxAudioSize>', 'maximum audio file size in bytes', DEFAULT_MAX_AUDIO_SIZE.toString())
+        .option('--temp-directory <tempDirectory>', 'temporary directory for processing files', DEFAULT_TEMP_DIRECTORY || os.tmpdir())
 
     // Add common cabazooka options
     program = await cabazooka.configure(program);
@@ -74,6 +79,8 @@ async function validateInput(input: Input): Promise<{
     classifyModel: string;
     composeModel: string;
     contextDirectories?: string[];
+    maxAudioSize: number;
+    tempDirectory: string;
 }> {
 
 
@@ -95,6 +102,11 @@ async function validateInput(input: Input): Promise<{
         await validateContextDirectories(input.contextDirectories);
     }
 
+    // Validate temp directory if provided
+    if (input.tempDirectory) {
+        await validateTempDirectory(input.tempDirectory);
+    }
+
     return {
         dryRun: input.dryRun,
         verbose: input.verbose,
@@ -107,6 +119,8 @@ async function validateInput(input: Input): Promise<{
         classifyModel: input.classifyModel ?? DEFAULT_MODEL,
         composeModel: input.composeModel ?? DEFAULT_MODEL,
         contextDirectories: input.contextDirectories,
+        maxAudioSize: input.maxAudioSize ? parseInt(input.maxAudioSize.toString(), 10) : DEFAULT_MAX_AUDIO_SIZE,
+        tempDirectory: input.tempDirectory ?? os.tmpdir(),
     };
 }
 
@@ -135,5 +149,13 @@ async function validateContextDirectories(contextDirectories: string[]) {
         if (!storage.isDirectoryReadable(directory)) {
             throw new Error(`Context directory does not exist or is not readable: ${directory}`);
         }
+    }
+}
+
+async function validateTempDirectory(tempDirectory: string) {
+    const logger = getLogger();
+    const storage = Storage.create({ log: logger.info });
+    if (!storage.isDirectoryWritable(tempDirectory)) {
+        throw new Error(`Temp directory does not exist or is not writable: ${tempDirectory}`);
     }
 }

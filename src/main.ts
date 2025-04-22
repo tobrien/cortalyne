@@ -21,6 +21,8 @@ export interface Config extends Cabazooka.Config {
     classifyModel: string;
     composeModel: string;
     contextDirectories?: string[];
+    maxAudioSize: number;
+    tempDirectory: string;
 }
 
 export async function main() {

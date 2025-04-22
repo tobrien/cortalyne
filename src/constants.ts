@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+import os from 'os';
 import { FilenameOption, OutputStructure } from '@tobrien/cabazooka';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
@@ -84,3 +84,5 @@ export const DEFAULT_INSTRUCTIONS_COMPOSE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/co
 export const ALLOWED_MODELS: string[] = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'o3-mini', 'o3-preview', 'o1-pro', 'o1-preview-2024-09-12'];
 
 export const DEFAULT_OVERRIDES = false;
+export const DEFAULT_MAX_AUDIO_SIZE = 26214400; // 25MB in bytes
+export const DEFAULT_TEMP_DIRECTORY = os.tmpdir(); // Use OS default temp directory
