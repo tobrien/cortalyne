@@ -34,10 +34,15 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
 
         // Extract audio file creation time
         let creationTime = await media.getAudioCreationTime(audioFile);
-        if (creationTime) {
-            logger.info('Audio recording time: %s', creationTime.toISOString());
-        } else {
-            logger.warn('Could not determine audio recording time for %s, using current date', audioFile);
+        try {
+            if (creationTime) {
+                logger.info('Audio recording time: %s', creationTime.toISOString());
+            } else {
+                logger.warn('Could not determine audio recording time for %s, using current date', audioFile);
+                creationTime = dates.now();
+            }
+        } catch (error: any) {
+            logger.error('Error determining audio recording time for %s: %s, using current date', audioFile, error.message);
             creationTime = dates.now();
         }
 
