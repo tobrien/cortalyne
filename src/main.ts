@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import * as Arguments from './arguments';
-import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION } from './constants';
+import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_OUTPUT_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_OUTPUT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION } from './constants';
 import { getLogger, setLogLevel } from './logging';
 import * as Processor from './processor';
 import * as Cabazooka from '@tobrien/cabazooka';
@@ -33,14 +33,14 @@ export async function main() {
             timezone: DEFAULT_TIMEZONE,
             extensions: DEFAULT_AUDIO_EXTENSIONS,
             outputStructure: DEFAULT_OUTPUT_STRUCTURE,
-            filenameOptions: DEFAULT_FILENAME_OPTIONS,
+            outputFilenameOptions: DEFAULT_OUTPUT_FILENAME_OPTIONS,
             inputDirectory: DEFAULT_INPUT_DIRECTORY,
             outputDirectory: DEFAULT_OUTPUT_DIRECTORY,
         },
         allowed: {
             extensions: ALLOWED_AUDIO_EXTENSIONS,
             outputStructures: ALLOWED_OUTPUT_STRUCTURES,
-            filenameOptions: ALLOWED_FILENAME_OPTIONS,
+            outputFilenameOptions: ALLOWED_OUTPUT_FILENAME_OPTIONS,
         },
         features: Cabazooka.DEFAULT_FEATURES,
     });
