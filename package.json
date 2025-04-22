@@ -72,6 +72,8 @@
         "vite-plugin-node": "^5.0.0"
     },
     "pnpm": {
-        "overrides": {}
+        "overrides": {
+            "@tobrien/cabazooka": "link:../cabazooka"
+        }
     }
 }
