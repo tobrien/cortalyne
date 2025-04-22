@@ -2,6 +2,7 @@ import * as Logging from '../logging';
 import * as Media from '../util/media';
 import * as Storage from '../util/storage';
 import * as Cabazooka from '@tobrien/cabazooka';
+import * as Dates from '../util/dates';
 import { Config } from '../main';
 
 // Helper function to promisify ffmpeg.
@@ -19,6 +20,7 @@ export interface Instance {
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
     const logger = Logging.getLogger();
     const storage = Storage.create({ log: logger.debug });
+    const dates = Dates.create({ timezone: config.timezone });
     const media = Media.create(logger);
 
     const locate = async (audioFile: string): Promise<{
@@ -31,12 +33,12 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         logger.debug('Processing file %s', audioFile);
 
         // Extract audio file creation time
-        const creationTime = await media.getAudioCreationTime(audioFile);
+        let creationTime = await media.getAudioCreationTime(audioFile);
         if (creationTime) {
             logger.info('Audio recording time: %s', creationTime.toISOString());
         } else {
-            logger.warn('Could not determine audio recording time for %s, skipping', audioFile);
-            throw new Error('Could not determine audio recording time for ' + audioFile);
+            logger.warn('Could not determine audio recording time for %s, using current date', audioFile);
+            creationTime = dates.now();
         }
 
         // Calculate the hash of file and output directory
