@@ -38,7 +38,7 @@ export const create = (model: Chat.Model, config: Config): Factory => {
     const createComposePrompt = async (transcription: ClassifiedTranscription, noteType: string): Promise<MinorPrompt.Instance> => {
         const prompt: MinorPrompt.Instance = MinorPrompt.create();
         prompt.addPersona(await YouPersona.create(config.configDir, config.overrides, { customize: Override.customize }));
-        const instructions = await ComposeInstructions.create(noteType, config.configDir, config.overrides, { customize: Override.customize }, config.contextDirectories);
+        const instructions = await ComposeInstructions.create(noteType, config.configDir, config.overrides, { customize: Override.customize });
         instructions.forEach((instruction) => {
             prompt.addInstruction(instruction);
         });

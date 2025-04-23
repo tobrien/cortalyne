@@ -6,6 +6,10 @@ import * as Media from '../util/media';
 import * as OpenAI from '../util/openai';
 import { stringifyJSON } from '../util/general';
 import path from 'path';
+import { ChatCompletionMessageParam } from 'openai/resources';
+import * as Chat from '@tobrien/minorprompt/chat';
+import * as Override from '../prompt/override';
+import * as TranscribePrompt from '../prompt/transcribe';
 
 export interface Transcription {
     text: string;
@@ -19,6 +23,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const logger = Logging.getLogger();
     const storage = Storage.create({ log: logger.debug });
     const media = Media.create(logger);
+    const prompts = TranscribePrompt.create(config.composeModel as Chat.Model, config);
 
     const transcribe = async (creation: Date, outputPath: string, filename: string, hash: string, audioFile: string): Promise<Transcription> => {
         if (!outputPath) {
@@ -128,6 +133,52 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         // Save the transcription
         await storage.writeFile(transcriptOutputPath, stringifyJSON(transcription), 'utf8');
         logger.debug('Wrote transcription to %s', transcriptOutputPath);
+
+        // Create markdown version of the transcript
+        const markdownOutputFilename = transcriptOutputFilename.replace('.json', '.md');
+        const markdownOutputPath = path.join(outputPath, markdownOutputFilename);
+
+        // Only create the markdown file if it doesn't already exist
+        if (!await storage.exists(markdownOutputPath)) {
+            logger.info('Creating Markdown version of the transcription...');
+
+            // Create a prompt for the transcription formatting task
+            const prompt = await prompts.createTranscribePrompt(transcription.text);
+
+            // Format the prompt using the override utility
+            const chatRequest = Override.format(prompt, config.composeModel as Chat.Model);
+
+            // Debug file paths for the request and response
+            const requestDebugFile = config.debug ?
+                path.join(debugDir, `${baseDebugFilename}.markdown.request.json`) :
+                undefined;
+
+            const responseDebugFile = config.debug ?
+                path.join(debugDir, `${baseDebugFilename}.markdown.response.json`) :
+                undefined;
+
+            // Write debug file for the request if in debug mode
+            if (config.debug && requestDebugFile) {
+                await storage.writeFile(requestDebugFile, stringifyJSON(chatRequest), 'utf8');
+                logger.debug('Wrote chat request to %s', requestDebugFile);
+            }
+
+            // Call the model to convert the transcription to markdown
+            const markdownContent = await OpenAI.createCompletion(
+                chatRequest.messages as ChatCompletionMessageParam[],
+                {
+                    model: config.composeModel,
+                    debug: config.debug,
+                    debugFile: responseDebugFile
+                }
+            );
+
+            // Save the markdown version
+            await storage.writeFile(markdownOutputPath, markdownContent, 'utf8');
+            logger.debug('Wrote markdown transcription to %s', markdownOutputPath);
+        } else {
+            logger.info('Markdown transcription file %s already exists, skipping...', markdownOutputPath);
+        }
 
         return transcription;
     }

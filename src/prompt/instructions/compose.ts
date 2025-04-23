@@ -35,7 +35,6 @@ const INSTRUCTIONS_FACTORIES: Record<string, (configDir: string, overrides: bool
 
 export const create = async (type: string, configDir: string, overrides: boolean,
     { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> },
-    contextDirectories?: string[]
 ): Promise<(Instruction | Section<Instruction>)[]> => {
     const instructions: (Instruction | Section<Instruction>)[] = [];
 
@@ -48,12 +47,6 @@ export const create = async (type: string, configDir: string, overrides: boolean
 
     const instruction = createInstruction(overrideContent);
     instructions.push(instruction);
-
-    // Load context from directories using the shared utility
-    if (contextDirectories && contextDirectories.length > 0) {
-        const contextSections = await Context.loadContextFromDirectories(contextDirectories);
-        instructions.push(...contextSections);
-    }
 
     return instructions;
 }

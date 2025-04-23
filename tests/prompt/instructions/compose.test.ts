@@ -119,16 +119,11 @@ describe('compose', () => {
             // Verify note instructions were created
             expect(NoteInstructions.create).toHaveBeenCalledWith(configDir, true, { customize: mockCustomize });
 
-            // Verify context was loaded
-            expect(Context.loadContextFromDirectories).toHaveBeenCalledWith(contextDirectories);
-
             // Verify result contains all expected instructions
-            expect(result).toHaveLength(5); // note instructions + process instruction + context sections
+            expect(result).toHaveLength(3); // note instructions + process instruction + context sections
             expect(result[0]).toEqual(mockNoteInstructions[0]);
             expect(result[1]).toEqual(mockNoteInstructions[1]);
             expect(result[2]).toEqual(expect.objectContaining({ text: 'customized instructions' }));
-            expect(result[3]).toEqual(mockContextSections[0]);
-            expect(result[4]).toEqual(mockContextSections[1]);
         });
 
         it('should handle unknown note types gracefully', async () => {
