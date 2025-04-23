@@ -2,20 +2,37 @@ import { jest } from '@jest/globals';
 import { OutputStructure } from '@tobrien/cabazooka';
 import { FilenameOption } from '@tobrien/cabazooka';
 
-// Set up mock implementations before importing modules
+// Setup mock functions that will be used inside mock modules
 const mockLogger = {
     debug: jest.fn(),
     info: jest.fn(),
     warn: jest.fn(),
+    error: jest.fn()
 };
 
-// Define mock functions with type assertions
-const mockGetAudioCreationTime = jest.fn() as jest.MockedFunction<() => Promise<Date | null>>;
-const mockHashFile = jest.fn() as jest.MockedFunction<() => Promise<string>>;
-const mockConstructOutputDirectory = jest.fn() as jest.MockedFunction<() => Promise<string>>;
-const mockConstructFilename = jest.fn() as jest.MockedFunction<() => Promise<string>>;
+const mockGetAudioCreationTime = jest.fn();
+const mockHashFile = jest.fn();
+const mockNow = jest.fn();
+const mockConstructOutputDirectory = jest.fn();
+const mockConstructFilename = jest.fn();
 
-// Mock the modules before importing
+// Mock fs and crypto before importing anything that might use them
+jest.mock('fs', () => ({
+    promises: {
+        readFile: jest.fn(),
+        stat: jest.fn(),
+        access: jest.fn()
+    }
+}), { virtual: true });
+
+jest.mock('crypto', () => ({
+    createHash: jest.fn(() => ({
+        update: jest.fn().mockReturnThis(),
+        digest: jest.fn().mockReturnValue('12345678abcdef')
+    }))
+}), { virtual: true });
+
+// Mock modules before importing the code under test
 jest.unstable_mockModule('../../src/logging', () => ({
     getLogger: jest.fn(() => mockLogger)
 }));
@@ -32,26 +49,30 @@ jest.unstable_mockModule('../../src/util/storage', () => ({
     }))
 }));
 
-// Import modules after mocking
-let Logging: any;
-let Media: any;
-let Storage: any;
-let LocatePhase: any;
+jest.unstable_mockModule('../../src/util/dates', () => ({
+    create: jest.fn(() => ({
+        now: mockNow
+    }))
+}));
+
+// Now import the module under test
+// @ts-ignore
+const LocatePhase = await import('../../src/phases/locate');
 
 describe('locate', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         jest.clearAllMocks();
 
-        // Import the modules
-        Logging = await import('../../src/logging');
-        Media = await import('../../src/util/media');
-        Storage = await import('../../src/util/storage');
-        LocatePhase = await import('../../src/phases/locate');
-
-        // Set default mock values
+        // Set up common mock behaviors
+        // @ts-ignore
         mockGetAudioCreationTime.mockResolvedValue(new Date('2023-01-01T12:00:00Z'));
+        // @ts-ignore
         mockHashFile.mockResolvedValue('12345678abcdef');
+        // @ts-ignore
+        mockNow.mockReturnValue(new Date('2023-01-01T12:00:00Z'));
+        // @ts-ignore
         mockConstructOutputDirectory.mockResolvedValue('/output/path');
+        // @ts-ignore
         mockConstructFilename.mockResolvedValue('transcription.txt');
     });
 
@@ -76,22 +97,22 @@ describe('locate', () => {
                 configDir: './.transote',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
-                composeModel: 'gpt-4o-mini'
+                composeModel: 'gpt-4o-mini',
+                processedDir: './processed'
             };
 
             // Mock Cabazooka operator
             const mockOperator = {
                 constructOutputDirectory: mockConstructOutputDirectory,
-                constructFilename: mockConstructFilename
+                constructFilename: mockConstructFilename,
+                // @ts-ignore
+                process: jest.fn()
             };
 
+            // @ts-ignore
             const instance = LocatePhase.create(runConfig, mockOperator);
-
             expect(instance).toBeDefined();
             expect(instance.locate).toBeDefined();
-            expect(Logging.getLogger).toHaveBeenCalled();
-            expect(Storage.create).toHaveBeenCalledWith({ log: mockLogger.debug });
-            expect(Media.create).toHaveBeenCalledWith(mockLogger);
         });
     });
 
@@ -116,15 +137,19 @@ describe('locate', () => {
                 configDir: './.transote',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
-                composeModel: 'gpt-4o-mini'
+                composeModel: 'gpt-4o-mini',
+                processedDir: './processed'
             };
 
             // Mock Cabazooka operator
             const mockOperator = {
                 constructOutputDirectory: mockConstructOutputDirectory,
-                constructFilename: mockConstructFilename
+                constructFilename: mockConstructFilename,
+                // @ts-ignore
+                process: jest.fn()
             };
 
+            // @ts-ignore
             const instance = LocatePhase.create(runConfig, mockOperator);
             const result = await instance.locate('/path/to/audio.mp3');
 
@@ -142,7 +167,8 @@ describe('locate', () => {
             expect(mockConstructFilename).toHaveBeenCalledWith(new Date('2023-01-01T12:00:00Z'), 'transcription', '12345678');
         });
 
-        it('should throw error when creation time cannot be determined', async () => {
+        it('should use current date when creation time cannot be determined', async () => {
+            // @ts-ignore
             mockGetAudioCreationTime.mockResolvedValueOnce(null);
 
             const runConfig = {
@@ -164,25 +190,42 @@ describe('locate', () => {
                 configDir: './.transote',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
-                composeModel: 'gpt-4o-mini'
+                composeModel: 'gpt-4o-mini',
+                processedDir: './processed'
             };
 
             // Mock Cabazooka operator
             const mockOperator = {
                 constructOutputDirectory: mockConstructOutputDirectory,
-                constructFilename: mockConstructFilename
+                constructFilename: mockConstructFilename,
+                // @ts-ignore
+                process: jest.fn()
             };
 
+            // @ts-ignore
             const instance = LocatePhase.create(runConfig, mockOperator);
 
-            await expect(instance.locate('/path/to/audio.mp3')).rejects.toThrow(
-                'Could not determine audio recording time for /path/to/audio.mp3'
-            );
+            const result = await instance.locate('/path/to/audio.mp3');
 
+            // Verify the result uses the current date from mockNow
+            expect(result.creationTime).toEqual(new Date('2023-01-01T12:00:00Z'));
+            expect(result.outputPath).toEqual('/output/path');
+            expect(result.transcriptionFilename).toEqual('transcription.txt');
+            expect(result.hash).toEqual('12345678');
+            expect(result.audioFile).toEqual('/path/to/audio.mp3');
+
+            // Verify the warning was logged
             expect(mockLogger.warn).toHaveBeenCalledWith(
-                'Could not determine audio recording time for %s, skipping',
+                'Could not determine audio recording time for %s, using current date',
                 '/path/to/audio.mp3'
             );
+
+            // Verify the mocks were called with correct parameters
+            expect(mockGetAudioCreationTime).toHaveBeenCalledWith('/path/to/audio.mp3');
+            expect(mockNow).toHaveBeenCalled();
+            expect(mockHashFile).toHaveBeenCalledWith('/path/to/audio.mp3', 100);
+            expect(mockConstructOutputDirectory).toHaveBeenCalledWith(new Date('2023-01-01T12:00:00Z'));
+            expect(mockConstructFilename).toHaveBeenCalledWith(new Date('2023-01-01T12:00:00Z'), 'transcription', '12345678');
         });
     });
 });

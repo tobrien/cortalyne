@@ -1,5 +1,5 @@
 import { z } from 'zod';
-
+import os from 'os';
 import { FilenameOption, OutputStructure } from '@tobrien/cabazooka';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
@@ -67,11 +67,12 @@ export const DEFAULT_PROCESSED_DIR = './processed';
 
 export const DEFAULT_PERSONAS_DIR = `/personas`;
 
-export const DEFAULT_PERSONA_CLASSIFIER_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/traits.md`;
-export const DEFAULT_PERSONA_CLASSIFIER_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/instructions.md`;
-
 export const DEFAULT_PERSONA_YOU_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/you/traits.md`;
 export const DEFAULT_PERSONA_YOU_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/you/instructions.md`;
+export const DEFAULT_PERSONA_CLASSIFIER_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/traits.md`;
+export const DEFAULT_PERSONA_CLASSIFIER_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/instructions.md`;
+export const DEFAULT_PERSONA_TRANSCRIBE_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe/traits.md`;
+export const DEFAULT_PERSONA_TRANSCRIBE_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe/instructions.md`;
 
 export const DEFAULT_INSTRUCTIONS_DIR = `/instructions`;
 
@@ -79,8 +80,11 @@ export const DEFAULT_TYPE_INSTRUCTIONS_DIR = `${DEFAULT_INSTRUCTIONS_DIR}/types`
 
 export const DEFAULT_INSTRUCTIONS_CLASSIFY_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/classify.md`;
 export const DEFAULT_INSTRUCTIONS_COMPOSE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/compose.md`;
+export const DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}/transcribe.md`;
 
 // TODO: Add more models, but also this should be a part of an OpenAI specific extension.
 export const ALLOWED_MODELS: string[] = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'o3-mini', 'o3-preview', 'o1-pro', 'o1-preview-2024-09-12'];
 
 export const DEFAULT_OVERRIDES = false;
+export const DEFAULT_MAX_AUDIO_SIZE = 26214400; // 25MB in bytes
+export const DEFAULT_TEMP_DIRECTORY = os.tmpdir(); // Use OS default temp directory

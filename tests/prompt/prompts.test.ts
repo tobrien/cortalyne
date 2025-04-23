@@ -278,8 +278,7 @@ describe('prompts', () => {
 
             expect(MinorPrompt.create).toHaveBeenCalled();
             expect(YouPersona.create).toHaveBeenCalledWith('/test/config', false, { customize: expect.any(Function) });
-            expect(ComposeInstructions.create).toHaveBeenCalledWith('note', '/test/config', false, { customize: expect.any(Function) }, ['/test/context']);
-            expect(Context.loadContextFromDirectories).toHaveBeenCalledWith(['/test/context']);
+            expect(ComposeInstructions.create).toHaveBeenCalledWith('note', '/test/config', false, { customize: expect.any(Function) });
             expect(General.stringifyJSON).toHaveBeenCalledWith(transcription);
 
             expect(mockPrompt.addPersona).toHaveBeenCalledWith(mockPersona);

@@ -11,6 +11,7 @@ var fs: {
         writeFile: jest.Mock<() => Promise<void>>,
         lstatSync: jest.Mock<() => Promise<any>>,
         readdir: jest.Mock<() => Promise<string[]>>,
+        unlink: jest.Mock<() => Promise<void>>,
     },
     createReadStream: jest.Mock<() => Promise<any>>,
     constants: {
@@ -29,6 +30,7 @@ const mockWriteFile = jest.fn<() => Promise<void>>();
 const mockLstatSync = jest.fn<() => Promise<any>>();
 const mockReaddir = jest.fn<() => Promise<string[]>>();
 const mockCreateReadStream = jest.fn<() => Promise<any>>();
+const mockUnlink = jest.fn<() => Promise<void>>();
 
 jest.unstable_mockModule('fs', () => ({
     __esModule: true,
@@ -39,7 +41,8 @@ jest.unstable_mockModule('fs', () => ({
         readFile: mockReadFile,
         writeFile: mockWriteFile,
         lstatSync: mockLstatSync,
-        readdir: mockReaddir
+        readdir: mockReaddir,
+        unlink: mockUnlink
     },
     createReadStream: mockCreateReadStream,
     constants: {
@@ -472,6 +475,32 @@ describe('Storage Utility', () => {
             const result = await storage.isDirectoryReadable('/test/dir');
 
             expect(result).toBe(false);
+        });
+    });
+
+    describe('deleteFile', () => {
+        it('should delete a file', async () => {
+            mockUnlink.mockResolvedValueOnce(undefined);
+
+            await storage.deleteFile('/test/file.txt');
+
+            expect(mockUnlink).toHaveBeenCalledWith('/test/file.txt');
+        });
+    });
+
+    describe('getFileSize', () => {
+        it('should return the size of a file', async () => {
+            const fileStats = {
+                size: 12345,
+                isFile: () => true,
+                isDirectory: () => false
+            };
+            mockStat.mockResolvedValueOnce(fileStats);
+
+            const size = await storage.getFileSize('/test/file.txt');
+
+            expect(size).toBe(12345);
+            expect(mockStat).toHaveBeenCalledWith('/test/file.txt');
         });
     });
 });

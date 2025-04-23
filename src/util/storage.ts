@@ -29,6 +29,7 @@ export interface Utility {
     hashFile: (path: string, length: number) => Promise<string>;
     listFiles: (directory: string) => Promise<string[]>;
     deleteFile: (path: string) => Promise<void>;
+    getFileSize: (path: string) => Promise<number>;
 }
 
 export const create = (params: { log?: (message: string, ...args: any[]) => void }): Utility => {
@@ -140,6 +141,11 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         await fs.promises.unlink(path);
     }
 
+    const getFileSize = async (path: string): Promise<number> => {
+        const stats = await fs.promises.stat(path);
+        return stats.size;
+    }
+
     return {
         exists,
         isDirectory,
@@ -157,5 +163,6 @@ export const create = (params: { log?: (message: string, ...args: any[]) => void
         hashFile,
         listFiles,
         deleteFile,
+        getFileSize,
     };
 }
