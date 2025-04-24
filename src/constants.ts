@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import os from 'os';
-import { FilenameOption, OutputStructure } from '@tobrien/cabazooka';
+import { FilenameOption } from '@tobrien/cabazooka';
+import { FilesystemStructure } from '@tobrien/cabazooka';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'cortalyne';
@@ -56,10 +57,10 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
     text: z.string(),
 });
 
-export const DEFAULT_OUTPUT_STRUCTURE = 'month' as OutputStructure;
+export const DEFAULT_OUTPUT_STRUCTURE = 'month' as FilesystemStructure;
 export const DEFAULT_OUTPUT_FILENAME_OPTIONS = ['date', 'subject'] as FilenameOption[];
 
-export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as OutputStructure[];
+export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as FilesystemStructure[];
 export const ALLOWED_OUTPUT_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
 
 export const DEFAULT_CONFIG_DIR = `./.${PROGRAM_NAME}`;

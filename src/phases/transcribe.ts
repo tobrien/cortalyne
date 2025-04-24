@@ -1,5 +1,5 @@
 import * as Cabazooka from '@tobrien/cabazooka';
-import { Config } from 'main';
+import { Config } from '../cortalyne';
 import * as Logging from '../logging';
 import * as Storage from '../util/storage';
 import * as Media from '../util/media';

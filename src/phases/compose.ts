@@ -2,7 +2,7 @@ import * as Chat from '@tobrien/minorprompt/chat';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import path from 'path';
 import * as Logging from '../logging';
-import { Config } from '../main';
+import { Config } from '../cortalyne';
 import { ClassifiedTranscription } from '../processor';
 import * as Override from '../prompt/override';
 import * as Prompt from '../prompt/prompts';

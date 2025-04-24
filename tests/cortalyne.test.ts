@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 // Variables to hold dynamically imported modules
-let main: { main: () => Promise<void> };
+let cortalyne: { main: () => Promise<void> };
 
 // Define a simplified mock config 
 const mockConfig = {
@@ -113,7 +113,7 @@ afterAll(() => {
 // Load all dynamic imports before tests
 beforeAll(async () => {
     // Import the module under test after all mocks are set up
-    main = await import('../src/main.js');
+    cortalyne = await import('../src/cortalyne.js');
 });
 
 describe('main', () => {
@@ -122,7 +122,7 @@ describe('main', () => {
     });
 
     it('should run the main process successfully', async () => {
-        await main.main();
+        await cortalyne.main();
 
         // Verify that the logger was configured
         expect(mockLogger.debug).toHaveBeenCalledWith('Debug logging enabled');
@@ -142,7 +142,7 @@ describe('main', () => {
         // @ts-ignore - ignore TypeScript errors for jest mocks
         mockProcessFn.mockRejectedValueOnce(new Error('Test error'));
 
-        await main.main();
+        await cortalyne.main();
 
         // Verify error was logged
         expect(mockLogger.error).toHaveBeenCalledWith(
@@ -169,7 +169,7 @@ describe('main', () => {
 
         const loggingModule = await import('../src/logging.js');
 
-        await main.main();
+        await cortalyne.main();
 
         // Verify setLogLevel was called with 'verbose'
         expect(loggingModule.setLogLevel).toHaveBeenCalledWith('verbose');
@@ -189,7 +189,7 @@ describe('main', () => {
 
         const loggingModule = await import('../src/logging.js');
 
-        await main.main();
+        await cortalyne.main();
 
         // Verify setLogLevel was called with 'debug'
         expect(loggingModule.setLogLevel).toHaveBeenCalledWith('debug');

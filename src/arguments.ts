@@ -3,17 +3,17 @@ import { Command } from "commander";
 import { ALLOWED_MODELS, DEFAULT_CONFIG_DIR, DEFAULT_DEBUG, DEFAULT_DRY_RUN, DEFAULT_MAX_AUDIO_SIZE, DEFAULT_MODEL, DEFAULT_OVERRIDES, DEFAULT_PROCESSED_DIR, DEFAULT_TEMP_DIRECTORY, DEFAULT_TRANSCRIPTION_MODEL, DEFAULT_VERBOSE, PROGRAM_NAME, VERSION } from "./constants";
 import { getLogger } from "./logging";
 import * as Storage from "./util/storage";
-import { Config } from "./main";
+import { Config } from "./cortalyne";
 import os from 'os';
+import * as GiveMeTheConfig from '@tobrien/givemetheconfig';
 
-export interface Input extends Cabazooka.Input {
+export interface Args extends Cabazooka.Args, GiveMeTheConfig.Args {
     dryRun: boolean;
     verbose: boolean;
     debug: boolean;
     transcriptionModel: string;
     model: string;
     openaiApiKey: string;
-    configDir: string;
     overrides: boolean;
     processedDir: string;
     classifyModel?: string;
@@ -23,7 +23,7 @@ export interface Input extends Cabazooka.Input {
     tempDirectory?: string;
 }
 
-export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config]> => {
+export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig): Promise<[Config]> => {
     let program = new Command();
     program
         .name(PROGRAM_NAME)
@@ -35,7 +35,6 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config
         .option('--openai-api-key <openaiApiKey>', 'OpenAI API key', process.env.OPENAI_API_KEY)
         .option('--transcription-model <transcriptionModel>', 'OpenAI transcription model to use', DEFAULT_TRANSCRIPTION_MODEL)
         .option('--model <model>', 'OpenAI model to use', DEFAULT_MODEL)
-        .option('--config-dir <configDir>', 'config directory', DEFAULT_CONFIG_DIR)
         .option('--processed-dir <processedDir>', 'directory for processed audio files', DEFAULT_PROCESSED_DIR)
         .option('--overrides', 'allow overrides of the default configuration', DEFAULT_OVERRIDES)
         .option('--classify-model <classifierModel>', 'classifier model to use')
@@ -46,34 +45,39 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka): Promise<[Config
 
     // Add common cabazooka options
     program = await cabazooka.configure(program);
+    program = await givemetheconfig.configure(program);
     program.version(VERSION);
 
     program.parse();
 
-    const input: Input = program.opts<Input>();
+    const input: Args = program.opts<Args>();
 
     const cabazookaRunConfig: Cabazooka.Config = await cabazooka.validate(input);
     // eslint-disable-next-line no-console
     console.debug('Cabazooka run config: %j', cabazookaRunConfig);
+
+    const givemetheconfigRunConfig: GiveMeTheConfig.Config = await givemetheconfig.validate(input);
+    // eslint-disable-next-line no-console
+    console.debug('GiveMeTheConfig run config: %j', givemetheconfigRunConfig);
 
 
     const params = await validateInput(input);
 
     const combinedRunConfig: Config = {
         ...cabazookaRunConfig,
+        ...givemetheconfigRunConfig,
         ...params,
     } as Config;
 
     return [combinedRunConfig];
 }
 
-async function validateInput(input: Input): Promise<{
+async function validateInput(input: Args): Promise<{
     dryRun: boolean;
     verbose: boolean;
     debug: boolean;
     model: string;
     transcriptionModel: string;
-    configDir: string;
     overrides: boolean;
     processedDir: string;
     classifyModel: string;
@@ -87,12 +91,6 @@ async function validateInput(input: Input): Promise<{
     if (!input.openaiApiKey) {
         throw new Error('OpenAI API key is required, set OPENAI_API_KEY environment variable');
     }
-
-
-    if (input.configDir) {
-        await validateConfigDirectory(input.configDir);
-    }
-
 
     validateModel(input.model, true, '--model');
     validateModel(input.classifyModel, false, '--classify-model');
@@ -113,7 +111,6 @@ async function validateInput(input: Input): Promise<{
         debug: input.debug,
         model: input.model,
         transcriptionModel: input.transcriptionModel ?? DEFAULT_TRANSCRIPTION_MODEL,
-        configDir: input.configDir ?? DEFAULT_CONFIG_DIR,
         processedDir: input.processedDir ?? DEFAULT_PROCESSED_DIR,
         overrides: input.overrides ?? DEFAULT_OVERRIDES,
         classifyModel: input.classifyModel ?? DEFAULT_MODEL,
@@ -131,14 +128,6 @@ function validateModel(model: string | undefined, required: boolean, modelOption
 
     if (model && !ALLOWED_MODELS.includes(model)) {
         throw new Error(`Invalid model: ${model}. Valid models are: ${ALLOWED_MODELS.join(', ')}`);
-    }
-}
-
-async function validateConfigDirectory(configDir: string) {
-    const logger = getLogger();
-    const storage = Storage.create({ log: logger.info });
-    if (!storage.isDirectoryReadable(configDir)) {
-        throw new Error(`Config directory does not exist: ${configDir}`);
     }
 }
 

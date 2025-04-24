@@ -1,6 +1,6 @@
 import * as path from 'path';
 import * as Logging from '../logging';
-import { Config } from '../main';
+import { Config } from '../cortalyne';
 import * as Storage from '../util/storage';
 
 export interface Instance {

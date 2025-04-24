@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { OutputStructure } from '@tobrien/cabazooka';
+import { FilesystemStructure } from '@tobrien/cabazooka';
 import { FilenameOption } from '@tobrien/cabazooka';
 import * as Chat from '@tobrien/minorprompt/chat';
 
@@ -92,7 +92,7 @@ describe('classify', () => {
         it('should create a classify instance with correct dependencies', () => {
             const config = {
                 timezone: 'UTC',
-                outputStructure: 'month' as OutputStructure,
+                outputStructure: 'month' as FilesystemStructure,
                 filenameOptions: ['date', 'time'] as FilenameOption[],
                 outputDirectory: '/output',
                 dryRun: false,

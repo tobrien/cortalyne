@@ -1,5 +1,5 @@
 import { jest } from '@jest/globals';
-import { OutputStructure } from '@tobrien/cabazooka';
+import { FilesystemStructure } from '@tobrien/cabazooka';
 import { FilenameOption } from '@tobrien/cabazooka';
 
 // Setup mock functions that will be used inside mock modules
@@ -80,7 +80,7 @@ describe('locate', () => {
         it('should create a locate instance with correct dependencies', () => {
             const runConfig = {
                 timezone: 'UTC',
-                outputStructure: 'month' as OutputStructure,
+                outputStructure: 'month' as FilesystemStructure,
                 filenameOptions: ['date', 'time'] as FilenameOption[],
                 outputDirectory: '/output',
                 dryRun: false,
@@ -120,7 +120,7 @@ describe('locate', () => {
         it('should process audio file and return correct metadata', async () => {
             const runConfig = {
                 timezone: 'UTC',
-                outputStructure: 'month' as OutputStructure,
+                outputStructure: 'month' as FilesystemStructure,
                 filenameOptions: ['date', 'time'] as FilenameOption[],
                 outputDirectory: '/output',
                 dryRun: false,
@@ -173,7 +173,7 @@ describe('locate', () => {
 
             const runConfig = {
                 timezone: 'UTC',
-                outputStructure: 'month' as OutputStructure,
+                outputStructure: 'month' as FilesystemStructure,
                 filenameOptions: ['date', 'time'] as FilenameOption[],
                 outputDirectory: '/output',
                 dryRun: false,
