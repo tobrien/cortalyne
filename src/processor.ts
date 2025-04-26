@@ -5,7 +5,7 @@ import * as ComposePhase from './phases/compose';
 import * as LocatePhase from './phases/locate';
 import * as CompletePhase from './phases/complete';
 import * as Cabazooka from '@tobrien/cabazooka';
-import { Config } from './main';
+import { Config } from './cortalyne';
 export interface ClassifiedTranscription {
     text: string;
     type: string;

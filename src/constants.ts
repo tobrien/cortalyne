@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import os from 'os';
-import { FilenameOption, OutputStructure } from '@tobrien/cabazooka';
+import { FilenameOption } from '@tobrien/cabazooka';
+import { FilesystemStructure } from '@tobrien/cabazooka';
 
 export const VERSION = '__VERSION__ (__GIT_BRANCH__/__GIT_COMMIT__ __GIT_TAGS__ __GIT_COMMIT_DATE__) __SYSTEM_INFO__';
 export const PROGRAM_NAME = 'cortalyne';
@@ -26,8 +27,6 @@ export const DATE_FORMAT_MILLISECONDS = 'SSS';
 export const DEFAULT_VERBOSE = false;
 export const DEFAULT_DRY_RUN = false;
 export const DEFAULT_DEBUG = false;
-export const DEFAULT_MODEL = 'gpt-4o-mini';
-export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-1';
 export const DEFAULT_CONTENT_TYPES = ['diff'];
 export const DEFAULT_RECURSIVE = false;
 export const DEFAULT_INPUT_DIRECTORY = './';
@@ -56,10 +55,10 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
     text: z.string(),
 });
 
-export const DEFAULT_OUTPUT_STRUCTURE = 'month' as OutputStructure;
+export const DEFAULT_OUTPUT_STRUCTURE = 'month' as FilesystemStructure;
 export const DEFAULT_OUTPUT_FILENAME_OPTIONS = ['date', 'subject'] as FilenameOption[];
 
-export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as OutputStructure[];
+export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as FilesystemStructure[];
 export const ALLOWED_OUTPUT_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
 
 export const DEFAULT_CONFIG_DIR = `./.${PROGRAM_NAME}`;
@@ -84,6 +83,12 @@ export const DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}
 
 // TODO: Add more models, but also this should be a part of an OpenAI specific extension.
 export const ALLOWED_MODELS: string[] = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'o3-mini', 'o3-preview', 'o1-pro', 'o1-preview-2024-09-12'];
+export const ALLOWED_TRANSCRIPTION_MODELS: string[] = ['whisper-1'];
+
+export const DEFAULT_CLASSIFY_MODEL = 'gpt-4o-mini';
+export const DEFAULT_COMPOSE_MODEL = 'o1-mini';
+export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-1';
+export const DEFAULT_MODEL = 'gpt-4o-mini';
 
 export const DEFAULT_OVERRIDES = false;
 export const DEFAULT_MAX_AUDIO_SIZE = 26214400; // 25MB in bytes

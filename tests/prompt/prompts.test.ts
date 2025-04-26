@@ -160,7 +160,7 @@ describe('prompts', () => {
         it('should create a factory with classification and compose methods', () => {
             // @ts-ignore - ignoring type errors for simplicity
             const factory = Prompts.create('gpt-4', {
-                configDir: '/test/config',
+                configDirectory: '/test/config',
                 overrides: false,
                 contextDirectories: []
             });
@@ -240,7 +240,7 @@ describe('prompts', () => {
         it('should create a classification prompt with proper components', async () => {
             // @ts-ignore - ignoring type errors for simplicity
             const factory = Prompts.create('gpt-4', {
-                configDir: '/test/config',
+                configDirectory: '/test/config',
                 overrides: false,
                 contextDirectories: ['/test/context']
             });
@@ -263,7 +263,7 @@ describe('prompts', () => {
         it('should create a compose prompt with proper components', async () => {
             // @ts-ignore - ignoring type errors for simplicity
             const factory = Prompts.create('gpt-4', {
-                configDir: '/test/config',
+                configDirectory: '/test/config',
                 overrides: false,
                 contextDirectories: ['/test/context']
             });

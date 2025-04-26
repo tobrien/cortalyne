@@ -43,7 +43,7 @@ describe('Complete Phase', () => {
         it('should move audio file to processed directory with correct naming format', async () => {
             // Setup
             const config = {
-                processedDir: './processed',
+                processedDirectory: './processed',
                 dryRun: false
             };
 
@@ -91,7 +91,7 @@ describe('Complete Phase', () => {
         it('should create processed directory if it does not exist', async () => {
             // Setup
             const config = {
-                processedDir: './processed',
+                processedDirectory: './processed',
                 dryRun: false
             };
 
@@ -127,7 +127,7 @@ describe('Complete Phase', () => {
         it('should skip file movement in dry run mode', async () => {
             // Setup with dry run enabled
             const config = {
-                processedDir: './processed',
+                processedDirectory: './processed',
                 dryRun: true
             };
 

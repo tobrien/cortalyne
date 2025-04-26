@@ -3,7 +3,7 @@ import * as Media from '../util/media';
 import * as Storage from '../util/storage';
 import * as Cabazooka from '@tobrien/cabazooka';
 import * as Dates from '../util/dates';
-import { Config } from '../main';
+import { Config } from '../cortalyne';
 
 // Helper function to promisify ffmpeg.
 

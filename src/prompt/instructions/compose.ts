@@ -1,6 +1,5 @@
 import { Instruction, Section, createInstruction } from "@tobrien/minorprompt";
 import { DEFAULT_INSTRUCTIONS_COMPOSE_FILE } from "../../constants";
-import * as Context from "../context";
 import * as CallInstructions from "./types/call";
 import * as DocumentInstructions from "./types/document";
 import * as EmailInstructions from "./types/email";

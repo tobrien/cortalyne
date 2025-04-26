@@ -1,6 +1,6 @@
 import * as Cabazooka from '@tobrien/cabazooka';
 import * as Chat from '@tobrien/minorprompt/chat';
-import { Config } from 'main';
+import { Config } from '../cortalyne';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import { ClassifiedTranscription } from 'processor';

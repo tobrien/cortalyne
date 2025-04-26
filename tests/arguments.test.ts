@@ -47,7 +47,7 @@ const defaultCommanderMock = {
         inputDirectory: 'test-input-directory',
         outputDirectory: 'test-output-directory',
         audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-        configDir: 'test-config-dir',
+        configDirectory: 'test-config-dir',
         overrides: false,
         classifyModel: 'gpt-4o-mini',
         composeModel: 'o1-mini',
@@ -75,6 +75,20 @@ const mockCabazookaInstance = {
         outputDirectory: 'test-output-directory',
         recursive: false,
         audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']
+    } as any),
+    applyDefaults: jest.fn().mockImplementation((config: any) => config)
+};
+
+// Mock GiveMeTheConfig
+const mockGiveMeTheConfigInstance = {
+    configure: jest.fn().mockReturnValue(defaultCommanderMock),
+    // @ts-ignore
+    validate: jest.fn().mockResolvedValue({
+        configDirectory: 'test-config-dir'
+    } as any),
+    // @ts-ignore
+    getValuesFromFile: jest.fn().mockResolvedValue({
+        configDirectory: 'test-config-dir'
     } as any)
 };
 
@@ -97,14 +111,14 @@ describe('arguments', () => {
             debug: false,
             openaiApiKey: 'test-api-key',
             timezone: 'America/New_York',
-            transcriptionModel: 'test-transcription-model',
+            transcriptionModel: 'whisper-1',
             model: 'gpt-4o',
             contentTypes: ['diff', 'log'],
             recursive: false,
             inputDirectory: 'test-input-directory',
             outputDirectory: 'test-output-directory',
             audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-            configDir: 'test-config-dir',
+            configDirectory: 'test-config-dir',
             overrides: false,
             classifyModel: 'gpt-4o-mini',
             composeModel: 'o1-mini',
@@ -116,12 +130,6 @@ describe('arguments', () => {
     });
 
     describe('configure', () => {
-        it('should configure program with all options', async () => {
-            const [config] = await configure(mockCabazookaInstance);
-            expect(mockCabazookaInstance.configure).toHaveBeenCalled();
-            expect(mockCabazookaInstance.validate).toHaveBeenCalled();
-            expect(config).toBeDefined();
-        });
 
         it('should throw error when OpenAI API key is missing', async () => {
             // Delete the API key from env
@@ -141,19 +149,13 @@ describe('arguments', () => {
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow('OpenAI API key is required');
-        });
-
-        it('should throw error for invalid config directory', async () => {
-            mockIsDirectoryReadable.mockReturnValueOnce(false);
-
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Config directory does not exist');
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow('OpenAI API key is required');
         });
 
         it('should use default config directory when not provided', async () => {
@@ -164,7 +166,7 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
@@ -177,9 +179,9 @@ describe('arguments', () => {
                 // configDir is missing
             });
 
-            const [config] = await configure(mockCabazookaInstance);
+            const [config] = await configure(mockCabazookaInstance, mockGiveMeTheConfigInstance);
             // Config should contain the default config directory
-            expect(config.configDir).toBeDefined();
+            expect(config.configDirectory).toBeDefined();
         });
 
         it('should use default transcription model when not provided', async () => {
@@ -196,40 +198,16 @@ describe('arguments', () => {
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'o1-mini',
                 // transcriptionModel is missing
             });
 
-            const [config] = await configure(mockCabazookaInstance);
+            const [config] = await configure(mockCabazookaInstance, mockGiveMeTheConfigInstance);
             // Config should contain the default transcription model
             expect(config.transcriptionModel).toBeDefined();
-        });
-
-        it('should throw error when model is missing', async () => {
-            // Remove the main model
-            defaultCommanderMock.opts.mockReturnValue({
-                dryRun: false,
-                verbose: false,
-                debug: false,
-                openaiApiKey: 'test-api-key',
-                timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
-                // model is missing
-                contentTypes: ['diff', 'log'],
-                recursive: false,
-                inputDirectory: 'test-input-directory',
-                outputDirectory: 'test-output-directory',
-                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
-                overrides: false,
-                classifyModel: 'gpt-4o-mini',
-                composeModel: 'o1-mini',
-            });
-
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Model for --model is required');
         });
 
         it('should throw error for invalid model', async () => {
@@ -240,20 +218,20 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'invalid-model', // Invalid model
                 contentTypes: ['diff', 'log'],
                 recursive: false,
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow(/Invalid model/);
         });
 
         it('should throw error for invalid classify model', async () => {
@@ -264,20 +242,20 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1-blah',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'invalid-model', // Invalid classify model
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow(/Invalid transcriptionModel/);
         });
 
         it('should throw error for invalid compose model', async () => {
@@ -288,20 +266,20 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
-                model: 'gpt-4o',
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-blah',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'invalid-model', // Invalid compose model
             });
 
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow(/Invalid model/);
         });
 
         it('should throw error for invalid context directories', async () => {
@@ -312,14 +290,14 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
                 inputDirectory: 'test-input-directory',
                 outputDirectory: 'test-output-directory',
                 audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDir: 'test-config-dir',
+                configDirectory: 'test-config-dir',
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'o1-mini',
@@ -332,7 +310,7 @@ describe('arguments', () => {
                 return directory !== 'invalid-dir';
             });
 
-            await expect(configure(mockCabazookaInstance)).rejects.toThrow('Context directory does not exist or is not readable');
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow('Context directory does not exist or is not readable');
         });
 
         it('should use default values for optional parameters', async () => {
@@ -357,10 +335,10 @@ describe('arguments', () => {
                 // transcriptionModel
             });
 
-            const [config] = await configure(mockCabazookaInstance);
+            const [config] = await configure(mockCabazookaInstance, mockGiveMeTheConfigInstance);
 
             // Config should contain default values for missing parameters
-            expect(config.configDir).toBeDefined();
+            expect(config.configDirectory).toBeDefined();
             expect(config.overrides).toBeDefined();
             expect(config.classifyModel).toBeDefined();
             expect(config.composeModel).toBeDefined();

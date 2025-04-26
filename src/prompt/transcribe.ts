@@ -1,7 +1,7 @@
 import * as MinorPrompt from '@tobrien/minorprompt';
 import * as Chat from '@tobrien/minorprompt/chat';
 import { createPersona, Persona, createInstruction, Instruction, Section } from "@tobrien/minorprompt";
-import { Config } from '../main';
+import { Config } from '../cortalyne';
 import * as Context from './context';
 import * as Override from './override';
 import { DEFAULT_PERSONA_TRANSCRIBE_TRAITS_FILE, DEFAULT_PERSONA_TRANSCRIBE_INSTRUCTIONS_FILE, DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE } from '../constants';
@@ -74,10 +74,10 @@ export const createTranscribePrompt = async (
     const prompt: MinorPrompt.Instance = MinorPrompt.create();
 
     // Add persona
-    prompt.addPersona(await createTranscribePersona(config.configDir, config.overrides, { customize: Override.customize }));
+    prompt.addPersona(await createTranscribePersona(config.configDirectory, config.overrides, { customize: Override.customize }));
 
     // Add instructions
-    const instructions = await createTranscribeInstructions(config.configDir, config.overrides, { customize: Override.customize });
+    const instructions = await createTranscribeInstructions(config.configDirectory, config.overrides, { customize: Override.customize });
     instructions.forEach((instruction) => {
         prompt.addInstruction(instruction);
     });
