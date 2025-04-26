@@ -20,7 +20,7 @@ export const create = (config: Config): Instance => {
     const storage = Storage.create({ log: logger.debug });
     const prompts = Prompt.create(config.composeModel as Chat.Model, config);
 
-    const compose = async (transcription: ClassifiedTranscription, outputPath: string, filename: string, hash: string): Promise<any> => {
+    const compose = async (transcription: ClassifiedTranscription, outputPath: string, filename: string): Promise<any> => {
         // Look for a file in the outputPath that contains the hash and has a .json extension - let me be clear, the file name might have a lot of other stuff.  I need you to look for any filename that has that hash value in it.  Could you use a regexp?
         const files = await storage.listFiles(outputPath);
         const matchingFiles = files.filter((file: string) => file.includes(filename) && file.endsWith('.md'));

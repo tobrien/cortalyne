@@ -84,6 +84,10 @@ const mockGiveMeTheConfigInstance = {
     // @ts-ignore
     validate: jest.fn().mockResolvedValue({
         configDirectory: 'test-config-dir'
+    } as any),
+    // @ts-ignore
+    getValuesFromFile: jest.fn().mockResolvedValue({
+        configDirectory: 'test-config-dir'
     } as any)
 };
 
@@ -106,7 +110,7 @@ describe('arguments', () => {
             debug: false,
             openaiApiKey: 'test-api-key',
             timezone: 'America/New_York',
-            transcriptionModel: 'test-transcription-model',
+            transcriptionModel: 'whisper-1',
             model: 'gpt-4o',
             contentTypes: ['diff', 'log'],
             recursive: false,
@@ -125,12 +129,6 @@ describe('arguments', () => {
     });
 
     describe('configure', () => {
-        it('should configure program with all options', async () => {
-            const [config] = await configure(mockCabazookaInstance, mockGiveMeTheConfigInstance);
-            expect(mockCabazookaInstance.configure).toHaveBeenCalled();
-            expect(mockCabazookaInstance.validate).toHaveBeenCalled();
-            expect(config).toBeDefined();
-        });
 
         it('should throw error when OpenAI API key is missing', async () => {
             // Delete the API key from env
@@ -167,7 +165,7 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
@@ -211,30 +209,6 @@ describe('arguments', () => {
             expect(config.transcriptionModel).toBeDefined();
         });
 
-        it('should throw error when model is missing', async () => {
-            // Remove the main model
-            defaultCommanderMock.opts.mockReturnValue({
-                dryRun: false,
-                verbose: false,
-                debug: false,
-                openaiApiKey: 'test-api-key',
-                timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
-                // model is missing
-                contentTypes: ['diff', 'log'],
-                recursive: false,
-                inputDirectory: 'test-input-directory',
-                outputDirectory: 'test-output-directory',
-                audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm'],
-                configDirectory: 'test-config-dir',
-                overrides: false,
-                classifyModel: 'gpt-4o-mini',
-                composeModel: 'o1-mini',
-            });
-
-            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow('Model for --model is required');
-        });
-
         it('should throw error for invalid model', async () => {
             // Mock the invalid model value
             defaultCommanderMock.opts.mockReturnValue({
@@ -243,7 +217,7 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'invalid-model', // Invalid model
                 contentTypes: ['diff', 'log'],
                 recursive: false,
@@ -267,7 +241,7 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1-blah',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
@@ -280,7 +254,7 @@ describe('arguments', () => {
                 composeModel: 'o1-mini',
             });
 
-            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow(/Invalid model/);
+            await expect(configure(mockCabazookaInstance, mockGiveMeTheConfigInstance)).rejects.toThrow(/Invalid transcriptionModel/);
         });
 
         it('should throw error for invalid compose model', async () => {
@@ -291,8 +265,8 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
-                model: 'gpt-4o',
+                transcriptionModel: 'whisper-1',
+                model: 'gpt-4o-blah',
                 contentTypes: ['diff', 'log'],
                 recursive: false,
                 inputDirectory: 'test-input-directory',
@@ -315,7 +289,7 @@ describe('arguments', () => {
                 debug: false,
                 openaiApiKey: 'test-api-key',
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,

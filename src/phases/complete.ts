@@ -28,9 +28,9 @@ export const create = (config: Config): Instance => {
         }
 
         // Create the processed directory if it doesn't exist
-        if (!await storage.exists(config.processedDir)) {
-            logger.debug('Creating processed directory %s', config.processedDir);
-            await storage.createDirectory(config.processedDir);
+        if (!await storage.exists(config.processedDirectory)) {
+            logger.debug('Creating processed directory %s', config.processedDirectory);
+            await storage.createDirectory(config.processedDirectory);
         }
 
         // Get the file extension
@@ -43,7 +43,7 @@ export const create = (config: Config): Instance => {
         // Clean subject by removing special characters and spaces
         const cleanSubject = subject.replace(/[^a-zA-Z0-9]/g, '-').toLowerCase();
         const newFilename = `${dateStr}-${hash}-${classifiedType}-${cleanSubject}${fileExt}`;
-        const newFilePath = path.join(config.processedDir, newFilename);
+        const newFilePath = path.join(config.processedDirectory, newFilename);
 
         // Read the original file
         const fileContent = await storage.readFile(audioFile, 'binary');

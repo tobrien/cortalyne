@@ -27,8 +27,6 @@ export const DATE_FORMAT_MILLISECONDS = 'SSS';
 export const DEFAULT_VERBOSE = false;
 export const DEFAULT_DRY_RUN = false;
 export const DEFAULT_DEBUG = false;
-export const DEFAULT_MODEL = 'gpt-4o-mini';
-export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-1';
 export const DEFAULT_CONTENT_TYPES = ['diff'];
 export const DEFAULT_RECURSIVE = false;
 export const DEFAULT_INPUT_DIRECTORY = './';
@@ -85,6 +83,12 @@ export const DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE = `${DEFAULT_INSTRUCTIONS_DIR}
 
 // TODO: Add more models, but also this should be a part of an OpenAI specific extension.
 export const ALLOWED_MODELS: string[] = ['gpt-4o', 'gpt-4o-mini', 'o1-preview', 'o1-mini', 'o3-mini', 'o3-preview', 'o1-pro', 'o1-preview-2024-09-12'];
+export const ALLOWED_TRANSCRIPTION_MODELS: string[] = ['whisper-1'];
+
+export const DEFAULT_CLASSIFY_MODEL = 'gpt-4o-mini';
+export const DEFAULT_COMPOSE_MODEL = 'o1-mini';
+export const DEFAULT_TRANSCRIPTION_MODEL = 'whisper-1';
+export const DEFAULT_MODEL = 'gpt-4o-mini';
 
 export const DEFAULT_OVERRIDES = false;
 export const DEFAULT_MAX_AUDIO_SIZE = 26214400; // 25MB in bytes

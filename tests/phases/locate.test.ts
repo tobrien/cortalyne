@@ -98,7 +98,7 @@ describe('locate', () => {
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'gpt-4o-mini',
-                processedDir: './processed'
+                processedDirectory: './processed'
             };
 
             // Mock Cabazooka operator
@@ -138,7 +138,7 @@ describe('locate', () => {
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'gpt-4o-mini',
-                processedDir: './processed'
+                processedDirectory: './processed'
             };
 
             // Mock Cabazooka operator
@@ -191,7 +191,7 @@ describe('locate', () => {
                 overrides: false,
                 classifyModel: 'gpt-4o-mini',
                 composeModel: 'gpt-4o-mini',
-                processedDir: './processed'
+                processedDirectory: './processed'
             };
 
             // Mock Cabazooka operator

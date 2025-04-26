@@ -18,7 +18,7 @@ export const ConfigSchema = z.object({
     transcriptionModel: z.string(),
     contentTypes: z.array(z.string()),
     overrides: z.boolean(),
-    processedDir: z.string(),
+    processedDirectory: z.string(),
     classifyModel: z.string(),
     composeModel: z.string(),
     contextDirectories: z.array(z.string()).optional(),
@@ -53,10 +53,18 @@ export async function main() {
 
     const cabazooka = Cabazooka.create(cabazookaOptions);
 
+    const mergedShapeProperties = {
+        ...ConfigSchema.partial().shape,
+        ...Cabazooka.ConfigSchema.partial().shape
+    };
+    // @ts-expect-error This isn't causing an error.
+    const combinedShape = z.object(mergedShapeProperties);
+
     const givemetheconfigOptions = GiveMeTheConfig.createOptions({
         defaults: {
             configDirectory: DEFAULT_CONFIG_DIR,
         },
+        configShape: combinedShape.shape,
         features: GiveMeTheConfig.DEFAULT_FEATURES,
     });
 
@@ -64,19 +72,23 @@ export async function main() {
 
     const [config]: [Config] = await Arguments.configure(cabazooka, givemetheconfig);
 
+    console.log('Config: %s', JSON.stringify(config, null, 2));
+
     // Set log level based on verbose flag
-    if (config.verbose) {
+    if (config.verbose === true) {
         setLogLevel('verbose');
     }
-    if (config.debug) {
+    if (config.debug === true) {
         setLogLevel('debug');
     }
 
     const logger = getLogger();
     cabazooka.setLogger(logger);
 
+    logger.info('Test: %s', config.debug);
     logger.debug('Debug logging enabled');
-    logger.debug('Run config: %j', config);
+
+    logger.debug('Cortalyne Config: %s', JSON.stringify(config, null, 2));
 
 
     try {

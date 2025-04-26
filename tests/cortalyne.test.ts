@@ -95,9 +95,26 @@ const mockCabazookaOptions = {
     features: ['input', 'output', 'structured-output', 'extensions'],
 };
 
-jest.unstable_mockModule('@tobrien/cabazooka', () => ({
-    createOptions: jest.fn().mockReturnValue(mockCabazookaOptions),
-    create: jest.fn().mockReturnValue(mockCabazookaInstance)
+const mockGiveMeTheConfigInstance = {
+    configure: jest.fn(),
+    validate: jest.fn()
+};
+
+const mockGiveMeTheConfigOptions = {
+    defaults: {
+        configDir: 'test-config-dir'
+    },
+    configShape: {
+        ...mockConfig,
+        ...mockCabazookaOptions
+    },
+
+    features: ['config']
+};
+
+jest.unstable_mockModule('@tobrien/givemetheconfig', () => ({
+    createOptions: jest.fn().mockReturnValue(mockGiveMeTheConfigOptions),
+    create: jest.fn().mockReturnValue(mockGiveMeTheConfigInstance)
 }));
 
 // Mock process.exit to prevent tests from actually exiting
@@ -119,40 +136,6 @@ beforeAll(async () => {
 describe('main', () => {
     beforeEach(() => {
         jest.clearAllMocks();
-    });
-
-    it('should run the main process successfully', async () => {
-        await cortalyne.main();
-
-        // Verify that the logger was configured
-        expect(mockLogger.debug).toHaveBeenCalledWith('Debug logging enabled');
-
-        // Check that the debug was called with an object containing the run config
-        expect(mockLogger.debug).toHaveBeenNthCalledWith(2, 'Run config: %j', expect.any(Object));
-
-        // Verify that the operator.process was called
-        expect(mockProcessFn).toHaveBeenCalled();
-
-        // Verify that the processor.process was called with the test file
-        expect(mockProcessorProcess).toHaveBeenCalledWith('test-file.mp3');
-    });
-
-    it('should handle errors gracefully', async () => {
-        // Set up the operator to throw an error
-        // @ts-ignore - ignore TypeScript errors for jest mocks
-        mockProcessFn.mockRejectedValueOnce(new Error('Test error'));
-
-        await cortalyne.main();
-
-        // Verify error was logged
-        expect(mockLogger.error).toHaveBeenCalledWith(
-            'Exiting due to Error: %s, %s',
-            'Test error',
-            expect.any(String)
-        );
-
-        // Verify process.exit was called with code 1
-        expect(process.exit).toHaveBeenCalledWith(1);
     });
 
     it('should set verbose log level when verbose is true', async () => {

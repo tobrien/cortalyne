@@ -97,7 +97,7 @@ const mockOperator = {
 const mockConfig = {
     model: 'gpt-4o',
     transcriptionModel: 'whisper-1',
-    processedDir: './processed',
+    processedDirectory: './processed',
     dryRun: false
 };
 
