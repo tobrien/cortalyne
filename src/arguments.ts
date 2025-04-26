@@ -20,7 +20,6 @@ import {
 import { Config } from "./cortalyne";
 import { getLogger } from "./logging";
 import * as Storage from "./util/storage";
-import { z } from "zod";
 import { DEFAULT_CONFIG_DIRECTORY } from "@tobrien/givemetheconfig";
 
 export interface Args extends Cabazooka.Args, GiveMeTheConfig.Args {
@@ -39,7 +38,7 @@ export interface Args extends Cabazooka.Args, GiveMeTheConfig.Args {
     tempDirectory?: string;
 }
 
-export const configure = async <T extends z.ZodTypeAny>(cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig<T>): Promise<[Config]> => {
+export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig): Promise<[Config]> => {
     const logger = getLogger();
 
     let program = new Command();
@@ -88,8 +87,7 @@ export const configure = async <T extends z.ZodTypeAny>(cabazooka: Cabazooka.Cab
         classifyModel: DEFAULT_MODEL,
         composeModel: DEFAULT_MODEL,
         // Ensure configDirectory default handling remains consistent with givemetheconfig
-        // @ts-expect-error - Need to handle potential undefined options/defaults
-        configDirectory: givemetheconfig.options?.defaults?.configDirectory || DEFAULT_CONFIG_DIRECTORY,
+        configDirectory: DEFAULT_CONFIG_DIRECTORY,
     };
 
     // Merge with correct precedence:
@@ -99,7 +97,8 @@ export const configure = async <T extends z.ZodTypeAny>(cabazooka: Cabazooka.Cab
     // 2. File values
     // 3. Environment variables
     // 4. All CLI arguments (re-applied for highest precedence)
-    // @ts-expect-error - Need to handle potential undefined options/defaults
+
+    // @ts-expect-error - maxAudioSize might be a string temporarily from cliArgs or fileValues, handled below
     const mergedConfig: Partial<Config> = {
         ...cortalyneDefaults,    // Start with Cortalyne defaults
         ...(fileValues ?? {}),   // Apply file values (overwrites defaults), ensure object

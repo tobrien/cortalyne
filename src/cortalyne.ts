@@ -58,7 +58,7 @@ export async function main() {
         ...ConfigSchema.partial().shape,
         ...Cabazooka.ConfigSchema.partial().shape
     };
-    // @ts-expect-error This isn't causing an error.
+
     const combinedShape = z.object(mergedShapeProperties);
 
     const givemetheconfigOptions = GiveMeTheConfig.createOptions({
