@@ -1,6 +1,6 @@
 {
     "name": "@tobrien/cortalyne",
-    "version": "0.1.6",
+    "version": "0.1.7",
     "description": "Cortalyne doesn’t help you think. It removes what gets in the way.",
     "main": "dist/main.js",
     "type": "module",
