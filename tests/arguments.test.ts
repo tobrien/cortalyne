@@ -75,7 +75,8 @@ const mockCabazookaInstance = {
         outputDirectory: 'test-output-directory',
         recursive: false,
         audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']
-    } as any)
+    } as any),
+    applyDefaults: jest.fn().mockImplementation((config: any) => config)
 };
 
 // Mock GiveMeTheConfig

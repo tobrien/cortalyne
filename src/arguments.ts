@@ -68,12 +68,14 @@ export const configure = async <T extends z.ZodTypeAny>(cabazooka: Cabazooka.Cab
     program.parse();
 
     const cliArgs: Args = program.opts<Args>();
-    logger.debug('Raw CLI args: %s', JSON.stringify(cliArgs, null, 2));
+    logger.info('Loaded Command Line Options: %s', JSON.stringify(cliArgs, null, 2));
 
+
+    // Get values from config file first
     const fileValues = await givemetheconfig.getValuesFromFile(cliArgs);
-    logger.debug('Raw file config values: %s', JSON.stringify(fileValues, null, 2));
 
-    const mergedConfig: Partial<Config> = {
+    // Define Cortalyne-specific defaults
+    const cortalyneDefaults = {
         dryRun: DEFAULT_DRY_RUN,
         verbose: DEFAULT_VERBOSE,
         debug: DEFAULT_DEBUG,
@@ -85,68 +87,50 @@ export const configure = async <T extends z.ZodTypeAny>(cabazooka: Cabazooka.Cab
         tempDirectory: DEFAULT_TEMP_DIRECTORY || os.tmpdir(),
         classifyModel: DEFAULT_MODEL,
         composeModel: DEFAULT_MODEL,
-        // @ts-expect-error - configDirectory is not part of the Config type
-        configDirectory: fileValues.configDirectory || DEFAULT_CONFIG_DIRECTORY,
-
-        ...(fileValues?.dryRun !== undefined && { dryRun: fileValues.dryRun }),
-        ...(fileValues?.verbose !== undefined && { verbose: fileValues.verbose }),
-        ...(fileValues?.debug !== undefined && { debug: fileValues.debug }),
-        ...(fileValues?.openaiApiKey !== undefined && { openaiApiKey: fileValues.openaiApiKey }),
-        ...(fileValues?.transcriptionModel !== undefined && { transcriptionModel: fileValues.transcriptionModel }),
-        ...(fileValues?.model !== undefined && { model: fileValues.model }),
-        ...(fileValues?.processedDirectory !== undefined && { processedDirectory: fileValues.processedDirectory }),
-        ...(fileValues?.overrides !== undefined && { overrides: fileValues.overrides }),
-        ...(fileValues?.classifyModel !== undefined && { classifyModel: fileValues.classifyModel }),
-        ...(fileValues?.composeModel !== undefined && { composeModel: fileValues.composeModel }),
-        ...(fileValues?.contextDirectories !== undefined && { contextDirectories: fileValues.contextDirectories }),
-        ...(fileValues?.maxAudioSize !== undefined && typeof fileValues.maxAudioSize === 'number' && { maxAudioSize: fileValues.maxAudioSize }),
-        ...(fileValues?.maxAudioSize !== undefined && typeof fileValues.maxAudioSize === 'string' && { maxAudioSize: parseInt(fileValues.maxAudioSize, 10) }),
-        ...(fileValues?.tempDirectory !== undefined && { tempDirectory: fileValues.tempDirectory }),
-
-        ...(process.env.OPENAI_API_KEY !== undefined && { openaiApiKey: process.env.OPENAI_API_KEY }),
-
-        ...(cliArgs.dryRun !== undefined && { dryRun: cliArgs.dryRun }),
-        ...(cliArgs.verbose !== undefined && { verbose: cliArgs.verbose }),
-        ...(cliArgs.debug !== undefined && { debug: cliArgs.debug }),
-        ...(cliArgs.openaiApiKey !== undefined && { openaiApiKey: cliArgs.openaiApiKey }),
-        ...(cliArgs.transcriptionModel !== undefined && { transcriptionModel: cliArgs.transcriptionModel }),
-        ...(cliArgs.model !== undefined && { model: cliArgs.model }),
-        ...(cliArgs.processedDirectory !== undefined && { processedDirectory: cliArgs.processedDirectory }),
-        ...(cliArgs.overrides !== undefined && { overrides: cliArgs.overrides }),
-        ...(cliArgs.classifyModel !== undefined && { classifyModel: cliArgs.classifyModel }),
-        ...(cliArgs.composeModel !== undefined && { composeModel: cliArgs.composeModel }),
-        ...(cliArgs.contextDirectories !== undefined && { contextDirectories: cliArgs.contextDirectories }),
-        ...(cliArgs.maxAudioSize !== undefined && typeof cliArgs.maxAudioSize === 'number' && { maxAudioSize: cliArgs.maxAudioSize }),
-        ...(cliArgs.maxAudioSize !== undefined && typeof cliArgs.maxAudioSize === 'string' && { maxAudioSize: parseInt(cliArgs.maxAudioSize, 10) }),
-        ...(cliArgs.tempDirectory !== undefined && { tempDirectory: cliArgs.tempDirectory }),
+        // Ensure configDirectory default handling remains consistent with givemetheconfig
+        // @ts-expect-error - Need to handle potential undefined options/defaults
+        configDirectory: givemetheconfig.options?.defaults?.configDirectory || DEFAULT_CONFIG_DIRECTORY,
     };
 
+    // Merge with correct precedence:
+    // 1. Cortalyne defaults
+    // Merge with correct precedence:
+    // 1. Cortalyne defaults
+    // 2. File values
+    // 3. Environment variables
+    // 4. All CLI arguments (re-applied for highest precedence)
+    // @ts-expect-error - Need to handle potential undefined options/defaults
+    const mergedConfig: Partial<Config> = {
+        ...cortalyneDefaults,    // Start with Cortalyne defaults
+        ...(fileValues ?? {}),   // Apply file values (overwrites defaults), ensure object
+        ...(process.env.OPENAI_API_KEY !== undefined && { openaiApiKey: process.env.OPENAI_API_KEY }), // Apply Env vars
+        ...cliArgs,              // Apply all CLI args last (highest precedence for all keys, including Cabazooka's)
+        // Ensure configDirectory from file/cli overrides default if necessary
+        ...(typeof fileValues?.configDirectory === 'string' ? { configDirectory: fileValues.configDirectory } : {}),
+    };
+
+
+    // Convert maxAudioSize if it's a string AFTER merging
     if (typeof mergedConfig.maxAudioSize === 'string') {
-        mergedConfig.maxAudioSize = parseInt(mergedConfig.maxAudioSize, 10);
-        if (isNaN(mergedConfig.maxAudioSize)) {
-            logger.warn(`Invalid maxAudioSize value detected after merge, using default: ${DEFAULT_MAX_AUDIO_SIZE}`);
-            mergedConfig.maxAudioSize = DEFAULT_MAX_AUDIO_SIZE;
+        const parsedSize = parseInt(mergedConfig.maxAudioSize, 10);
+        if (!isNaN(parsedSize)) {
+            mergedConfig.maxAudioSize = parsedSize;
+        } else {
+            logger.warn(`Invalid maxAudioSize value detected after merge: '${mergedConfig.maxAudioSize}', using default: ${DEFAULT_MAX_AUDIO_SIZE}`);
+            mergedConfig.maxAudioSize = DEFAULT_MAX_AUDIO_SIZE; // Use Cortalyne default if parsing fails
         }
     } else if (mergedConfig.maxAudioSize === undefined) {
+        // If still undefined after all merges, apply Cortalyne default
         mergedConfig.maxAudioSize = DEFAULT_MAX_AUDIO_SIZE;
     }
 
-    const cabazookaKeys = Object.keys(cliArgs).filter(k => k in Cabazooka.ConfigSchema.shape);
-    for (const key of cabazookaKeys) {
-        if (cliArgs[key as keyof Args] !== undefined) {
-            mergedConfig[key as keyof Config] = cliArgs[key as keyof Args] as any;
-        }
-        else if (fileValues?.[key as keyof Args] !== undefined) {
-            mergedConfig[key as keyof Config] = fileValues[key as keyof Args] as any;
-        }
-    }
-
     const finalConfig = mergedConfig as Config;
-    logger.debug('Final merged config: %s', JSON.stringify(finalConfig, null, 2));
 
     await validateFinalConfig(finalConfig);
 
-    return [finalConfig];
+    const returnConfig = cabazooka.applyDefaults(finalConfig) as Config;
+    logger.info('Final configuration: %s', JSON.stringify(returnConfig, null, 2));
+    return [returnConfig];
 }
 
 async function validateFinalConfig(config: Config): Promise<void> {

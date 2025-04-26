@@ -49,6 +49,7 @@ export async function main() {
             outputFilenameOptions: ALLOWED_OUTPUT_FILENAME_OPTIONS,
         },
         features: Cabazooka.DEFAULT_FEATURES,
+        addDefaults: false,
     });
 
     const cabazooka = Cabazooka.create(cabazookaOptions);
@@ -72,8 +73,6 @@ export async function main() {
 
     const [config]: [Config] = await Arguments.configure(cabazooka, givemetheconfig);
 
-    console.log('Config: %s', JSON.stringify(config, null, 2));
-
     // Set log level based on verbose flag
     if (config.verbose === true) {
         setLogLevel('verbose');
@@ -84,12 +83,6 @@ export async function main() {
 
     const logger = getLogger();
     cabazooka.setLogger(logger);
-
-    logger.info('Test: %s', config.debug);
-    logger.debug('Debug logging enabled');
-
-    logger.debug('Cortalyne Config: %s', JSON.stringify(config, null, 2));
-
 
     try {
 
