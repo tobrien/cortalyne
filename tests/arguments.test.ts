@@ -63,6 +63,8 @@ jest.mock('commander', () => {
 // Mock Cabazooka
 const mockCabazookaInstance = {
     configure: jest.fn().mockReturnValue(defaultCommanderMock),
+    read: jest.fn().mockImplementation((args: any) => args),
+    applyDefaults: jest.fn().mockImplementation((config: any) => config),
     // @ts-ignore
     validate: jest.fn().mockResolvedValue({
         timezone: 'America/New_York',
@@ -76,7 +78,6 @@ const mockCabazookaInstance = {
         recursive: false,
         audioExtensions: ['mp3', 'mp4', 'mpeg', 'mpga', 'm4a', 'wav', 'webm']
     } as any),
-    applyDefaults: jest.fn().mockImplementation((config: any) => config)
 };
 
 // Mock GiveMeTheConfig

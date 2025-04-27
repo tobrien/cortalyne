@@ -60,7 +60,7 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
         .option('--max-audio-size <maxAudioSize>', 'maximum audio file size in bytes')
         .option('--temp-directory <tempDirectory>', 'temporary directory for processing files')
 
-    program = await cabazooka.configure(program);
+    await cabazooka.configure(program);
     program = await givemetheconfig.configure(program);
     program.version(VERSION);
 
@@ -68,7 +68,6 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
 
     const cliArgs: Args = program.opts<Args>();
     logger.info('Loaded Command Line Options: %s', JSON.stringify(cliArgs, null, 2));
-
 
     // Get values from config file first
     const fileValues = await givemetheconfig.getValuesFromFile(cliArgs);
@@ -98,16 +97,29 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
     // 3. Environment variables
     // 4. All CLI arguments (re-applied for highest precedence)
 
-    // @ts-expect-error - maxAudioSize might be a string temporarily from cliArgs or fileValues, handled below
-    const mergedConfig: Partial<Config> = {
+    let mergedConfig: Partial<Config> = {
         ...cortalyneDefaults,    // Start with Cortalyne defaults
-        ...(fileValues ?? {}),   // Apply file values (overwrites defaults), ensure object
+        ...fileValues,   // Apply file values (overwrites defaults), ensure object
+    } as Partial<Config>;
+
+    mergedConfig = {
+        ...mergedConfig,
         ...(process.env.OPENAI_API_KEY !== undefined && { openaiApiKey: process.env.OPENAI_API_KEY }), // Apply Env vars
-        ...cliArgs,              // Apply all CLI args last (highest precedence for all keys, including Cabazooka's)
+    } as Partial<Config>;
+
+    // Read the Raw values from the Cabazooka Command Line Arguments
+    const cabazookaValues = await cabazooka.read(cliArgs);
+
+    mergedConfig = {
+        ...mergedConfig,
+        ...cabazookaValues,              // Apply all CLI args last (highest precedence for all keys, including Cabazooka's)
+    } as Partial<Config>;
+
+    mergedConfig = {
+        ...mergedConfig,
         // Ensure configDirectory from file/cli overrides default if necessary
         ...(typeof fileValues?.configDirectory === 'string' ? { configDirectory: fileValues.configDirectory } : {}),
-    };
-
+    } as Partial<Config>;
 
     // Convert maxAudioSize if it's a string AFTER merging
     if (typeof mergedConfig.maxAudioSize === 'string') {
@@ -123,8 +135,15 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
         mergedConfig.maxAudioSize = DEFAULT_MAX_AUDIO_SIZE;
     }
 
+    // Apply Cabazooka defaults
+    mergedConfig = cabazooka.applyDefaults(mergedConfig) as Partial<Config>;
+
     const finalConfig = mergedConfig as Config;
 
+    // Validate Cabazooka final config
+    cabazooka.validate(finalConfig);
+
+    // Validate Cortalyne final config
     await validateFinalConfig(finalConfig);
 
     const returnConfig = cabazooka.applyDefaults(finalConfig) as Config;

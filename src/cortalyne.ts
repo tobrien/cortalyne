@@ -34,7 +34,7 @@ export async function main() {
     // eslint-disable-next-line no-console
     console.info(`Starting ${PROGRAM_NAME}: ${VERSION}`);
 
-    const cabazookaOptions = Cabazooka.createOptions({
+    const cabazookaOptions = {
         defaults: {
             timezone: DEFAULT_TIMEZONE,
             extensions: DEFAULT_AUDIO_EXTENSIONS,
@@ -50,7 +50,7 @@ export async function main() {
         },
         features: Cabazooka.DEFAULT_FEATURES,
         addDefaults: false,
-    });
+    };
 
     const cabazooka = Cabazooka.create(cabazookaOptions);
 

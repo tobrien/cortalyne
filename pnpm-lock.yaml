@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@tobrien/cabazooka':
-        specifier: ^0.1.2
-        version: 0.1.2
+        specifier: ^0.1.3
+        version: 0.1.3
       '@tobrien/givemetheconfig':
         specifier: ^0.0.1
         version: 0.0.1
@@ -820,8 +820,8 @@ packages:
   '@swc/types@0.1.21':
     resolution: {integrity: sha512-2YEtj5HJVbKivud9N4bpPBAyZhj4S2Ipe5LkUG94alTpr7in/GU/EARgPAd3BwU+YOmFVJC2+kjqhGRi3r0ZpQ==}
 
-  '@tobrien/cabazooka@0.1.2':
-    resolution: {integrity: sha512-VJrFF7RMVN1U1jOOcObxpGK5XbdNYgwFqs5DnVDrPTCAQRJfdRZ9LL3yQ+7Ynga00v0jQ4Bgz3viQJJvKWE4ng==}
+  '@tobrien/cabazooka@0.1.3':
+    resolution: {integrity: sha512-Cu9DEWer2ybFcHpQ0g5mH6XWai2H5cQ6EXyKfq90tPac1Hjkxnfn6sJe8Y8qaRIeUNAYoRNsDSI6rp+DJt8/kQ==}
 
   '@tobrien/givemetheconfig@0.0.1':
     resolution: {integrity: sha512-Y4WU2q/Tw7KLKlpBk8HLX5iVnKmurCJqk9P/ssUNxLnfInbXpGktF/t73REcOSLYjY0hoVnmppQ/tWnyJSjILA==}
@@ -3519,7 +3519,7 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@tobrien/cabazooka@0.1.2':
+  '@tobrien/cabazooka@0.1.3':
     dependencies:
       '@tobrien/minorprompt': 0.0.2
       '@types/fluent-ffmpeg': 2.1.27
@@ -3527,7 +3527,7 @@ snapshots:
       dayjs: 1.11.13
       dotenv: 16.5.0
       fluent-ffmpeg: 2.1.3
-      glob: 11.0.1
+      glob: 11.0.2
       js-yaml: 4.1.0
       luxon: 3.6.1
       moment-timezone: 0.5.48

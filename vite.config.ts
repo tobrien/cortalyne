@@ -41,6 +41,9 @@ export default defineConfig({
             appPath: './src/main.ts',
             exportName: 'viteNodeApp',
             tsCompiler: 'swc',
+            swcOptions: {
+                sourceMaps: true,
+            },
         }),
         // visualizer({
         //     template: 'network',
