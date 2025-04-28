@@ -1,44 +1,19 @@
 import * as Cabazooka from "@tobrien/cabazooka";
 import * as GiveMeTheConfig from '@tobrien/givemetheconfig';
 import { Command } from "commander";
-import os from 'os';
 import {
     ALLOWED_MODELS,
     ALLOWED_TRANSCRIPTION_MODELS,
-    DEFAULT_DEBUG,
-    DEFAULT_DRY_RUN,
+    CORTALYNE_DEFAULTS,
     DEFAULT_MAX_AUDIO_SIZE,
-    DEFAULT_MODEL,
-    DEFAULT_OVERRIDES,
-    DEFAULT_PROCESSED_DIR,
-    DEFAULT_TEMP_DIRECTORY,
-    DEFAULT_TRANSCRIPTION_MODEL,
-    DEFAULT_VERBOSE,
     PROGRAM_NAME,
-    VERSION,
+    VERSION
 } from "./constants";
-import { Config } from "./cortalyne";
+import { Args, Config, SecureConfig } from "./cortalyne";
 import { getLogger } from "./logging";
 import * as Storage from "./util/storage";
-import { DEFAULT_CONFIG_DIRECTORY } from "@tobrien/givemetheconfig";
 
-export interface Args extends Cabazooka.Args, GiveMeTheConfig.Args {
-    dryRun?: boolean;
-    verbose?: boolean;
-    debug?: boolean;
-    transcriptionModel?: string;
-    model?: string;
-    openaiApiKey?: string;
-    overrides?: boolean;
-    processedDirectory?: string;
-    classifyModel?: string;
-    composeModel?: string;
-    contextDirectories?: string[];
-    maxAudioSize?: number | string;
-    tempDirectory?: string;
-}
-
-export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig): Promise<[Config]> => {
+export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig<any>): Promise<[Config, SecureConfig]> => {
     const logger = getLogger();
 
     let program = new Command();
@@ -70,56 +45,22 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
     logger.info('Loaded Command Line Options: %s', JSON.stringify(cliArgs, null, 2));
 
     // Get values from config file first
-    const fileValues = await givemetheconfig.getValuesFromFile(cliArgs);
-
-    // Define Cortalyne-specific defaults
-    const cortalyneDefaults = {
-        dryRun: DEFAULT_DRY_RUN,
-        verbose: DEFAULT_VERBOSE,
-        debug: DEFAULT_DEBUG,
-        transcriptionModel: DEFAULT_TRANSCRIPTION_MODEL,
-        model: DEFAULT_MODEL,
-        processedDirectory: DEFAULT_PROCESSED_DIR,
-        overrides: DEFAULT_OVERRIDES,
-        maxAudioSize: DEFAULT_MAX_AUDIO_SIZE,
-        tempDirectory: DEFAULT_TEMP_DIRECTORY || os.tmpdir(),
-        classifyModel: DEFAULT_MODEL,
-        composeModel: DEFAULT_MODEL,
-        // Ensure configDirectory default handling remains consistent with givemetheconfig
-        configDirectory: DEFAULT_CONFIG_DIRECTORY,
-    };
-
-    // Merge with correct precedence:
-    // 1. Cortalyne defaults
-    // Merge with correct precedence:
-    // 1. Cortalyne defaults
-    // 2. File values
-    // 3. Environment variables
-    // 4. All CLI arguments (re-applied for highest precedence)
-
-    let mergedConfig: Partial<Config> = {
-        ...cortalyneDefaults,    // Start with Cortalyne defaults
-        ...fileValues,   // Apply file values (overwrites defaults), ensure object
-    } as Partial<Config>;
-
-    mergedConfig = {
-        ...mergedConfig,
-        ...(process.env.OPENAI_API_KEY !== undefined && { openaiApiKey: process.env.OPENAI_API_KEY }), // Apply Env vars
-    } as Partial<Config>;
+    // Validate that the configuration read from the file is valid.
+    const fileValues = await givemetheconfig.read(cliArgs);
+    await givemetheconfig.validate(fileValues);
 
     // Read the Raw values from the Cabazooka Command Line Arguments
     const cabazookaValues = await cabazooka.read(cliArgs);
 
-    mergedConfig = {
-        ...mergedConfig,
+    let mergedConfig: Partial<Config> = {
+        ...CORTALYNE_DEFAULTS,    // Start with Cortalyne defaults
+        ...fileValues,   // Apply file values (overwrites defaults), ensure object
         ...cabazookaValues,              // Apply all CLI args last (highest precedence for all keys, including Cabazooka's)
     } as Partial<Config>;
 
-    mergedConfig = {
-        ...mergedConfig,
-        // Ensure configDirectory from file/cli overrides default if necessary
-        ...(typeof fileValues?.configDirectory === 'string' ? { configDirectory: fileValues.configDirectory } : {}),
-    } as Partial<Config>;
+    const secureConfig: SecureConfig = {
+        ...(process.env.OPENAI_API_KEY !== undefined && { openaiApiKey: process.env.OPENAI_API_KEY }), // Apply Env vars
+    } as SecureConfig;
 
     // Convert maxAudioSize if it's a string AFTER merging
     if (typeof mergedConfig.maxAudioSize === 'string') {
@@ -138,33 +79,33 @@ export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig:
     // Apply Cabazooka defaults
     mergedConfig = cabazooka.applyDefaults(mergedConfig) as Partial<Config>;
 
-    const finalConfig = mergedConfig as Config;
+    const config = mergedConfig as Config;
 
     // Validate Cabazooka final config
-    cabazooka.validate(finalConfig);
+    cabazooka.validate(config);
 
     // Validate Cortalyne final config
-    await validateFinalConfig(finalConfig);
+    await validateConfig(config);
+    await validateSecureConfig(secureConfig);
 
-    const returnConfig = cabazooka.applyDefaults(finalConfig) as Config;
-    logger.info('Final configuration: %s', JSON.stringify(returnConfig, null, 2));
-    return [returnConfig];
+    logger.info('Final configuration: %s', JSON.stringify(config, null, 2));
+    return [config, secureConfig];
 }
 
-async function validateFinalConfig(config: Config): Promise<void> {
+async function validateSecureConfig(config: SecureConfig): Promise<void> {
     const logger = getLogger();
-
-    // @ts-expect-error - openaiApiKey is not part of the Config type
     if (!config.openaiApiKey) {
-        // @ts-expect-error - openaiApiKey is not part of the Config type
         config.openaiApiKey = process.env.OPENAI_API_KEY;
 
-        // @ts-expect-error - openaiApiKey is not part of the Config type
         if (!config.openaiApiKey) {
             throw new Error('OpenAI API key is required. Provide it via CLI (--openai-api-key), config file, or OPENAI_API_KEY environment variable.');
         }
         logger.debug("Using OpenAI API key from environment variable.");
     }
+}
+
+async function validateConfig(config: Config): Promise<void> {
+    const logger = getLogger();
 
     validateModel(config.model, true, 'model', ALLOWED_MODELS);
     validateModel(config.transcriptionModel, true, 'transcriptionModel', ALLOWED_TRANSCRIPTION_MODELS);
