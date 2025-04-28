@@ -8,6 +8,22 @@ import * as Cabazooka from '@tobrien/cabazooka';
 import * as GiveMeTheConfig from '@tobrien/givemetheconfig';
 import { z } from 'zod';
 
+export interface Args extends Cabazooka.Args, GiveMeTheConfig.Args {
+    dryRun?: boolean;
+    verbose?: boolean;
+    debug?: boolean;
+    transcriptionModel?: string;
+    model?: string;
+    openaiApiKey?: string;
+    overrides?: boolean;
+    processedDirectory?: string;
+    classifyModel?: string;
+    composeModel?: string;
+    contextDirectories?: string[];
+    maxAudioSize?: number | string;
+    tempDirectory?: string;
+}
+
 export const ConfigSchema = z.object({
     dryRun: z.boolean(),
     verbose: z.boolean(),
@@ -26,8 +42,12 @@ export const ConfigSchema = z.object({
     tempDirectory: z.string(),
 });
 
-export type Config = z.infer<typeof ConfigSchema> & Cabazooka.Config & GiveMeTheConfig.Config;
+export const SecureConfigSchema = ConfigSchema.extend({
+    openaiApiKey: z.string().optional(),
+});
 
+export type Config = z.infer<typeof ConfigSchema> & Cabazooka.Config & GiveMeTheConfig.Config;
+export type SecureConfig = z.infer<typeof SecureConfigSchema>;
 
 export async function main() {
 
@@ -61,17 +81,14 @@ export async function main() {
 
     const combinedShape = z.object(mergedShapeProperties);
 
-    const givemetheconfigOptions = GiveMeTheConfig.createOptions({
+    const givemetheconfig = GiveMeTheConfig.create({
         defaults: {
             configDirectory: DEFAULT_CONFIG_DIR,
         },
         configShape: combinedShape.shape,
-        features: GiveMeTheConfig.DEFAULT_FEATURES,
     });
 
-    const givemetheconfig = GiveMeTheConfig.create(givemetheconfigOptions);
-
-    const [config]: [Config] = await Arguments.configure(cabazooka, givemetheconfig);
+    const [config, secureConfig]: [Config, SecureConfig] = await Arguments.configure(cabazooka, givemetheconfig);
 
     // Set log level based on verbose flag
     if (config.verbose === true) {
@@ -86,7 +103,10 @@ export async function main() {
 
     try {
 
-        const operator: Cabazooka.Operator = await cabazooka.operate(config);
+        const operator: Cabazooka.Operator = await cabazooka.operate({
+            ...config,
+            ...secureConfig,
+        });
         const processor = Processor.create(config, operator);
 
         await operator.process(async (file: string) => {

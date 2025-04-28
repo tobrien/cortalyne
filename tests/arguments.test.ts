@@ -88,7 +88,7 @@ const mockGiveMeTheConfigInstance = {
         configDirectory: 'test-config-dir'
     } as any),
     // @ts-ignore
-    getValuesFromFile: jest.fn().mockResolvedValue({
+    read: jest.fn().mockResolvedValue({
         configDirectory: 'test-config-dir'
     } as any)
 };
@@ -143,7 +143,7 @@ describe('arguments', () => {
                 debug: false,
                 // No openaiApiKey
                 timezone: 'America/New_York',
-                transcriptionModel: 'test-transcription-model',
+                transcriptionModel: 'whisper-1',
                 model: 'gpt-4o',
                 contentTypes: ['diff', 'log'],
                 recursive: false,

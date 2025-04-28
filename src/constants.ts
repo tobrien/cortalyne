@@ -93,3 +93,18 @@ export const DEFAULT_MODEL = 'gpt-4o-mini';
 export const DEFAULT_OVERRIDES = false;
 export const DEFAULT_MAX_AUDIO_SIZE = 26214400; // 25MB in bytes
 export const DEFAULT_TEMP_DIRECTORY = os.tmpdir(); // Use OS default temp directory
+
+// Define Cortalyne-specific defaults
+export const CORTALYNE_DEFAULTS = {
+    dryRun: DEFAULT_DRY_RUN,
+    verbose: DEFAULT_VERBOSE,
+    debug: DEFAULT_DEBUG,
+    transcriptionModel: DEFAULT_TRANSCRIPTION_MODEL,
+    model: DEFAULT_MODEL,
+    processedDirectory: DEFAULT_PROCESSED_DIR,
+    overrides: DEFAULT_OVERRIDES,
+    maxAudioSize: DEFAULT_MAX_AUDIO_SIZE,
+    tempDirectory: DEFAULT_TEMP_DIRECTORY || os.tmpdir(),
+    classifyModel: DEFAULT_MODEL,
+    composeModel: DEFAULT_MODEL,
+};
