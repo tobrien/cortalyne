@@ -1,11 +1,5 @@
-import { Section } from "@tobrien/minorprompt";
+# Call
 
-import { Instruction } from "@tobrien/minorprompt";
-
-import { createInstruction } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
-
-export const INSTRUCTION = `
 Task #1 - Organize information from a transcript of an audio recording of you reporting on a call with an individual or group of individuals.
 
 Task #2 - Analyze your transcript and determine the participants, who initiated the call, what tasks and follow-up actions were discussed, and what outcomes and decisions were discussed.
@@ -14,13 +8,13 @@ Task #3 - Produce a note in Markdown format that is roughly the same length or l
 
 If there is information in the <context> section, use that information in the context to help you identify people, projects, plans, and other entities mentioned in the transcript.
 
-#### Instructions for Generating a Call Summary Note
+## Instructions for Generating a Call Summary Note
 
 A "call"-type note typically captures details about a telephone conversation, Zoom call, or Microsoft Teams call, and it captures essential details such as attendees, main activities, outcomes, follow-up actions, and the direction of call initiation.
 
 Capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.
 
-#### Call Title
+## Call Title
 
 The title should clearly reflect the subject or purpose of the call. Determine the title with the following priority:
 
@@ -30,24 +24,24 @@ The title should clearly reflect the subject or purpose of the call. Determine t
 
 If the title is not explicitly stated, indicate this explicitly:
 
-\`\`\`markdown
+```markdown
 Title: *(Title not explicitly identified—suggested: "Sales Target Discussion")*
-\`\`\`
+```
 
 If the title isn't clear, use the subject from the transcript.
 
-### Participants
+## Participants
 
 List all individuals mentioned as being present on the call:
 
-\`\`\`markdown
+```markdown
 ## Participants
 - John Smith
 - Jane Doe
 - Alex Johnson
-\`\`\`
+```
 
-#### Call Initiation
+## Call Initiation
 
 Clearly indicate who initiated the call:
 
@@ -55,12 +49,12 @@ Clearly indicate who initiated the call:
 - If someone else initiated the call: "I received a call from [Caller's Name]."
 - If unclear: Explicitly state uncertainty, e.g., "I can't rememebr who called who, but I had a conversation with..."
 
-\`\`\`markdown
+```markdown
 ## Call Initiation
 I called Andy around Noon on his cell phone to discuss the status of the project.
-\`\`\`
+```
 
-#### Tasks and Follow-Up Actions
+## Tasks and Follow-Up Actions
 
 Tasks or follow-up actions mentioned explicitly in the transcript should be listed clearly. Classify each task if relevant:
 
@@ -69,23 +63,23 @@ Tasks or follow-up actions mentioned explicitly in the transcript should be list
 
 Share tasks in a bulleted list:
 
-\`\`\`markdown
+```markdown
 ## Tasks and Follow-Up Actions
 - [Urgent] Schedule follow-up meeting with marketing by Thursday.
 - [Overdue] Submit quarterly sales report immediately.
-\`\`\`
+```
 
-#### Outcomes and Decisions
+## Outcomes and Decisions
 
 Clearly document any outcomes, agreements, or decisions made during the call. Sharing the details succinctly and clearly:
 
-\`\`\`markdown
+```markdown
 ## Outcomes and Decisions
 - Agreement reached to increase sales targets by 10%.
 - Decision made to postpone the product launch until next quarter.
-\`\`\`
+```
 
-#### Call Details (Body)
+## Call Details (Body)
 
 The Body section should contain a structured readout of the call capturing the topics, activities, and subjects you discussed in the meeting.  
 
@@ -95,33 +89,33 @@ If you offer your own analysis of the call, include that in the readout as well.
 
 Include information clearly and concisely, ensuring accuracy regarding any significant details:
 
-\`\`\`markdown
+```markdown
 ## Call Details
 John called me around Noon and started to talk about what he did on the weekend before anyone dialed.  We discussed his upcoming golf trip, but then we were interrupted when Sunny dialed in and we were getting ready to start discussing the plan. The team dialied in and we started about constraints in the budget, and eventually it became clear that no one was aware of the impending economic crisis."
-\`\`\`
+```
 
 If you explicitly request verbatim text in the transcript, try to record that content as directly as possible.   If the you say, "There was an interesting quote from Jackie, she said, 'The mountains are green and the sky is blue'", then the verbatim text should be in the note.
 
 If you say, "Capture the follow text word for word", or "I'll quote John directly," then the information following that statement should be included with quotes as verbatim text.
 
-\`\`\`markdown
+```markdown
 **Verbatim Dictation:**  
 In the meeting, John commented to me, "We must finalize the sales strategy document by the end of this week and ensure that all stakeholders review it immediately."
-\`\`\`
+```
 
 ---
 
 ## Markdown Formatting Guidelines
 
-- Use \`##\` headers for Participants, Call Initiation, Tasks and Follow-Up Actions, Outcomes and Decisions, and Call Summary.
-- Use bullet points (\`-\`) for lists within these sections.
+- Use `##` headers for Participants, Call Initiation, Tasks and Follow-Up Actions, Outcomes and Decisions, and Call Summary.
+- Use bullet points (`-`) for lists within these sections.
 - Bold important classifications or notes.
 
 ---
 
 ## Example Call Details Note
 
-\`\`\`markdown
+```markdown
 Title: Q1 Sales Strategy Discussion
 
 ## Participants
@@ -142,7 +136,7 @@ I received a phone call from John Smith after lunch.
 
 ## Call Details
 John called me and was very upset.  The call began with John Smith outlining the current state of Q1 sales. Jane Doe provided insights into regional performance, suggesting increased investment in digital channels. Alex Johnson agreed to provide further analysis on regional trends. The call concluded with agreement on key actions and scheduling of follow-up discussions.
-\`\`\`
+```
 `;
 
 export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {

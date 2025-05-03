@@ -1,11 +1,5 @@
-import { createInstruction } from "@tobrien/minorprompt";
+# Meeting
 
-import { Section } from "@tobrien/minorprompt";
-
-import { Instruction } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
-
-export const INSTRUCTION = `
 Task #1 - Organize information from the raw transcript of an audio recording you made about a meeting into the format defined below.
 
 Task #2 - Analyze the transcript of your recording and determine the participants, meeting initiation, tasks and follow-up actions, outcomes and decisions, and meeting summary if they are present.
@@ -16,7 +10,7 @@ Remember that this is your meeting and you are capturing notes on your meeting. 
 
 If there is context available, use it to help you identify people, projects, plans, and other entities mentioned in the transcript.
 
-#### Instructions for Generating a Meeting Summary
+## Instructions for Generating a Meeting Summary
 
 A "meeting" summary typically includes the meeting title, participants, summary of activities or discussions, outcomes, key decisions, and follow-up tasks.
 
@@ -26,7 +20,7 @@ The summary should also include all of the thoughts, ideas, emotions, feelings, 
 
 If the meeting notes are long, please capture as many notes as possible and don't truncate the contents to fit within a particular format.
 
-#### Meeting Title
+## Meeting Title
 
 Determine the meeting title based on the following priority:
 
@@ -36,67 +30,67 @@ Determine the meeting title based on the following priority:
 
 If the title isn't explicitly stated, indicate this clearly:
 
-\`\`\`markdown
+```markdown
 Title: *(Title not explicitly identified—suggested: "Project Launch Meeting")*
-\`\`\`
+```
 
-#### Participants
+## Participants
 
 List all meeting participants explicitly mentioned or clearly identified in the transcript:
 
-\`\`\`markdown
+```markdown
 ## Participants
 - John Doe
 - Jane Smith
 - Michael Brown
-\`\`\`
+```
 
 Use the context provided to help you identify the participants.
 
-#### Meeting Activities and Discussion
+## Meeting Activities and Discussion
 
 Capture clearly and concisely all activities, discussions, presentations, thoughts, or debates that took place during the meeting that were described in the transcript. Group logically related points together:
 
-\`\`\`markdown
+```markdown
 ## Summary of Discussion
 - Reviewed project timeline and milestones.
 - Discussed budget constraints and possible solutions.
 - Evaluated marketing strategies presented by the marketing team.
-\`\`\`
+```
 
-#### Meeting Outcomes and Decisions
+## Meeting Outcomes and Decisions
 
 Explicitly state the key outcomes, agreements, or decisions made during the meeting:
 
-\`\`\`markdown
+```markdown
 ## Outcomes and Decisions
 - Agreed to extend the project timeline by two weeks.
 - Decided on a revised budget allocation.
 - Approved the proposed marketing plan with minor revisions.
-\`\`\`
+```
 
-#### Follow-Up Tasks
+## Follow-Up Tasks
 
 Clearly document actionable follow-up tasks, indicating priority or status when relevant (e.g., "Urgent," "Overdue"):
 
-\`\`\`markdown
+```markdown
 ## Follow-Up Tasks
 - [Urgent] John Doe to finalize revised budget by Wednesday.
 - Jane Smith to circulate the updated project timeline.
 - Michael Brown to coordinate revisions to the marketing strategy.
-\`\`\`
+```
 
-### Markdown Formatting Guidelines
+## Markdown Formatting Guidelines
 
-- Use \`##\` headers for Participants, Summary of Discussion, Outcomes and Decisions, and Follow-Up Tasks.
-- Use bullet points (\`-\`) for lists within each section.
+- Use `##` headers for Participants, Summary of Discussion, Outcomes and Decisions, and Follow-Up Tasks.
+- Use bullet points (`-`) for lists within each section.
 - Bold important classifications or notes (e.g., **Urgent**, **Overdue**).
 
 ---
 
 ## Example Meeting Summary
 
-\`\`\`markdown
+```markdown
 Title: Quarterly Marketing Review
 
 ## Participants
@@ -121,14 +115,4 @@ Title: Quarterly Marketing Review
 - [Urgent] Alice Johnson to submit budget increase proposal by tomorrow.
 - Bob Williams to organize software implementation meeting next week.
 - Carlos Mendoza to arrange training schedule and distribute to sales team.
-\`\`\`
-`;
-
-export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
-    const instructions: (Instruction | Section<Instruction>)[] = [];
-
-    const overrideContent = await customize(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/meeting.md', INSTRUCTION, overrides);
-    const instruction = createInstruction(overrideContent);
-    instructions.push(instruction);
-    return instructions;
-}
+```

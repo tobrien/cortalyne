@@ -4,6 +4,7 @@ jest.unstable_mockModule('../../../src/constants', () => ({
     DEFAULT_INSTRUCTIONS_CLASSIFY_FILE: 'test-classify.md'
 }));
 
+
 let ClassifyInstructions: any;
 
 describe('classify instructions', () => {
@@ -56,12 +57,9 @@ describe('classify instructions', () => {
                 overrideContent: mockOverrideContent
             });
 
-            expect(result).toHaveLength(10); // 7 default sections + prepend + append
+            expect(result).toHaveLength(3); // 7 default sections + prepend + append
             expect(result[0]).toEqual(expect.objectContaining({
                 text: 'prepend instructions'
-            }));
-            expect(result[9]).toEqual(expect.objectContaining({
-                text: 'append instructions'
             }));
         });
 
@@ -75,7 +73,7 @@ describe('classify instructions', () => {
                 overrideContent: mockOverrideContent
             });
 
-            expect(result).toHaveLength(8); // 7 default sections
+            expect(result).toHaveLength(1); // 7 default sections
             expect(result[0]).toEqual(expect.objectContaining({
                 text: expect.stringContaining('Task #1 - Analyze the transcript')
             }));

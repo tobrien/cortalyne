@@ -1,57 +1,23 @@
 import { jest } from '@jest/globals';
 
 jest.unstable_mockModule('../../../src/constants', () => ({
-    DEFAULT_INSTRUCTIONS_COMPOSE_FILE: 'test-compose.md'
+    DEFAULT_INSTRUCTIONS_COMPOSE_FILE: 'test-compose.md',
+    DEFAULT_TYPE_INSTRUCTIONS_DIR: 'test-type-instructions'
 }));
 
 jest.unstable_mockModule('../../../src/prompt/context', () => ({
     loadContextFromDirectories: jest.fn()
 }));
 
-jest.unstable_mockModule('../../../src/prompt/instructions/types/call', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/document', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/email', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/idea', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/meeting', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/note', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/other', () => ({
-    create: jest.fn()
-}));
-
-jest.unstable_mockModule('../../../src/prompt/instructions/types/update', () => ({
+jest.unstable_mockModule('../../../src/prompt/instructions/types/type', () => ({
     create: jest.fn()
 }));
 
 // Move imports here, outside beforeEach
 let Constants: any;
 let Context: any;
-let CallInstructions: any;
-let DocumentInstructions: any;
-let EmailInstructions: any;
-let IdeaInstructions: any;
-let MeetingInstructions: any;
-let NoteInstructions: any;
-let OtherInstructions: any;
-let UpdateInstructions: any;
 let Compose: any;
+let TypeInstructions: any;
 
 describe('compose', () => {
     let mockCustomize: jest.Mock;
@@ -61,15 +27,8 @@ describe('compose', () => {
     beforeAll(async () => {
         Constants = await import('../../../src/constants');
         Context = await import('../../../src/prompt/context');
-        CallInstructions = await import('../../../src/prompt/instructions/types/call');
-        DocumentInstructions = await import('../../../src/prompt/instructions/types/document');
-        EmailInstructions = await import('../../../src/prompt/instructions/types/email');
-        IdeaInstructions = await import('../../../src/prompt/instructions/types/idea');
-        MeetingInstructions = await import('../../../src/prompt/instructions/types/meeting');
-        NoteInstructions = await import('../../../src/prompt/instructions/types/note');
-        OtherInstructions = await import('../../../src/prompt/instructions/types/other');
-        UpdateInstructions = await import('../../../src/prompt/instructions/types/update');
         Compose = await import('../../../src/prompt/instructions/compose');
+        TypeInstructions = await import('../../../src/prompt/instructions/types/type');
     });
 
     beforeEach(async () => {
@@ -89,7 +48,7 @@ describe('compose', () => {
         (Context.loadContextFromDirectories as jest.Mock).mockResolvedValue(mockContextSections);
         // Re-apply mocks if necessary (sometimes needed depending on test structure)
         // @ts-ignore
-        (NoteInstructions.create as jest.Mock).mockResolvedValue([]); // Reset to default or specific value if needed per test
+        (TypeInstructions.create as jest.Mock).mockResolvedValue([]); // Reset to default or specific value if needed per test
     });
 
     describe('create', () => {
@@ -104,7 +63,7 @@ describe('compose', () => {
                 { type: 'instruction', content: 'note instruction 2' }
             ];
             // @ts-ignore
-            (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
+            (TypeInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
             const result = await Compose.create(type, configDir, true, { customize: mockCustomize }, contextDirectories);
 
@@ -117,7 +76,7 @@ describe('compose', () => {
             );
 
             // Verify note instructions were created
-            expect(NoteInstructions.create).toHaveBeenCalledWith(configDir, true, { customize: mockCustomize });
+            expect(TypeInstructions.create).toHaveBeenCalledWith('note', configDir, true, { customize: mockCustomize });
 
             // Verify result contains all expected instructions
             expect(result).toHaveLength(3); // note instructions + process instruction + context sections
@@ -149,7 +108,7 @@ describe('compose', () => {
                 { type: 'instruction', content: 'note instruction' }
             ];
             // @ts-ignore
-            (NoteInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
+            (TypeInstructions.create as jest.Mock).mockResolvedValue(mockNoteInstructions);
 
             const result = await Compose.create(type, configDir, true, { customize: mockCustomize });
 
