@@ -45,21 +45,21 @@ importers:
         specifier: ^0.5.48
         version: 0.5.48
       openai:
-        specifier: ^4.91.1
-        version: 4.96.0(zod@3.24.3)
+        specifier: ^4.97.0
+        version: 4.97.0(zod@3.24.4)
       winston:
         specifier: ^3.17.0
         version: 3.17.0
       zod:
-        specifier: ^3.24.2
-        version: 3.24.3
+        specifier: ^3.24.4
+        version: 3.24.4
     devDependencies:
       '@eslint/eslintrc':
         specifier: ^3.3.1
         version: 3.3.1
       '@eslint/js':
-        specifier: ^9.23.0
-        version: 9.25.1
+        specifier: ^9.26.0
+        version: 9.26.0
       '@jest/globals':
         specifier: ^29.7.0
         version: 29.7.0
@@ -118,11 +118,11 @@ importers:
         specifier: ^5.3.3
         version: 5.8.3
       vite:
-        specifier: ^6.2.5
-        version: 6.3.3(@types/node@22.15.3)
+        specifier: ^6.3.4
+        version: 6.3.5(@types/node@22.15.3)
       vite-plugin-node:
         specifier: ^5.0.0
-        version: 5.0.1(@swc/core@1.11.22)(vite@6.3.3(@types/node@22.15.3))
+        version: 5.0.1(@swc/core@1.11.22)(vite@6.3.5(@types/node@22.15.3))
 
 packages:
 
@@ -476,6 +476,10 @@ packages:
 
   '@eslint/js@9.25.1':
     resolution: {integrity: sha512-dEIwmjntEx8u3Uvv+kr3PDeeArL8Hw07H9kyYxCjnM9pBjfEhk6uLXSchxxzgiwtRhhzVzqmUSDFBOi1TuZ7qg==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@eslint/js@9.26.0':
+    resolution: {integrity: sha512-I9XlJawFdSMvWjDt6wksMCrgns5ggLNfFwFvnShsleWruvXM514Qxk8V246efTw+eo9JABvVz+u3q2RiAowKxQ==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   '@eslint/object-schema@2.1.6':
@@ -2243,8 +2247,8 @@ packages:
     resolution: {integrity: sha512-7x81NCL719oNbsq/3mh+hVrAWmFuEYUqrq/Iw3kUzH8ReypT9QQ0BLoJS7/G9k6N81XjW4qHWtjWwe/9eLy1EQ==}
     engines: {node: '>=12'}
 
-  openai@4.96.0:
-    resolution: {integrity: sha512-dKoW56i02Prv2XQolJ9Rl9Svqubqkzg3QpwEOBuSVZLk05Shelu7s+ErRTwFc1Bs3JZ2qBqBfVpXQiJhwOGG8A==}
+  openai@4.97.0:
+    resolution: {integrity: sha512-LRoiy0zvEf819ZUEJhgfV8PfsE8G5WpQi4AwA1uCV8SKvvtXQkoWUFkepD6plqyJQRghy2+AEPQ07FrJFKHZ9Q==}
     hasBin: true
     peerDependencies:
       ws: ^8.18.0
@@ -2758,8 +2762,8 @@ packages:
       '@swc/core':
         optional: true
 
-  vite@6.3.3:
-    resolution: {integrity: sha512-5nXH+QsELbFKhsEfWLkHrvgRpTdGJzqOZ+utSdmPTvwHmvU6ITTm3xx+mRusihkcI8GeC7lCDyn3kDtiki9scw==}
+  vite@6.3.5:
+    resolution: {integrity: sha512-cZn6NDFE7wdTpINgs++ZJ4N49W2vRp8LCKrn3Ob1kYNtOo21vfDoaV5GzBfLU4MovSAB8uNRm4jgzVQZ+mBzPQ==}
     engines: {node: ^18.0.0 || ^20.0.0 || >=22.0.0}
     hasBin: true
     peerDependencies:
@@ -2894,8 +2898,8 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
-  zod@3.24.3:
-    resolution: {integrity: sha512-HhY1oqzWCQWuUqvBFnsyrtZRhyPeR7SUGv+C4+MsisMuVfSPx8HpwWqH8tRahSlt6M3PiFAcoeFhZAqIXTxoSg==}
+  zod@3.24.4:
+    resolution: {integrity: sha512-OdqJE9UDRPwWsrHjLN2F8bPxvwJBK22EHLWtanu0LSYr5YqzsaaW3RMgmjwr8Rypg5k+meEJdSPXJZXE/yqOMg==}
 
 snapshots:
 
@@ -3210,6 +3214,8 @@ snapshots:
       - supports-color
 
   '@eslint/js@9.25.1': {}
+
+  '@eslint/js@9.26.0': {}
 
   '@eslint/object-schema@2.1.6': {}
 
@@ -3597,9 +3603,9 @@ snapshots:
       js-yaml: 4.1.0
       luxon: 3.6.1
       moment-timezone: 0.5.48
-      openai: 4.96.0(zod@3.24.3)
+      openai: 4.97.0(zod@3.24.4)
       winston: 3.17.0
-      zod: 3.24.3
+      zod: 3.24.4
     transitivePeerDependencies:
       - encoding
       - ws
@@ -3611,7 +3617,7 @@ snapshots:
       glob: 11.0.2
       js-yaml: 4.1.0
       winston: 3.17.0
-      zod: 3.24.3
+      zod: 3.24.4
 
   '@tobrien/minorprompt@0.0.2': {}
 
@@ -5377,7 +5383,7 @@ snapshots:
       is-docker: 2.2.1
       is-wsl: 2.2.0
 
-  openai@4.96.0(zod@3.24.3):
+  openai@4.97.0(zod@3.24.4):
     dependencies:
       '@types/node': 18.19.87
       '@types/node-fetch': 2.6.12
@@ -5387,7 +5393,7 @@ snapshots:
       formdata-node: 4.4.1
       node-fetch: 2.7.0
     optionalDependencies:
-      zod: 3.24.3
+      zod: 3.24.4
     transitivePeerDependencies:
       - encoding
 
@@ -5928,18 +5934,18 @@ snapshots:
       '@types/istanbul-lib-coverage': 2.0.6
       convert-source-map: 2.0.0
 
-  vite-plugin-node@5.0.1(@swc/core@1.11.22)(vite@6.3.3(@types/node@22.15.3)):
+  vite-plugin-node@5.0.1(@swc/core@1.11.22)(vite@6.3.5(@types/node@22.15.3)):
     dependencies:
       '@rollup/pluginutils': 4.2.1
       chalk: 4.1.2
       debug: 4.4.0
-      vite: 6.3.3(@types/node@22.15.3)
+      vite: 6.3.5(@types/node@22.15.3)
     optionalDependencies:
       '@swc/core': 1.11.22
     transitivePeerDependencies:
       - supports-color
 
-  vite@6.3.3(@types/node@22.15.3):
+  vite@6.3.5(@types/node@22.15.3):
     dependencies:
       esbuild: 0.25.3
       fdir: 6.4.4(picomatch@4.0.2)
@@ -6086,4 +6092,4 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod@3.24.3: {}
+  zod@3.24.4: {}
