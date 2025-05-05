@@ -66,12 +66,9 @@ export const DEFAULT_PROCESSED_DIR = './processed';
 
 export const DEFAULT_PERSONAS_DIR = `/personas`;
 
-export const DEFAULT_PERSONA_YOU_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/you/traits.md`;
-export const DEFAULT_PERSONA_YOU_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/you/instructions.md`;
-export const DEFAULT_PERSONA_CLASSIFIER_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/traits.md`;
-export const DEFAULT_PERSONA_CLASSIFIER_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/classifier/instructions.md`;
-export const DEFAULT_PERSONA_TRANSCRIBE_TRAITS_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe/traits.md`;
-export const DEFAULT_PERSONA_TRANSCRIBE_INSTRUCTIONS_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe/instructions.md`;
+export const DEFAULT_PERSONA_YOU_FILE = `${DEFAULT_PERSONAS_DIR}/you.md`;
+export const DEFAULT_PERSONA_CLASSIFIER_FILE = `${DEFAULT_PERSONAS_DIR}/classifier.md`;
+export const DEFAULT_PERSONA_TRANSCRIBE_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe.md`;
 
 export const DEFAULT_INSTRUCTIONS_DIR = `/instructions`;
 

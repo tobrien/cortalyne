@@ -1,220 +1,271 @@
-import { jest } from '@jest/globals';
-import path from 'path';
+import * as path from 'path';
+import { describe, expect, it, beforeEach, jest, afterEach } from '@jest/globals';
 
-// Mock the modules before importing
+// Create mocks
 const mockLogger = {
     debug: jest.fn(),
+    info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn()
 };
 
+const mockStorage = {
+    exists: jest.fn(),
+    create: jest.fn()
+};
+
+const mockStorageInstance = {
+    exists: jest.fn()
+};
+
+const mockFormatter = {
+    formatPrompt: jest.fn(),
+    formatSection: jest.fn()
+};
+
+const mockParser = {
+    parseFile: jest.fn()
+};
+
+// Setup module mocks
+// @ts-ignore
 jest.unstable_mockModule('../../src/logging', () => ({
     getLogger: jest.fn(() => mockLogger)
 }));
 
-const mockStorage = {
-    exists: jest.fn(),
-    readFile: jest.fn()
-};
-
+// @ts-ignore
 jest.unstable_mockModule('../../src/util/storage', () => ({
-    create: jest.fn(() => mockStorage)
+    create: jest.fn(() => mockStorageInstance)
 }));
 
-// Mock MinorPrompt
-const mockFormatter = {
-    format: jest.fn()
-};
-
+// @ts-ignore
 jest.unstable_mockModule('@tobrien/minorprompt', () => ({
-    Instance: jest.fn()
+    Formatter: mockFormatter,
+    Parser: mockParser
 }));
 
-jest.unstable_mockModule('@tobrien/minorprompt/chat', () => ({
-    Model: jest.fn(),
-    Request: jest.fn()
-}));
+// Import the module under test (after mocks are set up)
+let overrideModule: typeof import('../../src/prompt/override');
 
-jest.unstable_mockModule('@tobrien/minorprompt/formatter', () => ({
-    create: jest.fn(() => mockFormatter)
-}));
-
-let Override: any;
-let Logging: any;
-let Storage: any;
-let MinorPrompt: any;
-let Chat: any;
-let Formatter: any;
-
-describe('override', () => {
+describe('prompt/override', () => {
     beforeEach(async () => {
+        // Reset all mocks
         jest.clearAllMocks();
 
-        // Import modules after mocking
-        Logging = await import('../../src/logging');
-        Storage = await import('../../src/util/storage');
-        MinorPrompt = await import('@tobrien/minorprompt');
-        Chat = await import('@tobrien/minorprompt/chat');
-        Formatter = await import('@tobrien/minorprompt/formatter');
-        Override = await import('../../src/prompt/override');
+        // Import the module (after mocks to ensure they're used)
+        overrideModule = await import('../../src/prompt/override');
     });
 
     describe('format', () => {
-        it('should format the prompt using the formatter', () => {
-            // @ts-ignore
-            const mockPrompt = {};
-            // @ts-ignore
-            const mockModel = {};
-            // @ts-ignore
-            const mockRequest = { messages: [] };
+        it('should call Formatter.formatPrompt with the provided prompt and model', () => {
+            const mockPrompt = { sections: [] };
+            const mockModel = { name: 'test-model' };
 
-            mockFormatter.format.mockReturnValue(mockRequest);
+            // @ts-ignore - Simplifying type errors
+            overrideModule.format(mockPrompt, mockModel);
 
-            const result = Override.format(mockPrompt, mockModel);
-
-            expect(Formatter.create).toHaveBeenCalledWith(mockModel);
-            expect(mockFormatter.format).toHaveBeenCalledWith(mockPrompt);
-            expect(result).toBe(mockRequest);
+            expect(mockFormatter.formatPrompt).toHaveBeenCalledWith(mockModel, mockPrompt);
         });
     });
 
     describe('overrideContent', () => {
-        it('should return empty object when no files exist', async () => {
+        it('should return an empty object when no override files exist', async () => {
             // @ts-ignore
-            mockStorage.exists.mockResolvedValue(false);
+            mockStorageInstance.exists.mockResolvedValue(false);
 
-            const result = await Override.overrideContent('/config', 'test.md', false);
+            const result = await overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                false
+            );
 
             expect(result).toEqual({});
-            expect(Storage.create).toHaveBeenCalledWith({ log: mockLogger.debug });
+            expect(mockStorageInstance.exists).toHaveBeenCalledTimes(3);
         });
 
-        it('should load prepend content when pre file exists', async () => {
+        it('should include prepend section when pre file exists', async () => {
+            const mockSection = { type: 'section', content: 'pre content' };
             // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                return file.endsWith('-pre.md');
-            });
-
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => file.includes('-pre.md'));
             // @ts-ignore
-            mockStorage.readFile.mockResolvedValue('prepend content');
+            mockParser.parseFile.mockResolvedValue(mockSection);
 
-            const result = await Override.overrideContent('/config', 'test.md', false);
-
-            expect(result).toEqual({
-                prepend: 'prepend content'
-            });
-            expect(mockLogger.debug).toHaveBeenCalledWith('Found pre file %s', '/config/test-pre.md');
-        });
-
-        it('should load append content when post file exists', async () => {
-            // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                return file.endsWith('-post.md');
-            });
-
-            // @ts-ignore
-            mockStorage.readFile.mockResolvedValue('append content');
-
-            const result = await Override.overrideContent('/config', 'test.md', false);
-
-            expect(result).toEqual({
-                append: 'append content'
-            });
-            expect(mockLogger.debug).toHaveBeenCalledWith('Found post file %s', '/config/test-post.md');
-        });
-
-        it('should throw error when base file exists but overrides not enabled', async () => {
-            // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                return !file.includes('-pre') && !file.includes('-post');
-            });
-
-            await expect(Override.overrideContent('/config', 'test.md', false)).rejects.toThrow(
-                'Core directives are being overwritten by custom configuration, but overrides are not enabled.  Please enable --overrides to use this feature.'
+            const result = await overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                false
             );
+
+            expect(result).toEqual({
+                prepend: mockSection
+            });
+            expect(mockParser.parseFile).toHaveBeenCalledWith('/config/test-pre.md');
+        });
+
+        it('should include append section when post file exists', async () => {
+            const mockSection = { type: 'section', content: 'post content' };
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => file.includes('-post.md'));
+            // @ts-ignore
+            mockParser.parseFile.mockResolvedValue(mockSection);
+
+            const result = await overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                false
+            );
+
+            expect(result).toEqual({
+                append: mockSection
+            });
+            expect(mockParser.parseFile).toHaveBeenCalledWith('/config/test-post.md');
+        });
+
+        it('should throw an error when base file exists but overrides are disabled', async () => {
+            // @ts-ignore
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => !file.includes('-pre.md') && !file.includes('-post.md'));
+
+            await expect(overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                false
+            )).rejects.toThrow('Core directives are being overwritten by custom configuration');
+
             expect(mockLogger.error).toHaveBeenCalled();
         });
 
-        it('should load override content when base file exists and overrides enabled', async () => {
+        it('should include override section when base file exists and overrides are enabled', async () => {
+            const mockSection = { type: 'section', content: 'override content' };
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => !file.includes('-pre.md') && !file.includes('-post.md'));
             // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                return !file.includes('-pre') && !file.includes('-post');
-            });
+            mockParser.parseFile.mockResolvedValue(mockSection);
 
-            // @ts-ignore
-            mockStorage.readFile.mockResolvedValue('override content');
-
-            const result = await Override.overrideContent('/config', 'test.md', true);
+            const result = await overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                true
+            );
 
             expect(result).toEqual({
-                override: 'override content'
+                override: mockSection
             });
-            expect(mockLogger.warn).toHaveBeenCalledWith('WARNING: Core directives are being overwritten by custom configuration');
+            expect(mockLogger.warn).toHaveBeenCalled();
+            expect(mockParser.parseFile).toHaveBeenCalledWith('/config/test.md');
+        });
+
+        it('should handle all three types of files when they exist', async () => {
+            // @ts-ignore
+            mockStorageInstance.exists.mockResolvedValue(true);
+            mockParser.parseFile
+                // @ts-ignore
+                .mockImplementation(async (file: string) => {
+                    if (file.includes('-pre.md')) return { type: 'section', content: 'pre content' };
+                    if (file.includes('-post.md')) return { type: 'section', content: 'post content' };
+                    return { type: 'section', content: 'base content' };
+                });
+
+            const result = await overrideModule.overrideContent(
+                '/config',
+                'test.md',
+                // @ts-ignore - Simplifying type errors
+                { type: 'section' },
+                true
+            );
+
+            expect(result).toEqual({
+                prepend: { type: 'section', content: 'pre content' },
+                append: { type: 'section', content: 'post content' },
+                override: { type: 'section', content: 'base content' }
+            });
         });
     });
 
     describe('customize', () => {
-        it('should return original content when no override files exist', async () => {
+        it('should return the original section when no override files exist', async () => {
+            const originalSection = { type: 'section', prepend: jest.fn(), append: jest.fn() };
             // @ts-ignore
-            mockStorage.exists.mockResolvedValue(false);
+            mockStorageInstance.exists.mockResolvedValue(false);
 
-            const result = await Override.customize('/config', 'test.md', 'original content', false);
+            // @ts-ignore - Simplifying type errors
+            const result = await overrideModule.customize('/config', 'test.md', originalSection, false);
 
-            expect(result).toBe('original content');
+            expect(result).toBe(originalSection);
         });
 
-        it('should apply overrides when available and enabled', async () => {
-            // Set up the storage mocks for the full customize flow
+        it('should replace section with override when overrides are enabled', async () => {
+            const originalSection = { type: 'section', prepend: jest.fn(), append: jest.fn() };
+            const overrideSection = { type: 'section', content: 'override', prepend: jest.fn(), append: jest.fn() };
+
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => !file.includes('-pre.md') && !file.includes('-post.md'));
             // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                return true; // all files exist
-            });
+            mockParser.parseFile.mockResolvedValue(overrideSection);
 
-            // @ts-ignore
-            mockStorage.readFile.mockImplementation(async (file: string) => {
-                if (file.endsWith('-pre.md')) return 'prepend content';
-                if (file.endsWith('-post.md')) return 'append content';
-                return 'override content';
-            });
+            // @ts-ignore - Simplifying type errors
+            const result = await overrideModule.customize('/config', 'test.md', originalSection, true);
 
-            const result = await Override.customize('/config', 'test.md', 'original content', true);
-
-            expect(result).toBe('prepend content\noverride content\nappend content');
+            expect(result).toBe(overrideSection);
             expect(mockLogger.warn).toHaveBeenCalled();
         });
 
-        it('should prepend and append to original content when no override', async () => {
+        it('should prepend content when pre file exists', async () => {
+            const originalSection = {
+                type: 'section',
+                prepend: jest.fn().mockReturnValue({ type: 'section', content: 'combined pre' }),
+                append: jest.fn()
+            };
+            const prependSection = { type: 'section', content: 'pre' };
+
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => file.includes('-pre.md'));
             // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                // Only pre and post files exist, base file doesn't
-                return file.endsWith('-pre.md') || file.endsWith('-post.md');
-            });
+            mockParser.parseFile.mockResolvedValue(prependSection);
 
-            // @ts-ignore
-            mockStorage.readFile.mockImplementation(async (file: string) => {
-                if (file.endsWith('-pre.md')) return 'prepend content';
-                if (file.endsWith('-post.md')) return 'append content';
-                return null;
-            });
+            // @ts-ignore - Simplifying type errors
+            const result = await overrideModule.customize('/config', 'test.md', originalSection, false);
 
-            const result = await Override.customize('/config', 'test.md', 'original content', false);
-
-            expect(result).toBe('prepend content\noriginal content\nappend content');
+            expect(originalSection.prepend).toHaveBeenCalledWith(prependSection);
+            expect(result).toEqual({ type: 'section', content: 'combined pre' });
         });
 
-        it('should throw error when override exists but not enabled', async () => {
-            // @ts-ignore
-            mockStorage.exists.mockImplementation(async (file: string) => {
-                // Only base file exists
-                return !file.includes('-pre') && !file.includes('-post');
-            });
+        it('should append content when post file exists', async () => {
+            const originalSection = {
+                type: 'section',
+                prepend: jest.fn(),
+                append: jest.fn().mockReturnValue({ type: 'section', content: 'combined post' })
+            };
+            const appendSection = { type: 'section', content: 'post' };
 
+            mockStorageInstance.exists
+                // @ts-ignore
+                .mockImplementation(async (file: string) => file.includes('-post.md'));
             // @ts-ignore
-            mockStorage.readFile.mockResolvedValue('override content');
+            mockParser.parseFile.mockResolvedValue(appendSection);
 
-            await expect(Override.customize('/config', 'test.md', 'original content', false)).rejects.toThrow(
-                'Core directives are being overwritten by custom configuration, but overrides are not enabled.  Please enable --overrides to use this feature.'
-            );
+            // @ts-ignore - Simplifying type errors
+            const result = await overrideModule.customize('/config', 'test.md', originalSection, false);
+
+            expect(originalSection.append).toHaveBeenCalledWith(appendSection);
+            expect(result).toEqual({ type: 'section', content: 'combined post' });
         });
     });
 });

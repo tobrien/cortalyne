@@ -7,7 +7,7 @@ import * as OpenAI from '../util/openai';
 import { stringifyJSON } from '../util/general';
 import path from 'path';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import * as Chat from '@tobrien/minorprompt/chat';
+import { Chat } from '@tobrien/minorprompt';
 import * as Override from '../prompt/override';
 import * as TranscribePrompt from '../prompt/transcribe';
 

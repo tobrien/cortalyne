@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { FilesystemStructure } from '@tobrien/cabazooka';
 import { FilenameOption } from '@tobrien/cabazooka';
-import * as Chat from '@tobrien/minorprompt/chat';
+import { Chat } from '@tobrien/minorprompt';
 
 // Set up mock implementations before importing modules
 const mockLogger = {

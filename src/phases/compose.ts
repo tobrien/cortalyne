@@ -1,4 +1,4 @@
-import * as Chat from '@tobrien/minorprompt/chat';
+import { Chat } from '@tobrien/minorprompt';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import path from 'path';
 import * as Logging from '../logging';
