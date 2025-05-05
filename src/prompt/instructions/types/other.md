@@ -1,9 +1,5 @@
-import { createInstruction } from "@tobrien/minorprompt";
-import { Instruction } from "@tobrien/minorprompt";
-import { Section } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
+# Instruction
 
-export const INSTRUCTION = `
 Task #1 - Organize information from the raw transcript about a miscellaneous note that you have about a topic or a project.
 
 Task #2 - If your note is about a project, a person, a place, or a thing, please identify what your note is related to in another field.
@@ -28,12 +24,9 @@ For a short other note, it could be captured in a single sentence or paragraph, 
 
 The other note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
 
----
+## Other Note Formatting Guide
 
-### Other Note Formatting Guide
-
-
-\`\`\`markdown
+```markdown
 ## Other: [Subject of the other note]
 
 - Clearly state the primary concept or insight.
@@ -56,13 +49,11 @@ Conclude by briefly mentioning possible next steps or applications if relevant.
 ## Tasks
 
 - If the task requires research or follow-up, add any tasks that have been identified.
-\`\`\`
+```
 
----
+## Example Other Notes:
 
-### Example Other Notes:
-
-\`\`\`markdown
+```markdown
 ## Other: We Need More Ice Cream
 
 - The people have spoken, and we need more ice cream.
@@ -85,14 +76,4 @@ There is a necessity in this culture for us to consume ice cream, and I'm convin
 - Research the Montangards
 - Research the supply chain issues for ice cream
 - Research the philosophical questions about the role of government in our lives
-\`\`\`
-`;
-
-export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
-    const instructions: (Instruction | Section<Instruction>)[] = [];
-
-    const overrideContent = await customize(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/other.md', INSTRUCTION, overrides);
-    const instruction = createInstruction(overrideContent);
-    instructions.push(instruction);
-    return instructions;
-}
+```

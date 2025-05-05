@@ -1,5 +1,5 @@
 import * as Cabazooka from '@tobrien/cabazooka';
-import * as Chat from '@tobrien/minorprompt/chat';
+import { Chat } from '@tobrien/minorprompt';
 import { Config } from '../cortalyne';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { ChatCompletionMessageParam } from 'openai/resources';

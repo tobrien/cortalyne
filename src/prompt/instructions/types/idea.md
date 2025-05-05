@@ -1,9 +1,5 @@
-import { createInstruction } from "@tobrien/minorprompt";
-import { Instruction } from "@tobrien/minorprompt";
-import { Section } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
+# Idea
 
-export const INSTRUCTION = `
 Task #1 - You are capturing and organizing notes from the transcript of an audio recording you made of your ideas and thoughts.
 
 Task #2 - Analyze the transcript and determine if your idea is a continuation of a previous note related to your idea, or if this is a new idea of yours.
@@ -27,7 +23,7 @@ An idea note does not require structured sections or bulleted lists, but if coul
 
 ## Idea Note Formatting Guide
 
-\`\`\`markdown
+```markdown
 ## Idea: [Subject of the idea]
 
 - Clearly state the primary concept or insight.
@@ -38,10 +34,10 @@ The idea note should also make sure to capture all of your thoughts, ideas, emot
 
 ---
 
-### Idea Note Formatting Guide
+## Idea Note Formatting Guide
 
 
-\`\`\`markdown
+```markdown
 ## Idea: [Subject of the idea]
 
 - Clearly state the primary concept or insight.
@@ -64,13 +60,13 @@ Conclude by briefly mentioning possible next steps or applications if relevant.
 ## Tasks
 
 - If the task requires research or follow-up, add any tasks that have been identified.
-\`\`\`
+```
 
 ---
 
 ### Example Idea Notes:
 
-\`\`\`markdown
+```markdown
 ## Idea: We Need More Ice Cream
 
 - The people have spoken, and we need more ice cream.
@@ -93,7 +89,7 @@ There is a necessity in this culture for us to consume ice cream, and I'm convin
 - Research the Montangards
 - Research the supply chain issues for ice cream
 - Research the philosophical questions about the role of government in our lives
-\`\`\`
+```
 `;
 
 export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {

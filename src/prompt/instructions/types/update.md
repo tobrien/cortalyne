@@ -1,9 +1,5 @@
-import { createInstruction } from "@tobrien/minorprompt";
-import { Instruction } from "@tobrien/minorprompt";
-import { Section } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
+# Update
 
-export const INSTRUCTION = `
 Task #1 - You are capturing and organizing notes from the transcript of an audio recording you made of an update you gave on a topic.
 
 Task #2 - Analyze the transcript and determine if your update is a continuation of a previous update, or if this is a new update from you.
@@ -30,12 +26,10 @@ For a short update, it could be captured in a single sentence or paragraph, but 
 
 The update note should also make sure to capture all of your thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
 
----
-
-### Update Note Formatting Guide
+## Update Note Formatting Guide
 
 
-\`\`\`markdown
+```markdown
 ## Update: [Subject of the update]
 
 - Clearly state the primary concept or insight.
@@ -58,13 +52,11 @@ Conclude by briefly mentioning possible next steps or applications if relevant.
 ## Tasks
 
 - If the task requires research or follow-up, add any tasks that have been identified.
-\`\`\`
+```
 
----
+## Example Update Notes:
 
-### Example Update Notes:
-
-\`\`\`markdown
+```markdown
 ## Update: We Need More Ice Cream
 
 - The people have spoken, and we need more ice cream.
@@ -87,14 +79,4 @@ There is a necessity in this culture for us to consume ice cream, and I'm convin
 - Research the Montangards
 - Research the supply chain issues for ice cream
 - Research the philosophical questions about the role of government in our lives
-\`\`\`
-`;
-
-export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
-    const instructions: (Instruction | Section<Instruction>)[] = [];
-
-    const overrideContent = await customize(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/update.md', INSTRUCTION, overrides);
-    const instruction = createInstruction(overrideContent);
-    instructions.push(instruction);
-    return instructions;
-}
+```

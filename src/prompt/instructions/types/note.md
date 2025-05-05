@@ -1,9 +1,5 @@
-import { createInstruction } from "@tobrien/minorprompt";
-import { Instruction } from "@tobrien/minorprompt";
-import { Section } from "@tobrien/minorprompt";
-import { DEFAULT_TYPE_INSTRUCTIONS_DIR } from "../../../constants";
+# Note
 
-export const INSTRUCTION = `
 Task #1 - Organize information from the raw transcript of an audio recording you made about a note that you have about a topic or a project.
 
 Task #2 - Analyze the transcript and determine if your note is a continuation of a previous note, or if this is a new note.
@@ -30,12 +26,9 @@ For a short note, it could be captured in a single sentence or paragraph, but fo
 
 The note should also make sure to capture all of the thoughts, ideas, emotions, feelings, and information shared in the transcript being careful not to change the meaning or content of the transcript as it is written.   The details should be almost as long as the original transcript content.
 
----
+## Note Formatting Guide
 
-### Note Formatting Guide
-
-
-\`\`\`markdown
+```markdown
 ## Note: [Subject of the note]
 
 - Clearly state the primary concept or insight.
@@ -58,13 +51,13 @@ Conclude by briefly mentioning possible next steps or applications if relevant.
 ## Tasks
 
 - If the task requires research or follow-up, add any tasks that have been identified.
-\`\`\`
+```
 
 ---
 
 ### Example Note Notes:
 
-\`\`\`markdown
+```markdown
 ## Note: We Need More Ice Cream
 
 - The people have spoken, and we need more ice cream.
@@ -87,14 +80,4 @@ There is a necessity in this culture for us to consume ice cream, and I'm convin
 - Research the Montangards
 - Research the supply chain issues for ice cream
 - Research the philosophical questions about the role of government in our lives
-\`\`\`
-`;
-
-export const create = async (configDir: string, overrides: boolean, { customize }: { customize: (configDir: string, overrideFile: string, content: string, overrides: boolean) => Promise<string> }): Promise<(Instruction | Section<Instruction>)[]> => {
-    const instructions: (Instruction | Section<Instruction>)[] = [];
-
-    const overrideContent = await customize(configDir, DEFAULT_TYPE_INSTRUCTIONS_DIR + '/note.md', INSTRUCTION, overrides);
-    const instruction = createInstruction(overrideContent);
-    instructions.push(instruction);
-    return instructions;
-}
+```

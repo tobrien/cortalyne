@@ -1,14 +1,6 @@
 import { jest } from '@jest/globals';
 import { ChatCompletionMessageParam } from 'openai/resources';
 
-// Mock Chat module before importing
-jest.unstable_mockModule('@tobrien/minorprompt/chat', () => ({
-    Model: {
-        GPT4: 'gpt-4',
-        GPT35Turbo: 'gpt-3.5-turbo'
-    }
-}));
-
 // Mock Cabazooka module
 jest.unstable_mockModule('@tobrien/cabazooka', () => ({
     Operator: {}
@@ -79,7 +71,6 @@ let OpenAI: any;
 let Prompt: any;
 let ComposePhase: any;
 // Import these modules to ensure we're using the mocked versions
-let Chat: any;
 let Cabazooka: any;
 
 describe('compose', () => {
@@ -92,7 +83,6 @@ describe('compose', () => {
         OpenAI = await import('../../src/util/openai');
         Prompt = await import('../../src/prompt/prompts');
         ComposePhase = await import('../../src/phases/compose');
-        Chat = await import('@tobrien/minorprompt/chat');
         Cabazooka = await import('@tobrien/cabazooka');
 
         // Reset mock values
