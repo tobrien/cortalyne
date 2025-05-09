@@ -2,6 +2,10 @@
 export function deepMerge(target: any, source: any): any {
     for (const key in source) {
         if (Object.prototype.hasOwnProperty.call(source, key)) {
+            // Block prototype-polluting keys
+            if (key === '__proto__' || key === 'constructor') {
+                continue;
+            }
             if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
                 if (!target[key]) {
                     target[key] = {};
