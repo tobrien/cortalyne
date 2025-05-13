@@ -41,45 +41,40 @@ const mockOverride = {
 
 // Mock the modules before importing
 // @ts-ignore
-jest.unstable_mockModule('../../src/logging', () => ({
+jest.unstable_mockModule('@/logging', () => ({
     getLogger: jest.fn(() => mockLogger),
 }));
 
 // @ts-ignore
-jest.unstable_mockModule('../../src/util/storage', () => ({
+jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn(() => mockStorage),
 }));
 
 // @ts-ignore
-jest.unstable_mockModule('../../src/util/media', () => ({
+jest.unstable_mockModule('@/util/media', () => ({
     create: jest.fn(() => mockMedia),
 }));
 
 // @ts-ignore
-jest.unstable_mockModule('../../src/util/openai', () => ({
+jest.unstable_mockModule('@/util/openai', () => ({
     transcribeAudio: mockOpenAI.transcribeAudio,
     createCompletion: mockOpenAI.createCompletion,
 }));
 
 // @ts-ignore
-jest.unstable_mockModule('../../src/util/general', () => ({
+jest.unstable_mockModule('@/util/general', () => ({
     stringifyJSON: jest.fn((obj) => JSON.stringify(obj, null, 2)),
 }));
 
 // @ts-ignore
-jest.unstable_mockModule('../../src/prompt/override', () => ({
-    format: mockOverride.format,
-}));
-
-// @ts-ignore
-jest.unstable_mockModule('../../src/prompt/transcribe', () => ({
+jest.unstable_mockModule('@/prompt/transcribe', () => ({
     create: jest.fn(() => mockPrompts),
 }));
 
 // Import the module under test after all mocks are set up
 const importTranscribe = async () => {
     // @ts-ignore
-    return await import('../../src/phases/transcribe');
+    return await import('@/phases/transcribe');
 };
 
 describe('Transcribe Phase Tests', () => {
@@ -134,7 +129,12 @@ describe('Transcribe Phase Tests', () => {
         // @ts-ignore
         mockOperator.constructFilename.mockResolvedValue('transcript_abc123.json');
         // @ts-ignore
-        mockPrompts.createTranscribePrompt.mockResolvedValue([{ role: 'user', content: 'Format this transcript' }]);
+        mockPrompts.createTranscribePrompt.mockResolvedValue({
+            persona: { items: [{ text: 'Persona' }] },
+            instructions: { items: [{ text: 'Instructions' }] },
+            contents: { items: [{ text: 'Content' }] },
+            contexts: { items: [{ text: 'Context' }] },
+        });
         // @ts-ignore
         mockOverride.format.mockReturnValue({ messages: [{ role: 'user', content: 'Format this transcript' }] });
         // @ts-ignore
@@ -184,7 +184,12 @@ describe('Transcribe Phase Tests', () => {
             // @ts-ignore
             .mockResolvedValueOnce({ text: 'transcribed chunk 2' });
         // @ts-ignore
-        mockPrompts.createTranscribePrompt.mockResolvedValue([{ role: 'user', content: 'Format this transcript' }]);
+        mockPrompts.createTranscribePrompt.mockResolvedValue({
+            persona: { items: [{ text: 'Persona' }] },
+            instructions: { items: [{ text: 'Instructions' }] },
+            contents: { items: [{ text: 'Content' }] },
+            contexts: { items: [{ text: 'Context' }] },
+        });
         // @ts-ignore
         mockOverride.format.mockReturnValue({ messages: [{ role: 'user', content: 'Format this transcript' }] });
         // @ts-ignore

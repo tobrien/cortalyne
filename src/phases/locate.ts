@@ -1,9 +1,9 @@
-import * as Logging from '../logging';
-import * as Media from '../util/media';
-import * as Storage from '../util/storage';
+import * as Logging from '@/logging';
+import * as Media from '@/util/media';
+import * as Storage from '@/util/storage';
 import * as Cabazooka from '@tobrien/cabazooka';
-import * as Dates from '../util/dates';
-import { Config } from '../cortalyne';
+import * as Dates from '@/util/dates';
+import { Config } from '@/cortalyne';
 
 // Helper function to promisify ffmpeg.
 

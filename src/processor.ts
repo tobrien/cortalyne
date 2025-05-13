@@ -1,11 +1,11 @@
-import * as Logging from './logging';
-import * as ClassifyPhase from './phases/classify';
-import * as TranscribePhase from './phases/transcribe';
-import * as ComposePhase from './phases/compose';
-import * as LocatePhase from './phases/locate';
-import * as CompletePhase from './phases/complete';
+import * as Logging from '@/logging';
+import * as ClassifyPhase from '@/phases/classify';
+import * as TranscribePhase from '@/phases/transcribe';
+import * as ComposePhase from '@/phases/compose';
+import * as LocatePhase from '@/phases/locate';
+import * as CompletePhase from '@/phases/complete';
 import * as Cabazooka from '@tobrien/cabazooka';
-import { Config } from './cortalyne';
+import { Config } from '@/cortalyne';
 export interface ClassifiedTranscription {
     text: string;
     type: string;

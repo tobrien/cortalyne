@@ -1,7 +1,7 @@
 import { OpenAI } from 'openai';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import * as Storage from './storage';
-import { getLogger } from '../logging';
+import * as Storage from '@/util/storage';
+import { getLogger } from '@/logging';
 export interface Transcription {
     text: string;
 }

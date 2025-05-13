@@ -1,7 +1,7 @@
 import * as path from 'path';
-import * as Logging from '../logging';
-import { Config } from '../cortalyne';
-import * as Storage from '../util/storage';
+import * as Logging from '@/logging';
+import { Config } from '@/cortalyne';
+import * as Storage from '@/util/storage';
 
 export interface Instance {
     complete(classifiedType: string, subject: string, hash: string, creationTime: Date, audioFile: string): Promise<string>;

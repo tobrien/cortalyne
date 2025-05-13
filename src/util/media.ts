@@ -1,7 +1,7 @@
 import ffmpeg from 'fluent-ffmpeg';
 import { Logger } from 'winston';
 import path from 'path';
-import * as Storage from './storage';
+import * as Storage from '@/util/storage';
 
 export interface Media {
     getAudioCreationTime: (filePath: string) => Promise<Date | null>;
