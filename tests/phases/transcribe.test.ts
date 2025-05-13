@@ -114,7 +114,7 @@ describe('Transcribe Phase Tests', () => {
         const result = await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
-        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(outputPath, 'transcript_abc123.json'));
+        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(interimPath, 'transcript_abc123.json'));
         expect(mockStorage.readFile).toHaveBeenCalled();
         expect(result).toEqual({ text: 'existing transcription' });
         expect(mockOpenAI.transcribeAudio).not.toHaveBeenCalled();
@@ -149,7 +149,7 @@ describe('Transcribe Phase Tests', () => {
         const result = await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
-        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(outputPath, 'transcript_abc123.json'));
+        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(interimPath, 'transcript_abc123.json'));
         expect(mockMedia.getFileSize).toHaveBeenCalledWith(audioFile);
         expect(mockOpenAI.transcribeAudio).toHaveBeenCalledWith(audioFile, {
             model: 'whisper-1',
@@ -157,7 +157,7 @@ describe('Transcribe Phase Tests', () => {
             debugFile: undefined
         });
         expect(mockStorage.writeFile).toHaveBeenCalledWith(
-            path.join(outputPath, 'transcript_abc123.json'),
+            path.join(interimPath, 'transcript_abc123.json'),
             expect.any(String),
             'utf8'
         );
@@ -271,7 +271,7 @@ describe('Transcribe Phase Tests', () => {
             expect.stringContaining('constructFilename did not return a .json file'),
             'transcript_abc123'
         );
-        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(outputPath, 'transcript_abc123.json'));
+        expect(mockStorage.exists).toHaveBeenCalledWith(path.join(interimPath, 'transcript_abc123.json'));
     });
 
     test('should skip creating markdown file if it already exists', async () => {
