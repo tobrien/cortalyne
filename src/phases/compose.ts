@@ -11,7 +11,7 @@ import * as Storage from '@/util/storage';
 // Helper function to promisify ffmpeg.
 
 export interface Instance {
-    compose: (transcription: ClassifiedTranscription, outputPath: string, filename: string, hash: string) => Promise<any>;
+    compose: (transcription: ClassifiedTranscription, outputPath: string, contextPath: string, interimPath: string, filename: string, hash: string) => Promise<any>;
 }
 
 export const create = (config: Config): Instance => {
@@ -19,7 +19,7 @@ export const create = (config: Config): Instance => {
     const storage = Storage.create({ log: logger.debug });
     const prompts = Prompt.create(config.composeModel as Chat.Model, config);
 
-    const compose = async (transcription: ClassifiedTranscription, outputPath: string, filename: string): Promise<any> => {
+    const compose = async (transcription: ClassifiedTranscription, outputPath: string, contextPath: string, interimPath: string, filename: string): Promise<any> => {
         // Look for a file in the outputPath that contains the hash and has a .json extension - let me be clear, the file name might have a lot of other stuff.  I need you to look for any filename that has that hash value in it.  Could you use a regexp?
         const files = await storage.listFiles(outputPath);
         const matchingFiles = files.filter((file: string) => file.includes(filename) && file.endsWith('.md'));
@@ -40,15 +40,11 @@ export const create = (config: Config): Instance => {
         const formatter = Formatter.create({ logger });
         const chatRequest: Chat.Request = formatter.formatPrompt(config.composeModel as Chat.Model, await prompts.createComposePrompt(transcription, transcription.type));
 
-        if (config.debug) {
-            const debugDir = path.join(outputPath, 'debug');
-            await storage.createDirectory(debugDir);
-            const requestOutputPath = path.join(debugDir, filename + '.request.json');
-            await storage.writeFile(requestOutputPath, stringifyJSON(chatRequest), 'utf8');
-            logger.debug('Wrote chat request to %s', requestOutputPath);
-        }
+        const requestOutputPath = path.join(interimPath, filename + '.request.json');
+        await storage.writeFile(requestOutputPath, stringifyJSON(chatRequest), 'utf8');
+        logger.debug('Wrote chat request to %s', requestOutputPath);
 
-        const debugResponsePath = config.debug ? path.join(outputPath, 'debug', filename + '.response.json') : undefined;
+        const debugResponsePath = config.debug ? path.join(interimPath, filename + '.response.json') : undefined;
         const noteCompletion: string = await OpenAI.createCompletion(chatRequest.messages as ChatCompletionMessageParam[], { model: config.model, debug: config.debug, debugFile: debugResponsePath });
 
         await storage.writeFile(noteOutputPath, Buffer.from(noteCompletion, 'utf8'), 'utf8');

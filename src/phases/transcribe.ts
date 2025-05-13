@@ -15,7 +15,7 @@ export interface Transcription {
 }
 
 export interface Instance {
-    transcribe: (creation: Date, outputPath: string, filename: string, hash: string, audioFile: string) => Promise<Transcription>;
+    transcribe: (creation: Date, outputPath: string, contextPath: string, interimPath: string, filename: string, hash: string, audioFile: string) => Promise<Transcription>;
 }
 
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
@@ -24,7 +24,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const media = Media.create(logger);
     const prompts = TranscribePrompt.create(config.composeModel as Chat.Model, config);
 
-    const transcribe = async (creation: Date, outputPath: string, filename: string, hash: string, audioFile: string): Promise<Transcription> => {
+    const transcribe = async (creation: Date, outputPath: string, contextPath: string, interimPath: string, filename: string, hash: string, audioFile: string): Promise<Transcription> => {
         if (!outputPath) {
             throw new Error("outputPath is required for transcribe function");
         }
@@ -40,7 +40,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             transcriptOutputFilename += '.json';
         }
 
-        const transcriptOutputPath = path.join(outputPath, transcriptOutputFilename);
+        const transcriptOutputPath = path.join(interimPath, transcriptOutputFilename);
 
         // Check if transcription already exists
         if (await storage.exists(transcriptOutputPath)) {
@@ -49,11 +49,8 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             return JSON.parse(existingContent);
         }
 
-        const debugDir = path.join(outputPath, 'debug');
-        await storage.createDirectory(debugDir);
-
         const baseDebugFilename = path.parse(transcriptOutputFilename).name;
-        const transcriptionDebugFile = config.debug ? path.join(debugDir, `${baseDebugFilename}.transcription.raw.response.json`) : undefined;
+        const transcriptionDebugFile = config.debug ? path.join(interimPath, `${baseDebugFilename}.transcription.raw.response.json`) : undefined;
 
         // Check if audio file exceeds the size limit
         const fileSize = await media.getFileSize(audioFile);
@@ -80,7 +77,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
                     logger.info(`Transcribing chunk ${i + 1}/${audioChunks.length}: ${chunkPath}`);
 
                     const chunkDebugFile = config.debug ?
-                        path.join(debugDir, `${baseDebugFilename}.transcription.chunk${i + 1}.raw.response.json`) :
+                        path.join(interimPath, `${baseDebugFilename}.transcription.chunk${i + 1}.raw.response.json`) :
                         undefined;
 
                     const chunkTranscription = await OpenAI.transcribeAudio(chunkPath, {
@@ -96,15 +93,12 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
                 const combinedText = transcriptions.map(t => t.text).join(' ');
                 transcription = { text: combinedText };
 
-                // Save the combined transcription
-                if (config.debug) {
-                    // Save each individual chunk for debugging
-                    await storage.writeFile(
-                        path.join(debugDir, `${baseDebugFilename}.transcription.combined.json`),
-                        stringifyJSON({ chunks: transcriptions, combined: transcription }),
-                        'utf8'
-                    );
-                }
+                // Save each individual chunk for debugging
+                await storage.writeFile(
+                    path.join(interimPath, `${baseDebugFilename}.transcription.combined.json`),
+                    stringifyJSON({ chunks: transcriptions, combined: transcription }),
+                    'utf8'
+                );
 
                 // Clean up temporary files if not in debug mode
                 if (!config.debug) {
@@ -150,11 +144,11 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
 
             // Debug file paths for the request and response
             const requestDebugFile = config.debug ?
-                path.join(debugDir, `${baseDebugFilename}.markdown.request.json`) :
+                path.join(interimPath, `${baseDebugFilename}.markdown.request.json`) :
                 undefined;
 
             const responseDebugFile = config.debug ?
-                path.join(debugDir, `${baseDebugFilename}.markdown.response.json`) :
+                path.join(interimPath, `${baseDebugFilename}.markdown.response.json`) :
                 undefined;
 
             // Write debug file for the request if in debug mode

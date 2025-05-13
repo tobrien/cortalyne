@@ -88,6 +88,8 @@ describe('Transcribe Phase Tests', () => {
 
     const creation = new Date('2023-01-01T12:00:00Z');
     const outputPath = '/output';
+    const contextPath = '/output/context';
+    const interimPath = '/output/interim';
     const filename = 'audio.mp3';
     const hash = 'abc123';
     const audioFile = '/path/to/audio.mp3';
@@ -109,7 +111,7 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(config, mockOperator);
-        const result = await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        const result = await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
         expect(mockStorage.exists).toHaveBeenCalledWith(path.join(outputPath, 'transcript_abc123.json'));
@@ -144,7 +146,7 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(config, mockOperator);
-        const result = await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        const result = await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
         expect(mockStorage.exists).toHaveBeenCalledWith(path.join(outputPath, 'transcript_abc123.json'));
@@ -199,7 +201,7 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(config, mockOperator);
-        const result = await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        const result = await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
         expect(mockMedia.getFileSize).toHaveBeenCalledWith(audioFile);
@@ -216,10 +218,10 @@ describe('Transcribe Phase Tests', () => {
         const instance = transcribe.create(config, mockOperator);
 
         // Execute & Verify
-        await expect(instance.transcribe(creation, '', filename, hash, audioFile))
+        await expect(instance.transcribe(creation, '', contextPath, interimPath, filename, hash, audioFile))
             .rejects.toThrow('outputPath is required for transcribe function');
 
-        await expect(instance.transcribe(creation, outputPath, filename, hash, ''))
+        await expect(instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, ''))
             .rejects.toThrow('audioFile is required for transcribe function');
     });
 
@@ -237,14 +239,13 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(debugConfig, mockOperator);
-        await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
-        expect(mockStorage.createDirectory).toHaveBeenCalledWith(path.join(outputPath, 'debug'));
         expect(mockOpenAI.transcribeAudio).toHaveBeenCalledWith(audioFile, {
             model: 'whisper-1',
             debug: true,
-            debugFile: expect.stringContaining('debug/transcript_abc123.transcription.raw.response.json')
+            debugFile: expect.stringContaining('interim/transcript_abc123.transcription.raw.response.json')
         });
     });
 
@@ -263,7 +264,7 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(config, mockOperator);
-        await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
         expect(mockLogger.warn).toHaveBeenCalledWith(
@@ -290,7 +291,7 @@ describe('Transcribe Phase Tests', () => {
         const transcribe = await importTranscribe();
         // @ts-ignore
         const instance = transcribe.create(config, mockOperator);
-        await instance.transcribe(creation, outputPath, filename, hash, audioFile);
+        await instance.transcribe(creation, outputPath, contextPath, interimPath, filename, hash, audioFile);
 
         // Verify
         expect(mockPrompts.createTranscribePrompt).not.toHaveBeenCalled();

@@ -61,6 +61,8 @@ jest.unstable_mockModule('../src/phases/compose', () => ({
 const mockLocateResult = {
     creationTime: new Date('2023-01-01T12:00:00Z'),
     outputPath: '/test/output/path',
+    contextPath: '/test/output/path/.context',
+    interimPath: '/test/output/path/.interim',
     transcriptionFilename: 'test-transcription.json',
     hash: 'test-hash-123'
 };
@@ -129,6 +131,8 @@ describe('Processor', () => {
             expect(mockTranscribe).toHaveBeenCalledWith(
                 mockLocateResult.creationTime,
                 mockLocateResult.outputPath,
+                mockLocateResult.contextPath,
+                mockLocateResult.interimPath,
                 mockLocateResult.transcriptionFilename,
                 mockLocateResult.hash,
                 testFile
@@ -138,6 +142,8 @@ describe('Processor', () => {
             expect(mockClassify).toHaveBeenCalledWith(
                 mockLocateResult.creationTime,
                 mockLocateResult.outputPath,
+                mockLocateResult.contextPath,
+                mockLocateResult.interimPath,
                 'Test transcription', // text from mockTranscribe
                 mockLocateResult.hash
             );
@@ -158,6 +164,8 @@ describe('Processor', () => {
                     subject: 'Test subject'
                 },
                 mockLocateResult.outputPath,
+                mockLocateResult.contextPath,
+                mockLocateResult.interimPath,
                 'test-note-filename.md',
                 mockLocateResult.hash
             );
