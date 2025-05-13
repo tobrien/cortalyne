@@ -68,7 +68,7 @@ export const DEFAULT_PERSONAS_DIR = `/personas`;
 
 export const DEFAULT_PERSONA_YOU_FILE = `${DEFAULT_PERSONAS_DIR}/you.md`;
 export const DEFAULT_PERSONA_CLASSIFIER_FILE = `${DEFAULT_PERSONAS_DIR}/classifier.md`;
-export const DEFAULT_PERSONA_TRANSCRIBE_FILE = `${DEFAULT_PERSONAS_DIR}/transcribe.md`;
+export const DEFAULT_PERSONA_TRANSCRIBER_FILE = `${DEFAULT_PERSONAS_DIR}/transcriber.md`;
 
 export const DEFAULT_INSTRUCTIONS_DIR = `/instructions`;
 

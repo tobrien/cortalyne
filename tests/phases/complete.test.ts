@@ -12,7 +12,7 @@ const mockLogger = {
     error: jest.fn()
 };
 
-jest.unstable_mockModule('../../src/logging', () => ({
+jest.unstable_mockModule('@/logging', () => ({
     getLogger: jest.fn().mockReturnValue(mockLogger)
 }));
 
@@ -25,13 +25,13 @@ const mockStorage = {
     deleteFile: jest.fn()
 };
 
-jest.unstable_mockModule('../../src/util/storage', () => ({
+jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn().mockReturnValue(mockStorage)
 }));
 
 // Load all dynamic imports before tests
 beforeAll(async () => {
-    completeModule = await import('../../src/phases/complete');
+    completeModule = await import('@/phases/complete');
 });
 
 describe('Complete Phase', () => {

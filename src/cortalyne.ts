@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 import 'dotenv/config';
-import * as Arguments from './arguments';
-import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_OUTPUT_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_OUTPUT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION, DEFAULT_CONFIG_DIR } from './constants';
-import { getLogger, setLogLevel } from './logging';
+import * as Arguments from '@/arguments';
+import { ALLOWED_AUDIO_EXTENSIONS, ALLOWED_OUTPUT_FILENAME_OPTIONS, ALLOWED_OUTPUT_STRUCTURES, DEFAULT_AUDIO_EXTENSIONS, DEFAULT_OUTPUT_FILENAME_OPTIONS, DEFAULT_INPUT_DIRECTORY, DEFAULT_OUTPUT_DIRECTORY, DEFAULT_OUTPUT_STRUCTURE, DEFAULT_TIMEZONE, PROGRAM_NAME, VERSION, DEFAULT_CONFIG_DIR } from '@/constants';
+import { getLogger, setLogLevel } from '@/logging';
 import * as Processor from './processor';
 import * as Cabazooka from '@tobrien/cabazooka';
 import * as GiveMeTheConfig from '@tobrien/givemetheconfig';

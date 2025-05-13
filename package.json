@@ -33,7 +33,7 @@
     "dependencies": {
         "@tobrien/cabazooka": "^0.1.3",
         "@tobrien/givemetheconfig": "^0.0.2",
-        "@tobrien/minorprompt": "^0.0.3",
+        "@tobrien/minorprompt": "^0.0.5",
         "@types/fluent-ffmpeg": "^2.1.27",
         "commander": "^13.1.0",
         "dayjs": "^1.11.13",

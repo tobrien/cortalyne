@@ -1,9 +1,12 @@
-import { Chat, createPrompt, createSection, Prompt } from "@tobrien/minorprompt";
-import { DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE, DEFAULT_PERSONA_TRANSCRIBE_FILE } from '../constants';
-import { Config } from '../cortalyne';
-import * as Context from './context';
-import { create as createInstructions } from './instructions/instructions';
-import { create as createPersona } from './persona/persona';
+import { Builder, Chat, Prompt } from "@tobrien/minorprompt";
+import { DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE, DEFAULT_PERSONA_TRANSCRIBER_FILE } from '@/constants';
+import { Config } from '@/cortalyne';
+import { fileURLToPath } from "url";
+import path from "path";
+import { getLogger } from "@/logging";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Creates a prompt for the transcription formatting task
@@ -12,23 +15,16 @@ export const createTranscribePrompt = async (
     transcriptionText: string,
     config: Config
 ): Promise<Prompt> => {
-
-    const persona = await createPersona("transcriber", config.configDirectory, DEFAULT_PERSONA_TRANSCRIBE_FILE, config.overrides);
-    const instructions = await createInstructions("transcribe", config.configDirectory, DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE, config.overrides);
-
-    const content = createSection("Content");
-    content.add(transcriptionText);
-
-    const context = createSection("Context");
-    // Add context sections if available
-    if (config.contextDirectories && config.contextDirectories.length > 0) {
-        const contextSections = await Context.loadContextFromDirectories(config.contextDirectories);
-        contextSections.forEach((section) => {
-            context.add(section);
-        });
+    const logger = getLogger();
+    let builder: Builder.Instance = Builder.create({ logger, basePath: __dirname, overridePath: config.configDirectory, overrides: config.overrides });
+    builder = await builder.addPersonaPath(DEFAULT_PERSONA_TRANSCRIBER_FILE);
+    builder = await builder.addInstructionPath(DEFAULT_INSTRUCTIONS_TRANSCRIBE_FILE);
+    builder = await builder.addContent(transcriptionText);
+    if (config.contextDirectories) {
+        builder = await builder.loadContext(config.contextDirectories);
     }
 
-    const prompt = createPrompt(persona, content, context, instructions);
+    const prompt = await builder.build();
     return prompt;
 };
 

@@ -33,23 +33,23 @@ jest.mock('crypto', () => ({
 }), { virtual: true });
 
 // Mock modules before importing the code under test
-jest.unstable_mockModule('../../src/logging', () => ({
+jest.unstable_mockModule('@/logging', () => ({
     getLogger: jest.fn(() => mockLogger)
 }));
 
-jest.unstable_mockModule('../../src/util/media', () => ({
+jest.unstable_mockModule('@/util/media', () => ({
     create: jest.fn(() => ({
         getAudioCreationTime: mockGetAudioCreationTime
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/storage', () => ({
+jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn(() => ({
         hashFile: mockHashFile
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/dates', () => ({
+jest.unstable_mockModule('@/util/dates', () => ({
     create: jest.fn(() => ({
         now: mockNow
     }))
@@ -57,7 +57,7 @@ jest.unstable_mockModule('../../src/util/dates', () => ({
 
 // Now import the module under test
 // @ts-ignore
-const LocatePhase = await import('../../src/phases/locate');
+const LocatePhase = await import('@/phases/locate');
 
 describe('locate', () => {
     beforeEach(() => {

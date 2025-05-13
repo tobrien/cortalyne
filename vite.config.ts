@@ -4,6 +4,7 @@ import replace from '@rollup/plugin-replace';
 // import { visualizer } from 'rollup-plugin-visualizer';
 import { execSync } from 'child_process';
 import shebang from 'rollup-plugin-preserve-shebang';
+import path from 'path';
 
 let gitInfo = {
     branch: '',
@@ -81,10 +82,15 @@ export default defineConfig({
                     shebang: '#!/usr/bin/env node',
                 }),
             ],
+
         },
-        // Make sure Vite generates ESM-compatible code
         modulePreload: false,
         minify: false,
         sourcemap: true
     },
+    resolve: {
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+        },
+    }
 }); 

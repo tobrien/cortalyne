@@ -8,10 +8,10 @@ import {
     DEFAULT_MAX_AUDIO_SIZE,
     PROGRAM_NAME,
     VERSION
-} from "./constants";
-import { Args, Config, SecureConfig } from "./cortalyne";
-import { getLogger } from "./logging";
-import * as Storage from "./util/storage";
+} from "@/constants";
+import { Args, Config, SecureConfig } from "@/cortalyne";
+import { getLogger } from "@/logging";
+import * as Storage from "@/util/storage";
 
 export const configure = async (cabazooka: Cabazooka.Cabazooka, givemetheconfig: GiveMeTheConfig.Givemetheconfig<any>): Promise<[Config, SecureConfig]> => {
     const logger = getLogger();
