@@ -9,3 +9,6 @@ output/
 input/
 processed/
 .cortalyne/
+output
+outdiff
+outlog
