@@ -15,8 +15,8 @@ importers:
         specifier: ^0.0.2
         version: 0.0.2
       '@tobrien/minorprompt':
-        specifier: ^0.0.3
-        version: 0.0.3
+        specifier: ^0.0.5
+        version: 0.0.5
       '@types/fluent-ffmpeg':
         specifier: ^2.1.27
         version: 2.1.27
@@ -836,8 +836,8 @@ packages:
   '@tobrien/minorprompt@0.0.2':
     resolution: {integrity: sha512-cSxFrfyqBlkIycQxIdwqeL5aunQpcTpvQmUSnf+YKdVY+YrI01oAA3G5mPUaEkwKm0f5kpWOw0BXbqmCXsmv9g==}
 
-  '@tobrien/minorprompt@0.0.3':
-    resolution: {integrity: sha512-UkOmOFg0e8NFQKDm/mmqLwZCq/VsQPExSfGOcKlOtrlf4Coznb14bAdf5JheRISCYaZn0u2K9IUlxIyij1/Tsg==}
+  '@tobrien/minorprompt@0.0.5':
+    resolution: {integrity: sha512-enODSJFFXsdsgthuttoCmO5iTmF3ZsWe/rwjvJRHcstWYOd/HRX2xYltHXm/gcPl1nfVy2IYtqoOJij1R0NeVg==}
 
   '@types/babel__core@7.20.5':
     resolution: {integrity: sha512-qoQprZvz5wQFJwMDqeseRXWv3rqMvhgpbXFfVyWhbx9X47POIA6i/+dXefEmZKoAgOaTdaIgNSMqMIU61yRyzA==}
@@ -3621,8 +3621,9 @@ snapshots:
 
   '@tobrien/minorprompt@0.0.2': {}
 
-  '@tobrien/minorprompt@0.0.3':
+  '@tobrien/minorprompt@0.0.5':
     dependencies:
+      glob: 11.0.2
       marked: 15.0.11
 
   '@types/babel__core@7.20.5':
