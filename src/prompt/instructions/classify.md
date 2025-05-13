@@ -1,6 +1,6 @@
 # Classify
 
-Task #1 - Analyze the transcript provided to determine the type of note that is being described.
+Task #1 - Analyze the transcript provided to determine the type of note that is being described, and use the "Audio File" name as a hint for what the subject and type will be.
 
 Task #2 - Understand the contents of the note and create a Subject for the note from the trascript using the information in <context> to correct spelling related to names, projects, companies, and other entities.
 
