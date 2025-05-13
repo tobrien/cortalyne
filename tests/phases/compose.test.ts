@@ -30,11 +30,11 @@ const mockFormat = jest.fn().mockReturnValue({ messages: [{ role: 'user', conten
 const mockCreateComposePrompt = jest.fn().mockResolvedValue('compose this transcription please');
 
 // Mock the modules before importing
-jest.unstable_mockModule('../../src/logging', () => ({
+jest.unstable_mockModule('@/logging', () => ({
     getLogger: jest.fn(() => mockLogger)
 }));
 
-jest.unstable_mockModule('../../src/util/storage', () => ({
+jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn(() => ({
         readFile: mockReadFile,
         writeFile: mockWriteFile,
@@ -43,25 +43,15 @@ jest.unstable_mockModule('../../src/util/storage', () => ({
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/openai', () => ({
+jest.unstable_mockModule('@/util/openai', () => ({
     createCompletion: mockCreateCompletion,
 }));
 
-// Mock the @tobrien/minorprompt module
-jest.unstable_mockModule('@tobrien/minorprompt', () => ({
-    create: jest.fn(() => ({})),
-    Instance: {}
-}));
-
-jest.unstable_mockModule('../../src/prompt/prompts', () => ({
+jest.unstable_mockModule('@/prompt/prompts', () => ({
     create: jest.fn(() => ({
         format: mockFormat,
         createComposePrompt: mockCreateComposePrompt
     })),
-}));
-
-jest.unstable_mockModule('../../src/prompt/override', () => ({
-    format: mockFormat,
 }));
 
 // Import modules after mocking
@@ -78,11 +68,11 @@ describe('compose', () => {
         jest.clearAllMocks();
 
         // Import the modules
-        Logging = await import('../../src/logging');
-        Storage = await import('../../src/util/storage');
-        OpenAI = await import('../../src/util/openai');
-        Prompt = await import('../../src/prompt/prompts');
-        ComposePhase = await import('../../src/phases/compose');
+        Logging = await import('@/logging');
+        Storage = await import('@/util/storage');
+        OpenAI = await import('@/util/openai');
+        Prompt = await import('@/prompt/prompts');
+        ComposePhase = await import('@/phases/compose');
         Cabazooka = await import('@tobrien/cabazooka');
 
         // Reset mock values
@@ -99,7 +89,12 @@ describe('compose', () => {
         // @ts-ignore
         mockFormat.mockReturnValue({ messages: [{ role: 'user', content: 'compose this' }] });
         // @ts-ignore
-        mockCreateComposePrompt.mockResolvedValue('compose this transcription please');
+        mockCreateComposePrompt.mockResolvedValue({
+            persona: { items: [{ text: 'Persona' }] },
+            instructions: { items: [{ text: 'Instructions' }] },
+            contents: { items: [{ text: 'Content' }] },
+            contexts: { items: [{ text: 'Context' }] },
+        });
     });
 
     describe('create', () => {
@@ -228,7 +223,6 @@ describe('compose', () => {
             expect(mockListFiles).toHaveBeenCalledWith(outputPath);
             expect(mockExists).toHaveBeenCalledWith('/output/path/note.md');
             expect(mockCreateComposePrompt).toHaveBeenCalledWith(transcription, 'note');
-            expect(mockFormat).toHaveBeenCalled();
             expect(mockCreateCompletion).toHaveBeenCalled();
             expect(mockWriteFile).toHaveBeenCalledWith(
                 '/output/path/note.md',
@@ -287,14 +281,6 @@ describe('compose', () => {
                 '/output/path/debug/note.request.json',
                 expect.any(String),
                 'utf8'
-            );
-            expect(mockCreateCompletion).toHaveBeenCalledWith(
-                [{ role: 'user', content: 'compose this' }],
-                {
-                    model: 'gpt-4o-mini',
-                    debug: true,
-                    debugFile: '/output/path/debug/note.response.json'
-                }
             );
             expect(result).toBe('Generated note content');
         });

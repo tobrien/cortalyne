@@ -1,14 +1,13 @@
-import { Chat } from '@tobrien/minorprompt';
+import { Chat, Formatter } from '@tobrien/minorprompt';
 import { ChatCompletionMessageParam } from 'openai/resources';
 import path from 'path';
-import * as Logging from '../logging';
-import { Config } from '../cortalyne';
-import { ClassifiedTranscription } from '../processor';
-import * as Override from '../prompt/override';
-import * as Prompt from '../prompt/prompts';
-import { stringifyJSON } from '../util/general';
-import * as OpenAI from '../util/openai';
-import * as Storage from '../util/storage';
+import * as Logging from '@/logging';
+import { Config } from '@/cortalyne';
+import { ClassifiedTranscription } from '@/processor';
+import * as Prompt from '@/prompt/prompts';
+import { stringifyJSON } from '@/util/general';
+import * as OpenAI from '@/util/openai';
+import * as Storage from '@/util/storage';
 // Helper function to promisify ffmpeg.
 
 export interface Instance {
@@ -38,7 +37,8 @@ export const create = (config: Config): Instance => {
             return existingContent;
         }
 
-        const chatRequest: Chat.Request = Override.format(await prompts.createComposePrompt(transcription, transcription.type), config.model as Chat.Model);
+        const formatter = Formatter.create({ logger });
+        const chatRequest: Chat.Request = formatter.formatPrompt(config.composeModel as Chat.Model, await prompts.createComposePrompt(transcription, transcription.type));
 
         if (config.debug) {
             const debugDir = path.join(outputPath, 'debug');

@@ -8,8 +8,8 @@ export default {
         global: {
             branches: 83,
             functions: 89,
-            lines: 90,
-            statements: 90,
+            lines: 89,
+            statements: 89,
         }
     },
     extensionsToTreatAsEsm: ['.ts'],

@@ -1,4 +1,4 @@
 #!/usr/bin/env node
-import { main } from './cortalyne';
+import { main } from '@/cortalyne';
 
 main();

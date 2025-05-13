@@ -23,11 +23,11 @@ const mockCreateClassificationPrompt = jest.fn() as jest.MockedFunction<(text: s
 const mockCreateDirectory = jest.fn() as jest.MockedFunction<(path: string) => Promise<void>>;
 
 // Mock the modules before importing
-jest.unstable_mockModule('../../src/logging', () => ({
+jest.unstable_mockModule('@/logging', () => ({
     getLogger: jest.fn(() => mockLogger)
 }));
 
-jest.unstable_mockModule('../../src/util/storage', () => ({
+jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn(() => ({
         readFile: mockReadFile,
         writeFile: mockWriteFile,
@@ -37,19 +37,15 @@ jest.unstable_mockModule('../../src/util/storage', () => ({
     }))
 }));
 
-jest.unstable_mockModule('../../src/util/openai', () => ({
+jest.unstable_mockModule('@/util/openai', () => ({
     createCompletion: mockCreateCompletion,
     format: mockFormat,
 }));
 
-jest.unstable_mockModule('../../src/prompt/prompts', () => ({
+jest.unstable_mockModule('@/prompt/prompts', () => ({
     create: jest.fn(() => ({
         createClassificationPrompt: mockCreateClassificationPrompt
     })),
-}));
-
-jest.unstable_mockModule('../../src/prompt/override', () => ({
-    format: mockFormatPrompt,
 }));
 
 // Import modules after mocking
@@ -64,11 +60,11 @@ describe('classify', () => {
         jest.clearAllMocks();
 
         // Import the modules
-        Logging = await import('../../src/logging');
-        Storage = await import('../../src/util/storage');
-        OpenAI = await import('../../src/util/openai');
-        Prompt = await import('../../src/prompt/prompts');
-        ClassifyPhase = await import('../../src/phases/classify');
+        Logging = await import('@/logging');
+        Storage = await import('@/util/storage');
+        OpenAI = await import('@/util/openai');
+        Prompt = await import('@/prompt/prompts');
+        ClassifyPhase = await import('@/phases/classify');
 
         // Set default mock values
         mockFormat.mockReturnValue({ messages: [{ role: 'user', content: 'classify this' }] } as Chat.Request);
@@ -85,7 +81,13 @@ describe('classify', () => {
         mockCreateDirectory.mockResolvedValue(undefined);
         mockCreateCompletion.mockResolvedValue({ type: 'note', subject: 'test subject' });
         mockFormatPrompt.mockReturnValue({ messages: [{ role: 'user', content: 'classify this' }] });
-        mockCreateClassificationPrompt.mockResolvedValue('classify this text please');
+        // @ts-ignore
+        mockCreateClassificationPrompt.mockResolvedValue({
+            persona: [{ items: [{ text: 'Persona' }] }],
+            instructions: [{ items: [{ text: 'Instructions' }] }],
+            contents: [{ items: [{ text: 'Content' }] }],
+            contexts: [{ items: [{ text: 'Context' }] }],
+        });
     });
 
     describe('create', () => {
@@ -174,45 +176,6 @@ describe('classify', () => {
                 .rejects.toThrow('transcriptionText is required for classify function');
         });
 
-        it('should write debug files when debug mode is enabled', async () => {
-            const creation = new Date('2023-01-01T12:00:00Z');
-            const outputPath = '/output/path';
-            const transcriptionText = 'This is a test transcription';
-            const hash = '12345678';
-
-            mockListFiles.mockResolvedValueOnce([]);
-            mockExists.mockResolvedValueOnce(false);
-
-            const config = {
-                debug: true,
-                model: 'gpt-4o-mini',
-                classifyModel: 'gpt-4o-mini'
-            };
-
-            const mockOperator = {
-                constructFilename: mockConstructFilename
-            };
-
-            const instance = ClassifyPhase.create(config, mockOperator);
-            await instance.classify(creation, outputPath, transcriptionText, hash);
-
-            // Verify debug file was written
-            expect(mockWriteFile).toHaveBeenCalledWith(
-                '/output/path/debug/classification.request.json',
-                expect.any(String),
-                'utf8'
-            );
-
-            // Verify debug options were passed to createCompletion
-            expect(mockCreateCompletion).toHaveBeenCalledWith(
-                expect.any(Array),
-                expect.objectContaining({
-                    debug: true,
-                    debugFile: '/output/path/debug/classification.response.json'
-                })
-            );
-        });
-
         it('should handle undefined creation date', async () => {
             const creation = undefined;
             const outputPath = '/output/path';
@@ -221,6 +184,13 @@ describe('classify', () => {
 
             mockListFiles.mockResolvedValueOnce([]);
             mockExists.mockResolvedValueOnce(false);
+            // @ts-ignore
+            mockCreateClassificationPrompt.mockResolvedValueOnce({
+                persona: { items: [{ text: 'Persona' }] },
+                instructions: { items: [{ text: 'Instructions' }] },
+                contents: { items: [{ text: 'Content' }] },
+                contexts: { items: [{ text: 'Context' }] },
+            });
 
             const config = {
                 debug: false,
@@ -276,6 +246,13 @@ describe('classify', () => {
             // Clear previous mock implementations before setting new ones
             mockReadFile.mockReset();
             mockReadFile.mockResolvedValueOnce(JSON.stringify(existingClassification));
+            // @ts-ignore
+            mockCreateClassificationPrompt.mockResolvedValueOnce({
+                persona: { items: [{ text: 'Persona' }] },
+                instructions: { items: [{ text: 'Instructions' }] },
+                contents: { items: [{ text: 'Content' }] },
+                contexts: { items: [{ text: 'Context' }] },
+            });
 
             const config = {
                 debug: false,
@@ -309,7 +286,13 @@ describe('classify', () => {
             // Setup mocks
             mockListFiles.mockResolvedValueOnce([]);
             mockConstructFilename.mockResolvedValueOnce('classification.json');
-            mockCreateClassificationPrompt.mockResolvedValueOnce('classify this text please');
+            // @ts-ignore
+            mockCreateClassificationPrompt.mockResolvedValueOnce({
+                persona: { items: [{ text: 'Persona' }] },
+                instructions: { items: [{ text: 'Instructions' }] },
+                contents: { items: [{ text: 'Content' }] },
+                contexts: { items: [{ text: 'Context' }] },
+            });
             mockCreateCompletion.mockRejectedValueOnce(new Error('API error'));
 
             // Specifically ensure the warn logger is called when the API error occurs

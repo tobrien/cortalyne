@@ -1,17 +1,16 @@
 import * as Cabazooka from '@tobrien/cabazooka';
-import { Chat } from '@tobrien/minorprompt';
-import { Config } from '../cortalyne';
+import { Chat, Formatter } from '@tobrien/minorprompt';
 import { zodResponseFormat } from 'openai/helpers/zod';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { ClassifiedTranscription } from 'processor';
-import { DEFAULT_CLASSIFIED_RESPONSE_SCHEMA } from '../constants';
-import * as Logging from '../logging';
-import * as Prompt from '../prompt/prompts';
-import { stringifyJSON } from '../util/general';
-import * as OpenAI from '../util/openai';
-import * as Storage from '../util/storage';
-import * as Override from '../prompt/override';
 import path from 'path';
+import { ClassifiedTranscription } from 'processor';
+import { DEFAULT_CLASSIFIED_RESPONSE_SCHEMA } from '@/constants';
+import { Config } from '@/cortalyne';
+import * as Logging from '@/logging';
+import * as Prompt from '@/prompt/prompts';
+import { stringifyJSON } from '@/util/general';
+import * as OpenAI from '@/util/openai';
+import * as Storage from '@/util/storage';
 
 // Helper function to promisify ffmpeg.
 export interface Instance {
@@ -55,7 +54,8 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const baseDebugFilename = path.parse(jsonOutputFilename).name;
 
         // Generate classification prompt using the transcription text
-        const chatRequest: Chat.Request = Override.format(await prompts.createClassificationPrompt(transcriptionText), config.model as Chat.Model);
+        const formatter = Formatter.create({ logger });
+        const chatRequest: Chat.Request = formatter.formatPrompt(config.classifyModel as Chat.Model, await prompts.createClassificationPrompt(transcriptionText));
 
         if (config.debug) {
             const requestDebugFile = path.join(debugDir, `${baseDebugFilename}.request.json`);

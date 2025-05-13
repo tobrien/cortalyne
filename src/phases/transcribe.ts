@@ -1,15 +1,14 @@
 import * as Cabazooka from '@tobrien/cabazooka';
-import { Config } from '../cortalyne';
-import * as Logging from '../logging';
-import * as Storage from '../util/storage';
-import * as Media from '../util/media';
-import * as OpenAI from '../util/openai';
-import { stringifyJSON } from '../util/general';
+import { Config } from '@/cortalyne';
+import * as Logging from '@/logging';
+import * as Storage from '@/util/storage';
+import * as Media from '@/util/media';
+import * as OpenAI from '@/util/openai';
+import { stringifyJSON } from '@/util/general';
 import path from 'path';
 import { ChatCompletionMessageParam } from 'openai/resources';
-import { Chat } from '@tobrien/minorprompt';
-import * as Override from '../prompt/override';
-import * as TranscribePrompt from '../prompt/transcribe';
+import { Chat, Formatter } from '@tobrien/minorprompt';
+import * as TranscribePrompt from '@/prompt/transcribe';
 
 export interface Transcription {
     text: string;
@@ -146,7 +145,8 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             const prompt = await prompts.createTranscribePrompt(transcription.text);
 
             // Format the prompt using the override utility
-            const chatRequest = Override.format(prompt, config.composeModel as Chat.Model);
+            const formatter = Formatter.create({ logger });
+            const chatRequest: Chat.Request = formatter.formatPrompt(config.composeModel as Chat.Model, prompt);
 
             // Debug file paths for the request and response
             const requestDebugFile = config.debug ?
