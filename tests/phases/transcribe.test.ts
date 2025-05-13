@@ -127,7 +127,7 @@ describe('Transcribe Phase Tests', () => {
         // @ts-ignore
         mockMedia.getFileSize.mockResolvedValue(1024 * 1024); // 1MB
         // @ts-ignore
-        mockOpenAI.transcribeAudio.mockResolvedValue({ text: 'transcribed text' });
+        mockOpenAI.transcribeAudio.mockResolvedValue({ text: 'transcribed text', audioFileBasename: 'audio' });
         // @ts-ignore
         mockOperator.constructFilename.mockResolvedValue('transcript_abc123.json');
         // @ts-ignore
@@ -168,7 +168,7 @@ describe('Transcribe Phase Tests', () => {
             '# Formatted Transcript\n\nTranscribed text',
             'utf8'
         );
-        expect(result).toEqual({ text: 'transcribed text' });
+        expect(result).toEqual({ text: 'transcribed text', audioFileBasename: 'audio' });
     });
 
     test('should split and transcribe large audio files', async () => {

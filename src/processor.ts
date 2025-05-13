@@ -40,7 +40,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
 
         // Then classify the transcription
         logger.debug('Classifying transcription for file %s', audioFile);
-        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, contextPath, interimPath, transcription.text, hash);
+        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, contextPath, interimPath, transcription.text, hash, transcription.audioFileBasename);
 
         // Create the note
         const noteFilename = await operator.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });

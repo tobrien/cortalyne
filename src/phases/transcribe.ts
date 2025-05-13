@@ -12,6 +12,7 @@ import * as TranscribePrompt from '@/prompt/transcribe';
 
 export interface Transcription {
     text: string;
+    audioFileBasename: string;
 }
 
 export interface Instance {
@@ -33,7 +34,15 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             throw new Error("audioFile is required for transcribe function");
         }
 
-        let transcriptOutputFilename = await operator.constructFilename(creation, 'transcript', hash);
+        // Remove extension from audioFile and make the name filesafe
+        const audioFileBasename = path.basename(audioFile, path.extname(audioFile))
+            .replace(/[^a-zA-Z0-9_-]/g, '_') // Replace non-alphanumeric chars with underscore
+            .replace(/_+/g, '_') // Replace multiple underscores with a single one
+            .trim();
+
+        logger.debug(`Processed audio filename: ${audioFileBasename}`);
+
+        let transcriptOutputFilename = await operator.constructFilename(creation, 'transcript', hash, { subject: audioFileBasename });
         // Ensure the filename ends with .json
         if (!transcriptOutputFilename.endsWith('.json')) {
             logger.warn('constructFilename did not return a .json file for transcript, appending extension: %s', transcriptOutputFilename);
@@ -174,7 +183,10 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             logger.info('Markdown transcription file %s already exists, skipping...', markdownOutputPath);
         }
 
-        return transcription;
+        return {
+            ...transcription,
+            audioFileBasename,
+        };
     }
 
     return {

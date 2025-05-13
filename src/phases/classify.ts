@@ -14,7 +14,7 @@ import * as Storage from '@/util/storage';
 
 // Helper function to promisify ffmpeg.
 export interface Instance {
-    classify: (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string) => Promise<ClassifiedTranscription>;
+    classify: (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string, audioFileBasename: string) => Promise<ClassifiedTranscription>;
 }
 
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
@@ -22,7 +22,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const storage = Storage.create({ log: logger.debug });
     const prompts = Prompt.create(config.classifyModel as Chat.Model, config);
 
-    const classify = async (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string): Promise<ClassifiedTranscription> => {
+    const classify = async (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string, audioFileBasename: string): Promise<ClassifiedTranscription> => {
         if (!outputPath) {
             throw new Error("outputPath is required for classify function");
         }
@@ -31,7 +31,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             throw new Error("transcriptionText is required for classify function");
         }
 
-        let jsonOutputFilename = await operator.constructFilename(creation, 'classification', hash);
+        let jsonOutputFilename = await operator.constructFilename(creation, 'classification', hash, { subject: audioFileBasename });
         // Ensure the filename ends with .json
         if (!jsonOutputFilename.endsWith('.json')) {
             logger.warn('constructFilename did not return a .json file, appending extension: %s', jsonOutputFilename);
@@ -52,7 +52,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
 
         // Generate classification prompt using the transcription text
         const formatter = Formatter.create({ logger });
-        const chatRequest: Chat.Request = formatter.formatPrompt(config.classifyModel as Chat.Model, await prompts.createClassificationPrompt(transcriptionText));
+        const chatRequest: Chat.Request = formatter.formatPrompt(config.classifyModel as Chat.Model, await prompts.createClassificationPrompt(transcriptionText, audioFileBasename));
 
         if (config.debug) {
             const requestDebugFile = path.join(interimPath, `${baseDebugFilename}.request.json`);
