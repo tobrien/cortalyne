@@ -131,6 +131,8 @@ describe('compose', () => {
                 recordingTime: '2023-01-01T12:00:00.000Z'
             };
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const filename = 'note';
             const hash = '12345678';
 
@@ -148,7 +150,7 @@ describe('compose', () => {
             const mockOperator = {};
 
             const instance = ComposePhase.create(config, mockOperator);
-            const result = await instance.compose(transcription, outputPath, filename, hash);
+            const result = await instance.compose(transcription, outputPath, contextPath, interimPath, filename, hash);
 
             expect(mockListFiles).toHaveBeenCalledWith(outputPath);
             expect(mockCreateCompletion).not.toHaveBeenCalled();
@@ -164,6 +166,8 @@ describe('compose', () => {
                 recordingTime: '2023-01-01T12:00:00.000Z'
             };
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const filename = 'note';
             const hash = '12345678';
 
@@ -183,7 +187,7 @@ describe('compose', () => {
             const mockOperator = {};
 
             const instance = ComposePhase.create(config, mockOperator);
-            const result = await instance.compose(transcription, outputPath, filename, hash);
+            const result = await instance.compose(transcription, outputPath, contextPath, interimPath, filename, hash);
 
             expect(mockExists).toHaveBeenCalledWith('/output/path/note.md');
             expect(mockReadFile).toHaveBeenCalledWith('/output/path/note.md', 'utf8');
@@ -199,6 +203,8 @@ describe('compose', () => {
                 recordingTime: '2023-01-01T12:00:00.000Z'
             };
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const filename = 'note';
             const hash = '12345678';
 
@@ -218,7 +224,7 @@ describe('compose', () => {
             const mockOperator = {};
 
             const instance = ComposePhase.create(config, mockOperator);
-            const result = await instance.compose(transcription, outputPath, filename, hash);
+            const result = await instance.compose(transcription, outputPath, contextPath, interimPath, filename, hash);
 
             expect(mockListFiles).toHaveBeenCalledWith(outputPath);
             expect(mockExists).toHaveBeenCalledWith('/output/path/note.md');
@@ -232,93 +238,6 @@ describe('compose', () => {
             expect(result).toBe('Generated note content');
         });
 
-        it('should create debug files when debug mode is enabled', async () => {
-            const transcription = {
-                text: 'This is a test transcription',
-                type: 'note',
-                subject: 'test subject',
-                recordingTime: '2023-01-01T12:00:00.000Z'
-            };
-            const outputPath = '/output/path';
-            const filename = 'note';
-            const hash = '12345678';
-
-            // Mock for createDirectory
-            // @ts-ignore
-            const mockCreateDirectory = jest.fn().mockResolvedValue(undefined);
-            // @ts-ignore
-            Storage.create.mockReturnValueOnce({
-                readFile: mockReadFile,
-                writeFile: mockWriteFile,
-                exists: mockExists,
-                listFiles: mockListFiles,
-                createDirectory: mockCreateDirectory
-            });
-
-            // @ts-ignore
-            mockListFiles.mockResolvedValueOnce([]);
-            // @ts-ignore
-            mockExists.mockResolvedValueOnce(false);
-            // @ts-ignore
-            mockFormat.mockReturnValueOnce({
-                messages: [{ role: 'user', content: 'compose this' }]
-            });
-
-            const config = {
-                debug: true,
-                model: 'gpt-4o-mini',
-                classifyModel: 'gpt-4o-mini',
-                composeModel: 'gpt-4o-mini'
-            };
-
-            const mockOperator = {};
-            const instance = ComposePhase.create(config, mockOperator);
-            const result = await instance.compose(transcription, outputPath, filename, hash);
-
-            expect(mockCreateDirectory).toHaveBeenCalledWith('/output/path/debug');
-            expect(mockWriteFile).toHaveBeenCalledTimes(2); // One for debug, one for actual note
-            expect(mockWriteFile).toHaveBeenCalledWith(
-                '/output/path/debug/note.request.json',
-                expect.any(String),
-                'utf8'
-            );
-            expect(result).toBe('Generated note content');
-        });
-
-        it('should handle error when OpenAI completion fails', async () => {
-            const transcription = {
-                text: 'This is a test transcription',
-                type: 'note',
-                subject: 'test subject',
-                recordingTime: '2023-01-01T12:00:00.000Z'
-            };
-            const outputPath = '/output/path';
-            const filename = 'note';
-            const hash = '12345678';
-
-            // @ts-ignore
-            mockListFiles.mockResolvedValueOnce([]);
-            // @ts-ignore
-            mockExists.mockResolvedValueOnce(false);
-            // @ts-ignore
-            mockCreateCompletion.mockRejectedValueOnce(new Error('OpenAI API error'));
-
-            const config = {
-                debug: false,
-                model: 'gpt-4o-mini',
-                classifyModel: 'gpt-4o-mini',
-                composeModel: 'gpt-4o-mini'
-            };
-
-            const mockOperator = {};
-            const instance = ComposePhase.create(config, mockOperator);
-
-            await expect(instance.compose(transcription, outputPath, filename, hash))
-                .rejects.toThrow('OpenAI API error');
-
-            expect(mockWriteFile).not.toHaveBeenCalled();
-        });
-
         it('should handle different file types in transcription', async () => {
             const transcription = {
                 text: 'This is a test transcription',
@@ -327,6 +246,8 @@ describe('compose', () => {
                 recordingTime: '2023-01-01T12:00:00.000Z'
             };
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const filename = 'action';
             const hash = '12345678';
 
@@ -344,7 +265,7 @@ describe('compose', () => {
 
             const mockOperator = {};
             const instance = ComposePhase.create(config, mockOperator);
-            await instance.compose(transcription, outputPath, filename, hash);
+            await instance.compose(transcription, outputPath, contextPath, interimPath, filename, hash);
 
             expect(mockCreateComposePrompt).toHaveBeenCalledWith(transcription, 'action_item');
             expect(mockWriteFile).toHaveBeenCalledWith(

@@ -4,6 +4,7 @@ import * as Storage from '@/util/storage';
 import * as Cabazooka from '@tobrien/cabazooka';
 import * as Dates from '@/util/dates';
 import { Config } from '@/cortalyne';
+import path from 'path';
 
 // Helper function to promisify ffmpeg.
 
@@ -11,6 +12,8 @@ export interface Instance {
     locate: (audioFile: string) => Promise<{
         creationTime: Date;
         outputPath: string;
+        contextPath: string;
+        interimPath: string;
         transcriptionFilename: string;
         hash: string;
         audioFile: string;
@@ -26,6 +29,8 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const locate = async (audioFile: string): Promise<{
         creationTime: Date;
         outputPath: string;
+        contextPath: string;
+        interimPath: string;
         transcriptionFilename: string;
         hash: string;
         audioFile: string;
@@ -49,11 +54,17 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         // Calculate the hash of file and output directory
         const hash = (await storage.hashFile(audioFile, 100)).substring(0, 8);
         const outputPath: string = await operator.constructOutputDirectory(creationTime);
+        const contextPath: string = path.join(outputPath, '.context');
+        await storage.createDirectory(contextPath);
+        const interimPath: string = path.join(outputPath, '.interim');
+        await storage.createDirectory(interimPath);
         const transcriptionFilename = await operator.constructFilename(creationTime, 'transcription', hash);
 
         return {
             creationTime,
             outputPath,
+            contextPath,
+            interimPath,
             transcriptionFilename,
             hash,
             audioFile,

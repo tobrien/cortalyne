@@ -56,7 +56,7 @@ export const DEFAULT_CLASSIFIED_RESPONSE_SCHEMA = z.object({
 });
 
 export const DEFAULT_OUTPUT_STRUCTURE = 'month' as FilesystemStructure;
-export const DEFAULT_OUTPUT_FILENAME_OPTIONS = ['date', 'subject'] as FilenameOption[];
+export const DEFAULT_OUTPUT_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];
 
 export const ALLOWED_OUTPUT_STRUCTURES = ['none', 'year', 'month', 'day'] as FilesystemStructure[];
 export const ALLOWED_OUTPUT_FILENAME_OPTIONS = ['date', 'time', 'subject'] as FilenameOption[];

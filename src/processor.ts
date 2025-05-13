@@ -31,21 +31,21 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
 
         // Locate the contents in time and on the filesystem
         logger.debug('Locating file %s', audioFile);
-        const { creationTime, outputPath, transcriptionFilename, hash } = await locatePhase.locate(audioFile);
-        logger.debug('Locate complete: %s', JSON.stringify({ creationTime, outputPath, transcriptionFilename, hash }));
+        const { creationTime, outputPath, contextPath, interimPath, transcriptionFilename, hash } = await locatePhase.locate(audioFile);
+        logger.debug('Locate complete: %s', JSON.stringify({ creationTime, outputPath, contextPath, interimPath, transcriptionFilename, hash }));
 
         // First transcribe the audio
         logger.debug('Transcribing file %s', audioFile);
-        const transcription = await transcribePhase.transcribe(creationTime, outputPath, transcriptionFilename, hash, audioFile);
+        const transcription = await transcribePhase.transcribe(creationTime, outputPath, contextPath, interimPath, transcriptionFilename, hash, audioFile);
 
         // Then classify the transcription
         logger.debug('Classifying transcription for file %s', audioFile);
-        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, transcription.text, hash);
+        const classifiedTranscription: ClassifiedTranscription = await classifyPhase.classify(creationTime, outputPath, contextPath, interimPath, transcription.text, hash);
 
         // Create the note
         const noteFilename = await operator.constructFilename(creationTime, classifiedTranscription.type, hash, { subject: classifiedTranscription.subject });
         logger.debug('Composing Note %s in %s', noteFilename, outputPath);
-        await composePhase.compose(classifiedTranscription, outputPath, noteFilename, hash);
+        await composePhase.compose(classifiedTranscription, outputPath, contextPath, interimPath, noteFilename, hash);
 
         // Move the processed file to the processed directory
         logger.debug('Completing processing for %s', audioFile);
