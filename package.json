@@ -11,7 +11,7 @@
         "type": "git",
         "url": "git+https://github.com/tobrien/cortalyne.git"
     },
-    "packageManager": "pnpm@10.10.0",
+    "packageManager": "pnpm@10.11.0",
     "scripts": {
         "build": "tsc --noEmit && vite build && copyfiles -u 1 \"src/**/*.md\" dist",
         "dev": "vite",
