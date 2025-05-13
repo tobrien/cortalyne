@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export interface Factory {
-    createClassificationPrompt: (transcription: string) => Promise<Prompt>;
+    createClassificationPrompt: (transcription: string, audioFileBasename: string) => Promise<Prompt>;
     createComposePrompt: (transcription: ClassifiedTranscription, noteType: string) => Promise<Prompt>;
 }
 
@@ -19,11 +19,12 @@ export const create = (model: Model, config: Config): Factory => {
 
     const logger = getLogger();
 
-    const createClassificationPrompt = async (transcription: string): Promise<Prompt> => {
+    const createClassificationPrompt = async (transcription: string, audioFileBasename: string): Promise<Prompt> => {
         let builder: Builder.Instance = Builder.create({ logger, basePath: __dirname, overridePath: config.configDirectory, overrides: config.overrides });
         builder = await builder.addPersonaPath(DEFAULT_PERSONA_CLASSIFIER_FILE);
         builder = await builder.addInstructionPath(DEFAULT_INSTRUCTIONS_CLASSIFY_FILE);
-        builder = await builder.addContent(transcription);
+        builder = await builder.addContent(`Audio File: ${audioFileBasename}`);
+        builder = await builder.addContent(`Transcription: ${transcription}`);
         if (config.contextDirectories) {
             builder = await builder.loadContext(config.contextDirectories);
         }

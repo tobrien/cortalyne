@@ -145,7 +145,8 @@ describe('Processor', () => {
                 mockLocateResult.contextPath,
                 mockLocateResult.interimPath,
                 'Test transcription', // text from mockTranscribe
-                mockLocateResult.hash
+                mockLocateResult.hash,
+                undefined,
             );
 
             // Verify constructFilename was called
