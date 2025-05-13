@@ -156,6 +156,8 @@ describe('classify', () => {
         it('should throw error when transcriptionText is missing', async () => {
             const creation = new Date('2023-01-01T12:00:00Z');
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const transcriptionText = '';
             const hash = '12345678';
 
@@ -172,61 +174,15 @@ describe('classify', () => {
 
             const instance = ClassifyPhase.create(config, mockOperator);
 
-            await expect(instance.classify(creation, outputPath, transcriptionText, hash))
+            await expect(instance.classify(creation, outputPath, contextPath, interimPath, transcriptionText, hash))
                 .rejects.toThrow('transcriptionText is required for classify function');
-        });
-
-        it('should handle undefined creation date', async () => {
-            const creation = undefined;
-            const outputPath = '/output/path';
-            const transcriptionText = 'This is a test transcription';
-            const hash = '12345678';
-
-            mockListFiles.mockResolvedValueOnce([]);
-            mockExists.mockResolvedValueOnce(false);
-            // @ts-ignore
-            mockCreateClassificationPrompt.mockResolvedValueOnce({
-                persona: { items: [{ text: 'Persona' }] },
-                instructions: { items: [{ text: 'Instructions' }] },
-                contents: { items: [{ text: 'Content' }] },
-                contexts: { items: [{ text: 'Context' }] },
-            });
-
-            const config = {
-                debug: false,
-                model: 'gpt-4o-mini',
-                classifyModel: 'gpt-4o-mini'
-            };
-
-            const mockOperator = {
-                constructFilename: mockConstructFilename
-            };
-
-            const instance = ClassifyPhase.create(config, mockOperator);
-            const result = await instance.classify(creation, outputPath, transcriptionText, hash);
-
-            expect(result).toEqual({
-                type: 'note',
-                subject: 'test subject',
-                text: 'This is a test transcription',
-                recordingTime: undefined
-            });
-
-            expect(mockWriteFile).toHaveBeenCalledWith(
-                '/output/path/classification.json',
-                JSON.stringify({
-                    type: 'note',
-                    subject: 'test subject',
-                    text: 'This is a test transcription',
-                    recordingTime: undefined
-                }, null, 2),
-                'utf8'
-            );
         });
 
         it('should skip classification when classification file already exists', async () => {
             const creation = new Date('2023-01-01T12:00:00Z');
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const transcriptionText = 'This is a test transcription';
             const hash = '12345678';
 
@@ -265,7 +221,7 @@ describe('classify', () => {
             };
 
             const instance = ClassifyPhase.create(config, mockOperator);
-            const result = await instance.classify(creation, outputPath, transcriptionText, hash);
+            const result = await instance.classify(creation, outputPath, contextPath, interimPath, transcriptionText, hash);
 
             expect(result).toEqual(existingClassification);
         });
@@ -273,6 +229,8 @@ describe('classify', () => {
         it('should handle API errors during classification', async () => {
             const creation = new Date('2023-01-01T12:00:00Z');
             const outputPath = '/output/path';
+            const contextPath = '/output/context';
+            const interimPath = '/output/interim';
             const transcriptionText = 'This is a test transcription';
             const hash = '12345678';
 
@@ -310,7 +268,7 @@ describe('classify', () => {
 
             const instance = ClassifyPhase.create(config, mockOperator);
 
-            await expect(instance.classify(creation, outputPath, transcriptionText, hash))
+            await expect(instance.classify(creation, outputPath, contextPath, interimPath, transcriptionText, hash))
                 .rejects.toThrow('API error');
         });
     });

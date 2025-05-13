@@ -43,9 +43,14 @@ jest.unstable_mockModule('@/util/media', () => ({
     }))
 }));
 
+const mockExists = jest.fn();
+const mockCreateDirectory = jest.fn();
+
 jest.unstable_mockModule('@/util/storage', () => ({
     create: jest.fn(() => ({
-        hashFile: mockHashFile
+        hashFile: mockHashFile,
+        exists: mockExists,
+        createDirectory: mockCreateDirectory,
     }))
 }));
 
@@ -156,6 +161,8 @@ describe('locate', () => {
             expect(result).toEqual({
                 creationTime: new Date('2023-01-01T12:00:00Z'),
                 outputPath: '/output/path',
+                contextPath: '/output/path/.context',
+                interimPath: '/output/path/.interim',
                 transcriptionFilename: 'transcription.txt',
                 hash: '12345678',
                 audioFile: '/path/to/audio.mp3',

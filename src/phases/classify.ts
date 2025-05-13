@@ -14,7 +14,7 @@ import * as Storage from '@/util/storage';
 
 // Helper function to promisify ffmpeg.
 export interface Instance {
-    classify: (creation: Date, outputPath: string, transcriptionText: string, hash: string) => Promise<ClassifiedTranscription>;
+    classify: (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string) => Promise<ClassifiedTranscription>;
 }
 
 export const create = (config: Config, operator: Cabazooka.Operator): Instance => {
@@ -22,7 +22,7 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
     const storage = Storage.create({ log: logger.debug });
     const prompts = Prompt.create(config.classifyModel as Chat.Model, config);
 
-    const classify = async (creation: Date, outputPath: string, transcriptionText: string, hash: string): Promise<ClassifiedTranscription> => {
+    const classify = async (creation: Date, outputPath: string, contextPath: string, interimPath: string, transcriptionText: string, hash: string): Promise<ClassifiedTranscription> => {
         if (!outputPath) {
             throw new Error("outputPath is required for classify function");
         }
@@ -38,8 +38,8 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             jsonOutputFilename += '.json';
         }
 
-        const jsonOutputPath = path.join(outputPath, jsonOutputFilename);
-        const files = await storage.listFiles(outputPath);
+        const jsonOutputPath = path.join(interimPath, jsonOutputFilename);
+        const files = await storage.listFiles(interimPath);
         const matchingFiles = files.filter((file: string) => file.includes(hash) && file.includes('classification') && file.endsWith('.json'));
 
         if (matchingFiles.length > 0) {
@@ -48,9 +48,6 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
             return JSON.parse(existingContent);
         }
 
-        const debugDir = path.join(outputPath, 'debug');
-        await storage.createDirectory(debugDir);
-
         const baseDebugFilename = path.parse(jsonOutputFilename).name;
 
         // Generate classification prompt using the transcription text
@@ -58,12 +55,12 @@ export const create = (config: Config, operator: Cabazooka.Operator): Instance =
         const chatRequest: Chat.Request = formatter.formatPrompt(config.classifyModel as Chat.Model, await prompts.createClassificationPrompt(transcriptionText));
 
         if (config.debug) {
-            const requestDebugFile = path.join(debugDir, `${baseDebugFilename}.request.json`);
+            const requestDebugFile = path.join(interimPath, `${baseDebugFilename}.request.json`);
             await storage.writeFile(requestDebugFile, stringifyJSON(chatRequest), 'utf8');
             logger.debug('Wrote chat request to %s', requestDebugFile);
         }
 
-        const completionDebugFile = config.debug ? path.join(debugDir, `${baseDebugFilename}.response.json`) : undefined;
+        const completionDebugFile = config.debug ? path.join(interimPath, `${baseDebugFilename}.response.json`) : undefined;
         const contextCompletion = await OpenAI.createCompletion(chatRequest.messages as ChatCompletionMessageParam[], {
             responseFormat: zodResponseFormat(DEFAULT_CLASSIFIED_RESPONSE_SCHEMA, 'classifiedTranscription'),
             model: config.model,
