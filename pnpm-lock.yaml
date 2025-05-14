@@ -12,8 +12,8 @@ importers:
         specifier: ^0.1.3
         version: 0.1.3
       '@tobrien/givemetheconfig':
-        specifier: ^0.0.2
-        version: 0.0.2
+        specifier: ^0.0.3
+        version: 0.0.3
       '@tobrien/minorprompt':
         specifier: ^0.0.7
         version: 0.0.7
@@ -830,8 +830,8 @@ packages:
   '@tobrien/cabazooka@0.1.3':
     resolution: {integrity: sha512-Cu9DEWer2ybFcHpQ0g5mH6XWai2H5cQ6EXyKfq90tPac1Hjkxnfn6sJe8Y8qaRIeUNAYoRNsDSI6rp+DJt8/kQ==}
 
-  '@tobrien/givemetheconfig@0.0.2':
-    resolution: {integrity: sha512-V7XRi6W7p6QV6+VE7g/MH/KICmh5H/BDVDdEpIRIIsfSgPsK222SgxfX7hsEn4TVpEBr9nV8xBGntefVXNtZfw==}
+  '@tobrien/givemetheconfig@0.0.3':
+    resolution: {integrity: sha512-rVXJEi6dVA+eHH0vX3i5knpYqLFX2l/R1wWQxRpxpH+JiKVC4whYwPxA5C9UX5b6qXfh8zOChPAKFHahZHxRmw==}
 
   '@tobrien/minorprompt@0.0.2':
     resolution: {integrity: sha512-cSxFrfyqBlkIycQxIdwqeL5aunQpcTpvQmUSnf+YKdVY+YrI01oAA3G5mPUaEkwKm0f5kpWOw0BXbqmCXsmv9g==}
@@ -2301,6 +2301,7 @@ packages:
   node-domexception@1.0.0:
     resolution: {integrity: sha512-/jKZoMpw0F8GRwl4/eLROPA3cfcXtLApP0QzLmUT/HuPCZWyB7IY9ZrMeKw2O/nFIqPQB3PVM9aYm0F312AXDQ==}
     engines: {node: '>=10.5.0'}
+    deprecated: Use your platform's native DOMException instead
 
   node-fetch@2.7.0:
     resolution: {integrity: sha512-c4FRfUm/dbcWZ7U+1Wq0AwCyFL+3nt2bEw05wfxSz+DWpWsitgmSgYmy2dQdWyKC1694ELPqMs/YzUSNozLt8A==}
@@ -3821,7 +3822,7 @@ snapshots:
       - encoding
       - ws
 
-  '@tobrien/givemetheconfig@0.0.2':
+  '@tobrien/givemetheconfig@0.0.3':
     dependencies:
       commander: 13.1.0
       dotenv: 16.5.0
